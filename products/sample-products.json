@@ -1,0 +1,124 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Fluid Ring",
+      "material": "9K Gold - Sapphire",
+      "price": 5900,
+      "type": "rings",
+      "category": "gemstone",
+      "image": "images/product-fluid-ring.jpg",
+      "description": "A stunning fluid ring featuring 9K gold with sapphire accents"
+    },
+    {
+      "id": 2,
+      "name": "Wakame Threader",
+      "material": "Sterling Silver",
+      "price": 100,
+      "type": "earrings",
+      "category": "silver",
+      "image": "images/product-wakame-threader.jpg",
+      "description": "Elegant sterling silver threader earrings inspired by ocean seaweed"
+    },
+    {
+      "id": 3,
+      "name": "Kelp Pendant",
+      "material": "Sterling Silver",
+      "price": 290,
+      "type": "necklaces",
+      "category": "silver",
+      "image": "images/product-kelp-pendant.jpg",
+      "description": "Beautiful kelp-inspired pendant in sterling silver"
+    },
+    {
+      "id": 4,
+      "name": "Waterway Studs",
+      "material": "9K Gold",
+      "price": 1598,
+      "type": "earrings",
+      "category": "gold",
+      "image": "images/product-waterway-studs.jpg",
+      "description": "Sophisticated 9K gold studs with water-inspired design"
+    },
+    {
+      "id": 5,
+      "name": "Ripple Ring",
+      "material": "Sterling Silver",
+      "price": 180,
+      "type": "rings",
+      "category": "silver",
+      "image": "images/product-ripple-ring.jpg",
+      "description": "Delicate ripple ring in sterling silver"
+    },
+    {
+      "id": 6,
+      "name": "Elaz Threader",
+      "material": "Sterling Silver",
+      "price": 100,
+      "type": "earrings",
+      "category": "silver",
+      "image": "images/product-elaz-threader.jpg",
+      "description": "Minimalist sterling silver threader earrings"
+    },
+    {
+      "id": 7,
+      "name": "Wakame Pendant",
+      "material": "Brass",
+      "price": 210,
+      "type": "necklaces",
+      "category": "brass",
+      "image": "images/product-wakame-pendant.jpg",
+      "description": "Brass pendant with organic wakame-inspired design"
+    },
+    {
+      "id": 8,
+      "name": "Paeloris Cuff Bangle",
+      "material": "Brass",
+      "price": 635,
+      "type": "bangles",
+      "category": "brass",
+      "image": "images/product-paeloris-cuff.jpg",
+      "description": "Statement brass cuff bangle with unique texture"
+    },
+    {
+      "id": 9,
+      "name": "Coeval Paeloris Ring",
+      "material": "9K Gold / Teal Sapphire",
+      "price": 3450,
+      "type": "rings",
+      "category": "gemstone",
+      "image": "images/product-coeval-paeloris.jpg",
+      "description": "Luxurious 9K gold ring with teal sapphire"
+    },
+    {
+      "id": 10,
+      "name": "Ripple Threader",
+      "material": "9K Gold",
+      "price": 294,
+      "type": "earrings",
+      "category": "gold",
+      "image": "images/product-ripple-threader.jpg",
+      "description": "9K gold threader earrings with ripple detail"
+    },
+    {
+      "id": 11,
+      "name": "Embody Ring",
+      "material": "9K Gold / Sapphire",
+      "price": 2900,
+      "type": "rings",
+      "category": "gemstone",
+      "image": "images/product-embody-ring.jpg",
+      "description": "Stunning 9K gold ring featuring sapphire"
+    },
+    {
+      "id": 12,
+      "name": "Harmony Ring",
+      "material": "9K Gold / Sapphire",
+      "price": 3350,
+      "type": "rings",
+      "category": "gemstone",
+      "image": "images/product-harmony-ring.jpg",
+      "description": "Harmonious 9K gold ring with sapphire accents"
+    }
+  ]
+}

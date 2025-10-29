@@ -1,0 +1,124 @@
+{
+  "collections": [
+    {
+      "id": "oceana",
+      "name": "Oceana",
+      "description": "Inspired by Australia's coastal waters and marine life",
+      "image": "images/collections/collection-oceana.jpg"
+    },
+    {
+      "id": "everyday",
+      "name": "Everyday",
+      "description": "Timeless pieces for daily wear and special occasions",
+      "image": "images/collections/collection-everyday.jpg"
+    },
+    {
+      "id": "bespoke",
+      "name": "Bespoke",
+      "description": "Custom-made pieces tailored to your unique style",
+      "image": "images/collections/collection-gemstone.jpg"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Fluid Ring",
+      "material": "9K Gold - Sapphire",
+      "type": "rings",
+      "category": "gemstone",
+      "collection": "oceana",
+      "price": 450,
+      "soldOut": false,
+      "image": "images/products/fluid-ring/91821531-6473-416B-806C-FEB03D00C8F4.JPG",
+      "images": [
+        "images/products/fluid-ring/91821531-6473-416B-806C-FEB03D00C8F4.JPG",
+        "images/products/fluid-ring/EF56723B-DAE2-483A-9BAE-94EC96277C9F.JPG",
+        "images/products/fluid-ring/E42BBAAF-CA31-4208-8835-202FC82F5C2C.JPG",
+        "images/products/fluid-ring/86F54300-C82A-4E3F-AE4A-6CB533C2B4A4.JPG"
+      ],
+      "description": "A stunning fluid ring featuring 9K gold with sapphire accents. This piece showcases the perfect balance of elegance and sophistication, making it an ideal choice for those who appreciate fine craftsmanship and timeless beauty."
+    },
+    {
+      "id": 2,
+      "name": "Wakame Threader",
+      "material": "Sterling Silver",
+      "type": "earrings",
+      "category": "silver",
+      "collection": "oceana",
+      "price": 120,
+      "soldOut": false,
+      "image": "images/products/wakame-threader/45DB6477-2994-4DC6-A0C4-91B65D36984E.JPG",
+      "images": [
+        "images/products/wakame-threader/45DB6477-2994-4DC6-A0C4-91B65D36984E.JPG",
+        "images/products/wakame-threader/5F657423-B618-48B7-A087-5520F5CCA05B.JPG",
+        "images/products/wakame-threader/A6909FE3-03E4-497F-B1D9-92984A785838.JPG"
+      ],
+      "description": "Elegant sterling silver threader earrings inspired by ocean seaweed. The delicate design captures the organic flow of marine life, creating a unique and wearable piece of art."
+    },
+    {
+      "id": 3,
+      "name": "Kelp Pendant",
+      "material": "Sterling Silver",
+      "type": "necklaces",
+      "category": "silver",
+      "collection": "oceana",
+      "price": 95,
+      "soldOut": false,
+      "image": "images/products/kelp-pendant/CE380A41-34BF-424C-B885-DAF1219920A9.JPG",
+      "images": [
+        "images/products/kelp-pendant/CE380A41-34BF-424C-B885-DAF1219920A9.JPG",
+        "images/products/kelp-pendant/581A37AB-63EC-48DA-9534-997646948039.JPG"
+      ],
+      "description": "Beautiful kelp-inspired pendant in sterling silver. This piece reflects the natural beauty of Australia's coastal waters, with intricate detailing that mimics the graceful movement of underwater plants."
+    },
+    {
+      "id": 4,
+      "name": "Waterway Studs",
+      "material": "9K Gold",
+      "type": "earrings",
+      "category": "gold",
+      "collection": "everyday",
+      "price": 280,
+      "soldOut": false,
+      "image": "images/products/waterway-studs/main.jpg",
+      "images": [
+        "images/products/waterway-studs/main.jpg",
+        "images/products/waterway-studs/775D49BC-E599-4890-BF4B-88369F03D479.JPG",
+        "images/products/waterway-studs/DC2DE405-FBB5-412C-B636-FF18D5767194.JPG"
+      ],
+      "description": "Sophisticated 9K gold studs with water-inspired design. These elegant earrings feature a unique pattern that evokes the gentle flow of water, perfect for everyday wear or special occasions."
+    },
+    {
+      "id": 5,
+      "name": "Ripple Ring",
+      "material": "Sterling Silver",
+      "type": "rings",
+      "category": "silver",
+      "collection": "everyday",
+      "price": 160,
+      "soldOut": false,
+      "image": "images/products/ripple-ring/18B1DA55-90FA-425D-AE4C-C3111DEEFF00.JPG",
+      "images": [
+        "images/products/ripple-ring/18B1DA55-90FA-425D-AE4C-C3111DEEFF00.JPG",
+        "images/products/ripple-ring/713D6D15-204E-4B6C-8BC4-1C59DDD1DE58.JPG",
+        "images/products/ripple-ring/3461D164-CBF8-4778-BE3E-89B94EFC3470.JPG"
+      ],
+              "description": "Delicate ripple ring in sterling silver. Inspired by the gentle ripples on water's surface, this ring features a subtle texture that catches the light beautifully and adds dimension to any outfit."
+      },
+      {
+        "id": 6,
+        "name": "Elaz Threader",
+        "material": "Sterling Silver",
+        "type": "earrings",
+        "category": "silver",
+        "collection": "bespoke",
+        "price": 180,
+        "soldOut": true,
+        "image": "images/products/elaz-threader/main.jpg",
+        "images": [
+          "images/products/elaz-threader/main.jpg"
+        ],
+        "description": "Minimalist sterling silver threader earrings. Clean lines and simple elegance make these earrings versatile for any occasion, from casual day wear to sophisticated evening events."
+      }
+    ]
+}
