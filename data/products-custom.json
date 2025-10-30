@@ -4,19 +4,19 @@
       "id": "galicia",
       "name": "Galicia",
       "description": "Inspirada en la belleza natural y tradiciones de Galicia",
-      "image": "images/ProductsCollections/Colección Galicia/background.jpg"
+      "image": "images/ProductsCollections/ColeccionGalicia/background.jpg"
     },
     {
       "id": "gus",
       "name": "Gus",
       "description": "Colección contemporánea con diseños únicos y modernos",
-      "image": "images/ProductsCollections/Colección Gus/background.jpg"
+      "image": "images/ProductsCollections/ColeccionGus/background.jpg"
     },
     {
       "id": "primas",
       "name": "Primas",
       "description": "Piezas elegantes dedicadas a la familia y vínculos especiales",
-      "image": "images/ProductsCollections/Colección Primas/background.jpg"
+      "image": "images/ProductsCollections/ColeccionPrimas/background.jpg"
     }
   ],
   "products": [
@@ -30,9 +30,9 @@
       "price": 10,
       "soldOut": false,
       "description": "Anillo único inspirado en las tradiciones gallegas. Elaborado artesanalmente en plata de ley 925 con acabados pulidos que reflejan la luz de manera excepcional.",
-      "image": "images/ProductsCollections/Colección Galicia/Almu/1.jpg",
+      "image": "images/ProductsCollections/ColeccionGalicia/Almu/1.jpg",
       "images": [
-        "images/ProductsCollections/Colección Galicia/Almu/1.jpg"
+        "images/ProductsCollections/ColeccionGalicia/Almu/1.jpg"
       ],
       "tags": [
         "artesanal",
@@ -56,11 +56,11 @@
       "price": 10,
       "soldOut": false,
       "description": "Pendientes elegantes que capturan la esencia de la costa gallega. Diseño contemporáneo con influencias tradicionales, perfectos para cualquier ocasión especial.",
-      "image": "images/ProductsCollections/Colección Galicia/Bea/1.jpeg",
+      "image": "images/ProductsCollections/ColeccionGalicia/Bea/1.jpeg",
       "images": [
-        "images/ProductsCollections/Colección Galicia/Bea/1.jpeg",
-        "images/ProductsCollections/Colección Galicia/Bea/2.jpeg",
-        "images/ProductsCollections/Colección Galicia/Bea/3.jpg"
+        "images/ProductsCollections/ColeccionGalicia/Bea/1.jpeg",
+        "images/ProductsCollections/ColeccionGalicia/Bea/2.jpeg",
+        "images/ProductsCollections/ColeccionGalicia/Bea/3.jpg"
       ],
       "tags": [
         "oro rosa",
@@ -84,10 +84,10 @@
       "price": 10,
       "soldOut": false,
       "description": "Collar de diseño vanguardista que combina técnicas tradicionales con estética moderna. La plata oxidada le da un carácter único y sofisticado.",
-      "image": "images/ProductsCollections/Colección Gus/Arizpe/DSC_0242.JPG",
+      "image": "images/ProductsCollections/ColeccionGus/Arizpe/DSC_0242.JPG",
       "images": [
-        "images/ProductsCollections/Colección Gus/Arizpe/DSC_0242.JPG",
-        "images/ProductsCollections/Colección Gus/Arizpe/DSC_0243.JPG"
+        "images/ProductsCollections/ColeccionGus/Arizpe/DSC_0242.JPG",
+        "images/ProductsCollections/ColeccionGus/Arizpe/DSC_0243.JPG"
       ],
       "tags": [
         "collar",
@@ -111,10 +111,10 @@
       "price": 10,
       "soldOut": false,
       "description": "Anillo de oro blanco con diseño minimalista que destaca por su elegancia atemporal. Perfecto para uso diario o como pieza de compromiso.",
-      "image": "images/ProductsCollections/Colección Gus/Espe/DSC_0334.JPG",
+        "image": "images/ProductsCollections/ColeccionGus/Espe/DSC_0334.JPG",
       "images": [
-        "images/ProductsCollections/Colección Gus/Espe/DSC_0334.JPG",
-        "images/ProductsCollections/Colección Gus/Espe/DSC_0367.JPG"
+        "images/ProductsCollections/ColeccionGus/Espe/DSC_0334.JPG",
+        "images/ProductsCollections/ColeccionGus/Espe/DSC_0367.JPG"
       ],
       "tags": [
         "oro blanco",
@@ -138,14 +138,14 @@
       "price": 10,
       "soldOut": true,
       "description": "Pulsera statement que combina la durabilidad de la plata con la calidez del oro. Diseño arquitectónico que hace una declaración de estilo audaz.",
-      "image": "images/ProductsCollections/Colección Gus/Garnica/129649B9-B985-4F88-827B-16A3E6C14387.jpg",
+      "image": "images/ProductsCollections/ColeccionGus/Garnica/129649B9-B985-4F88-827B-16A3E6C14387.jpg",
       "images": [
-        "images/ProductsCollections/Colección Gus/Garnica/129649B9-B985-4F88-827B-16A3E6C14387.jpg",
-        "images/ProductsCollections/Colección Gus/Garnica/1985cf64-7ceb-49ba-a1e3-8bfb17d848e2.jpg",
-        "images/ProductsCollections/Colección Gus/Garnica/DSC_0228.JPG",
-        "images/ProductsCollections/Colección Gus/Garnica/IMG_2353.jpeg",
-        "images/ProductsCollections/Colección Gus/Garnica/IMG_3856.jpeg",
-        "images/ProductsCollections/Colección Gus/Garnica/IMG_4051.jpeg"
+        "images/ProductsCollections/ColeccionGus/Garnica/129649B9-B985-4F88-827B-16A3E6C14387.jpg",
+        "images/ProductsCollections/ColeccionGus/Garnica/1985cf64-7ceb-49ba-a1e3-8bfb17d848e2.jpg",
+        "images/ProductsCollections/ColeccionGus/Garnica/DSC_0228.JPG",
+        "images/ProductsCollections/ColeccionGus/Garnica/IMG_2353.jpeg",
+        "images/ProductsCollections/ColeccionGus/Garnica/IMG_3856.jpeg",
+        "images/ProductsCollections/ColeccionGus/Garnica/IMG_4051.jpeg"
       ],
       "tags": [
         "pulsera",
@@ -169,14 +169,14 @@
       "price": 10,
       "soldOut": false,
       "description": "Pendientes de lujo con diamantes naturales engastados en oro amarillo. Diseño clásico que honra los vínculos familiares más preciados.",
-      "image": "images/ProductsCollections/Colección Primas/Ana/4c0279a9-fe6b-478f-acc4-22d19edfd588.jpg",
+      "image": "images/ProductsCollections/ColeccionPrimas/Ana/4c0279a9-fe6b-478f-acc4-22d19edfd588.jpg",
       "images": [
-        "images/ProductsCollections/Colección Primas/Ana/4c0279a9-fe6b-478f-acc4-22d19edfd588.jpg",
-        "images/ProductsCollections/Colección Primas/Ana/5421c09c-eb35-408c-8bc7-174a4cc89b44.jpg",
-        "images/ProductsCollections/Colección Primas/Ana/5c332c42-4ce3-4bdd-99f0-86bf367e7cbd.jpg",
-        "images/ProductsCollections/Colección Primas/Ana/DSCF6501.JPG",
-        "images/ProductsCollections/Colección Primas/Ana/IMG_0124.jpeg",
-        "images/ProductsCollections/Colección Primas/Ana/IMG_1186.jpeg"
+        "images/ProductsCollections/ColeccionPrimas/Ana/4c0279a9-fe6b-478f-acc4-22d19edfd588.jpg",
+        "images/ProductsCollections/ColeccionPrimas/Ana/5421c09c-eb35-408c-8bc7-174a4cc89b44.jpg",
+        "images/ProductsCollections/ColeccionPrimas/Ana/5c332c42-4ce3-4bdd-99f0-86bf367e7cbd.jpg",
+        "images/ProductsCollections/ColeccionPrimas/Ana/DSCF6501.JPG",
+        "images/ProductsCollections/ColeccionPrimas/Ana/IMG_0124.jpeg",
+        "images/ProductsCollections/ColeccionPrimas/Ana/IMG_1186.jpeg"
       ],
       "tags": [
         "lujo",
@@ -200,9 +200,9 @@
       "price": 10,
       "soldOut": false,
       "description": "Collar de perlas cultivadas montadas en plata de ley. Elegancia pura que evoca la sofisticación de generaciones pasadas.",
-      "image": "images/ProductsCollections/Colección Primas/Blanca/DSCF6434.JPG",
+      "image": "images/ProductsCollections/ColeccionPrimas/Blanca/DSCF6434.JPG",
       "images": [
-        "images/ProductsCollections/Colección Primas/Blanca/DSCF6434.JPG"
+        "images/ProductsCollections/ColeccionPrimas/Blanca/DSCF6434.JPG"
       ],
       "tags": [
         "perlas",
@@ -226,11 +226,11 @@
       "price": 10,
       "soldOut": false,
       "description": "Anillo artístico con detalles de esmalte que cuentan una historia única. Cada pieza es ligeramente diferente, haciendo que cada anillo sea especial.",
-      "image": "images/ProductsCollections/Colección Primas/Carlota/4c6f7e93-2d9b-490d-81ed-3d8ec29c8d2e.jpg",
+      "image": "images/ProductsCollections/ColeccionPrimas/Carlota/4c6f7e93-2d9b-490d-81ed-3d8ec29c8d2e.jpg",
       "images": [
-        "images/ProductsCollections/Colección Primas/Carlota/4c6f7e93-2d9b-490d-81ed-3d8ec29c8d2e.jpg",
-        "images/ProductsCollections/Colección Primas/Carlota/DSCF6266.JPG",
-        "images/ProductsCollections/Colección Primas/Carlota/DSCF6271.JPG"
+        "images/ProductsCollections/ColeccionPrimas/Carlota/4c6f7e93-2d9b-490d-81ed-3d8ec29c8d2e.jpg",
+        "images/ProductsCollections/ColeccionPrimas/Carlota/DSCF6266.JPG",
+        "images/ProductsCollections/ColeccionPrimas/Carlota/DSCF6271.JPG"
       ],
       "tags": [
         "artístico",
@@ -254,9 +254,9 @@
       "price": 10,
       "soldOut": false,
       "description": "Pendientes de diseño contemporáneo que reflejan la modernidad de la colección Gus. Perfectos para complementar cualquier look urbano.",
-      "image": "images/ProductsCollections/Colección Gus/Leticia/DSC_0383.JPG",
+      "image": "images/ProductsCollections/ColeccionGus/Leticia/DSC_0383.JPG",
       "images": [
-        "images/ProductsCollections/Colección Gus/Leticia/DSC_0383.JPG"
+        "images/ProductsCollections/ColeccionGus/Leticia/DSC_0383.JPG"
       ],
       "tags": [
         "contemporáneo",
@@ -280,10 +280,10 @@
       "price": 10,
       "soldOut": false,
       "description": "Anillo de oro rosa con líneas fluidas que evocan movimiento y dinamismo. Una pieza que destaca por su carácter único y sofisticado.",
-      "image": "images/ProductsCollections/Colección Gus/Lucía/DSC_0396.JPG",
+      "image": "images/ProductsCollections/ColeccionGus/Lucía/DSC_0396.JPG",
       "images": [
-        "images/ProductsCollections/Colección Gus/Lucía/DSC_0396.JPG",
-        "images/ProductsCollections/Colección Gus/Lucía/IMG_4362.jpeg"
+        "images/ProductsCollections/ColeccionGus/Lucía/DSC_0396.JPG",
+        "images/ProductsCollections/ColeccionGus/Lucía/IMG_4362.jpeg"
       ],
       "tags": [
         "oro rosa",
@@ -307,14 +307,14 @@
       "price": 10,
       "soldOut": false,
       "description": "Collar statement que combina la elegancia de la plata con toques dorados. Diseño arquitectónico que hace una declaración de estilo audaz y contemporáneo.",
-      "image": "images/ProductsCollections/Colección Gus/Mónica/3119e84a-8500-48ca-8ba2-3e2b7d1f98f4.jpg",
+      "image": "images/ProductsCollections/ColeccionGus/Mónica/3119e84a-8500-48ca-8ba2-3e2b7d1f98f4.jpg",
       "images": [
-        "images/ProductsCollections/Colección Gus/Mónica/3119e84a-8500-48ca-8ba2-3e2b7d1f98f4.jpg",
-        "images/ProductsCollections/Colección Gus/Mónica/c7025cc9-3116-4d82-a237-e21e0c959fbb.jpg",
-        "images/ProductsCollections/Colección Gus/Mónica/DSC_0289.JPG",
-        "images/ProductsCollections/Colección Gus/Mónica/IMG_2775.jpeg",
-        "images/ProductsCollections/Colección Gus/Mónica/IMG_2777.jpeg",
-        "images/ProductsCollections/Colección Gus/Mónica/IMG_4372.jpeg"
+        "images/ProductsCollections/ColeccionGus/Mónica/3119e84a-8500-48ca-8ba2-3e2b7d1f98f4.jpg",
+        "images/ProductsCollections/ColeccionGus/Mónica/c7025cc9-3116-4d82-a237-e21e0c959fbb.jpg",
+        "images/ProductsCollections/ColeccionGus/Mónica/DSC_0289.JPG",
+        "images/ProductsCollections/ColeccionGus/Mónica/IMG_2775.jpeg",
+        "images/ProductsCollections/ColeccionGus/Mónica/IMG_2777.jpeg",
+        "images/ProductsCollections/ColeccionGus/Mónica/IMG_4372.jpeg"
       ],
       "tags": [
         "statement",
@@ -338,12 +338,12 @@
       "price": 10,
       "soldOut": false,
       "description": "Pulsera de oro amarillo que celebra los vínculos familiares. Diseño clásico con un toque contemporáneo que la hace perfecta para cualquier generación.",
-      "image": "images/ProductsCollections/Colección Primas/Cris/IMG_9054.jpeg",
+      "image": "images/ProductsCollections/ColeccionPrimas/Cris/IMG_9054.jpeg",
       "images": [
-        "images/ProductsCollections/Colección Primas/Cris/IMG_9054.jpeg",
-        "images/ProductsCollections/Colección Primas/Cris/IMG_9081.jpeg",
-        "images/ProductsCollections/Colección Primas/Cris/IMG_9117.jpeg",
-        "images/ProductsCollections/Colección Primas/Cris/IMG_9424.jpeg"
+        "images/ProductsCollections/ColeccionPrimas/Cris/IMG_9054.jpeg",
+        "images/ProductsCollections/ColeccionPrimas/Cris/IMG_9081.jpeg",
+        "images/ProductsCollections/ColeccionPrimas/Cris/IMG_9117.jpeg",
+        "images/ProductsCollections/ColeccionPrimas/Cris/IMG_9424.jpeg"
       ],
       "tags": [
         "oro amarillo",

@@ -4,25 +4,79 @@
   "trailingSlash": false,
   "headers": [
     {
-      "source": "(.*)\.(css|js)",
+      "source": "/(.*)\\.css",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
-      "source": "(.*)\.(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2)",
+      "source": "/(.*)\\.js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     },
     {
-      "source": "/(index|product-detail|test-images|create-placeholders).html",
+      "source": "/(.*)\\.png",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.jpg",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.jpeg",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.gif",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.webp",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.svg",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.ico",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.woff",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.woff2",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
+      "source": "/(.*)\\.html",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache" }
       ]
     },
     {
-      "source": "/data/products.json",
+      "source": "/data/products\\.json",
       "headers": [
         { "key": "Cache-Control", "value": "no-cache" },
         { "key": "Content-Type", "value": "application/json; charset=utf-8" }
@@ -30,5 +84,3 @@
     }
   ]
 }
-
-
