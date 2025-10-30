@@ -18,9 +18,9 @@ const STATIC_FILES = [
     '/js/performance.js',
     '/data/products.json',
     '/images/hero-background.jpg',
-    '/images/collections/collection-oceana.jpg',
-    '/images/collections/collection-everyday.jpg',
-    '/images/collections/collection-gemstone.jpg',
+    '/images/ProductsCollections/Colección Galicia/background.jpg',
+    '/images/ProductsCollections/Colección Gus/background.jpg',
+    '/images/ProductsCollections/Colección Primas/background.jpg',
     '/favicon/favicon-32x32.png',
     '/favicon/apple-touch-icon.png',
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap'

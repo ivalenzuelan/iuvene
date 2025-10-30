@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
             messageDiv.className = 'newsletter-message';
         }, 5000);
     }
-});
+    
     // Enhanced email validation
     function isValidEmail(email) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -332,5 +332,5 @@ document.addEventListener('DOMContentLoaded', function() {
         }, type === 'error' ? 6000 : 4000);
     }
     
-    // End of DOMContentLoaded event listener
+// End of DOMContentLoaded event listener
 });

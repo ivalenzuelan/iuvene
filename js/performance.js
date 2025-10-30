@@ -164,35 +164,59 @@
         // Monitor performance metrics
         monitorPerformance() {
             if ('PerformanceObserver' in window) {
+                const supported = (window.PerformanceObserver && PerformanceObserver.supportedEntryTypes) || [];
+                
                 // Monitor Largest Contentful Paint
-                const lcpObserver = new PerformanceObserver((list) => {
-                    const entries = list.getEntries();
-                    const lastEntry = entries[entries.length - 1];
-                    console.log('LCP:', lastEntry.startTime);
-                });
-                lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+                if (supported.includes('largest-contentful-paint')) {
+                    try {
+                        const lcpObserver = new PerformanceObserver((list) => {
+                            const entries = list.getEntries();
+                            const lastEntry = entries[entries.length - 1];
+                            if (lastEntry) {
+                                console.log('LCP:', lastEntry.startTime);
+                            }
+                        });
+                        lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+                    } catch (e) {
+                        console.debug('LCP observation not supported:', e && e.message);
+                    }
+                }
                 
                 // Monitor First Input Delay
-                const fidObserver = new PerformanceObserver((list) => {
-                    const entries = list.getEntries();
-                    entries.forEach(entry => {
-                        console.log('FID:', entry.processingStart - entry.startTime);
-                    });
-                });
-                fidObserver.observe({ entryTypes: ['first-input'] });
+                if (supported.includes('first-input')) {
+                    try {
+                        const fidObserver = new PerformanceObserver((list) => {
+                            const entries = list.getEntries();
+                            entries.forEach(entry => {
+                                console.log('FID:', entry.processingStart - entry.startTime);
+                            });
+                        });
+                        fidObserver.observe({ entryTypes: ['first-input'] });
+                    } catch (e) {
+                        console.debug('FID observation not supported:', e && e.message);
+                    }
+                }
                 
                 // Monitor Cumulative Layout Shift
-                const clsObserver = new PerformanceObserver((list) => {
-                    let clsValue = 0;
-                    const entries = list.getEntries();
-                    entries.forEach(entry => {
-                        if (!entry.hadRecentInput) {
-                            clsValue += entry.value;
-                        }
-                    });
-                    console.log('CLS:', clsValue);
-                });
-                clsObserver.observe({ entryTypes: ['layout-shift'] });
+                if (supported.includes('layout-shift')) {
+                    try {
+                        const clsObserver = new PerformanceObserver((list) => {
+                            let clsValue = 0;
+                            const entries = list.getEntries();
+                            entries.forEach(entry => {
+                                if (!entry.hadRecentInput) {
+                                    clsValue += entry.value;
+                                }
+                            });
+                            console.log('CLS:', clsValue);
+                        });
+                        clsObserver.observe({ entryTypes: ['layout-shift'] });
+                    } catch (e) {
+                        console.debug('CLS observation not supported:', e && e.message);
+                    }
+                } else {
+                    console.debug('Ignoring unsupported PerformanceObserver entryTypes: layout-shift');
+                }
             }
         },
         

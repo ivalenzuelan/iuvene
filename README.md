@@ -135,33 +135,34 @@ Edit `data/products.json`:
 - **Categories**: `gold`, `silver`, `brass`, `gemstone`
 - **Collections**: `oceana`, `everyday`, `bespoke`
 
-## Optional: Load products from Google Drive
+## Load products from local @images/@ProductsCollections
 
-Let admins upload folders to Google Drive and have the site read them automatically.
+You can manage products by dropping images into `images/@ProductsCollections/CollectionName/` and listing them in a small manifest JSON.
 
-Folder structure:
-- Collections root folder: subfolders by collection, each containing product folders
-  - `CollectionsRoot/`
-    - `Oceana/`
-      - `Fluid Ring/` -> images inside
-    - `Everyday/`
-      - `Ripple Ring/` -> images inside
-- Non-collections root folder: product folders not belonging to any collection
-  - `NonCollectionsRoot/`
-    - `Waterway Studs/` -> images inside
+Folder layout:
+- `images/@ProductsCollections/CollectionName/ProductName/{image1.jpg, image2.jpg, ...}`
+- Each folder under a collection represents one product; all images in that folder are used for the product gallery.
 
-Setup steps:
-1. Enable Google Drive API and create a Browser API key.
-2. Set Drive folders to "Anyone with the link" (Viewer).
-3. Get folder IDs from the Drive URLs.
-4. Edit `js/content-config.js`:
-   - `enabled: true`
-   - `apiKey: "YOUR_BROWSER_API_KEY"`
-   - Set `rootFolders.collections` and `rootFolders.nonCollections` with your IDs
+Manifest file:
+- Edit `data/products-collections.json`:
+```json
+{
+  "root": "images/@ProductsCollections",
+  "collections": {
+    "Oceana": {
+      "Fluid Ring": ["main.jpg", "detail1.jpg"],
+      "Kelp Pendant": ["main.jpg"]
+    },
+    "Everyday": {
+      "Ripple Ring": ["main.jpg"]
+    }
+  }
+}
+```
 
-Notes:
-- If Drive is enabled and returns items, it takes priority over `data/products.json`. Otherwise the site falls back automatically.
-- Images use Drive thumbnail links for fast loading.
+Behavior:
+- The site will try `data/products-collections.json` first and build products/collections from it.
+- If the manifest is missing or empty, it falls back to `data/products.json`.
 
 ## Customization
 

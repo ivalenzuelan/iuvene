@@ -1,0 +1,361 @@
+{
+  "collections": [
+    {
+      "id": "galicia",
+      "name": "Galicia",
+      "description": "Inspirada en la belleza natural y tradiciones de Galicia",
+      "image": "images/ProductsCollections/Colección Galicia/background.jpg"
+    },
+    {
+      "id": "gus",
+      "name": "Gus",
+      "description": "Colección contemporánea con diseños únicos y modernos",
+      "image": "images/ProductsCollections/Colección Gus/background.jpg"
+    },
+    {
+      "id": "primas",
+      "name": "Primas",
+      "description": "Piezas elegantes dedicadas a la familia y vínculos especiales",
+      "image": "images/ProductsCollections/Colección Primas/background.jpg"
+    }
+  ],
+  "products": [
+    {
+      "id": 1,
+      "name": "Almu",
+      "material": "Plata de Ley 925",
+      "type": "rings",
+      "category": "silver",
+      "collection": "galicia",
+      "price": 10,
+      "soldOut": false,
+      "description": "Anillo único inspirado en las tradiciones gallegas. Elaborado artesanalmente en plata de ley 925 con acabados pulidos que reflejan la luz de manera excepcional.",
+      "image": "images/ProductsCollections/Colección Galicia/Almu/1.jpg",
+      "images": [
+        "images/ProductsCollections/Colección Galicia/Almu/1.jpg"
+      ],
+      "tags": [
+        "artesanal",
+        "plata",
+        "galicia",
+        "único"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "8g",
+      "dimensions": "Ancho: 6mm",
+      "care": "Limpiar con paño suave. Evitar contacto con perfumes y cremas."
+    },
+    {
+      "id": 2,
+      "name": "Bea",
+      "material": "Oro Rosa 14K",
+      "type": "earrings",
+      "category": "gold",
+      "collection": "galicia",
+      "price": 10,
+      "soldOut": false,
+      "description": "Pendientes elegantes que capturan la esencia de la costa gallega. Diseño contemporáneo con influencias tradicionales, perfectos para cualquier ocasión especial.",
+      "image": "images/ProductsCollections/Colección Galicia/Bea/1.jpeg",
+      "images": [
+        "images/ProductsCollections/Colección Galicia/Bea/1.jpeg",
+        "images/ProductsCollections/Colección Galicia/Bea/2.jpeg",
+        "images/ProductsCollections/Colección Galicia/Bea/3.jpg"
+      ],
+      "tags": [
+        "oro rosa",
+        "pendientes",
+        "elegante",
+        "ocasión especial"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "4g",
+      "dimensions": "Largo: 25mm",
+      "care": "Guardar en lugar seco. Limpiar con paño de joyería."
+    },
+    {
+      "id": 3,
+      "name": "Arizpe",
+      "material": "Plata Oxidada",
+      "type": "necklaces",
+      "category": "silver",
+      "collection": "gus",
+      "price": 10,
+      "soldOut": false,
+      "description": "Collar de diseño vanguardista que combina técnicas tradicionales con estética moderna. La plata oxidada le da un carácter único y sofisticado.",
+      "image": "images/ProductsCollections/Colección Gus/Arizpe/DSC_0242.JPG",
+      "images": [
+        "images/ProductsCollections/Colección Gus/Arizpe/DSC_0242.JPG",
+        "images/ProductsCollections/Colección Gus/Arizpe/DSC_0243.JPG"
+      ],
+      "tags": [
+        "collar",
+        "vanguardista",
+        "plata oxidada",
+        "moderno"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "15g",
+      "dimensions": "Largo: 45cm",
+      "care": "No sumergir en agua. Limpiar en seco."
+    },
+    {
+      "id": 4,
+      "name": "Espe",
+      "material": "Oro Blanco 18K",
+      "type": "rings",
+      "category": "gold",
+      "collection": "gus",
+      "price": 10,
+      "soldOut": false,
+      "description": "Anillo de oro blanco con diseño minimalista que destaca por su elegancia atemporal. Perfecto para uso diario o como pieza de compromiso.",
+      "image": "images/ProductsCollections/Colección Gus/Espe/DSC_0334.JPG",
+      "images": [
+        "images/ProductsCollections/Colección Gus/Espe/DSC_0334.JPG",
+        "images/ProductsCollections/Colección Gus/Espe/DSC_0367.JPG"
+      ],
+      "tags": [
+        "oro blanco",
+        "minimalista",
+        "atemporal",
+        "compromiso"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "6g",
+      "dimensions": "Ancho: 4mm",
+      "care": "Resistente al agua. Limpiar con jabón suave."
+    },
+    {
+      "id": 5,
+      "name": "Garnica",
+      "material": "Plata con Baño de Oro",
+      "type": "bangles",
+      "category": "gold",
+      "collection": "gus",
+      "price": 10,
+      "soldOut": true,
+      "description": "Pulsera statement que combina la durabilidad de la plata con la calidez del oro. Diseño arquitectónico que hace una declaración de estilo audaz.",
+      "image": "images/ProductsCollections/Colección Gus/Garnica/129649B9-B985-4F88-827B-16A3E6C14387.jpg",
+      "images": [
+        "images/ProductsCollections/Colección Gus/Garnica/129649B9-B985-4F88-827B-16A3E6C14387.jpg",
+        "images/ProductsCollections/Colección Gus/Garnica/1985cf64-7ceb-49ba-a1e3-8bfb17d848e2.jpg",
+        "images/ProductsCollections/Colección Gus/Garnica/DSC_0228.JPG",
+        "images/ProductsCollections/Colección Gus/Garnica/IMG_2353.jpeg",
+        "images/ProductsCollections/Colección Gus/Garnica/IMG_3856.jpeg",
+        "images/ProductsCollections/Colección Gus/Garnica/IMG_4051.jpeg"
+      ],
+      "tags": [
+        "pulsera",
+        "statement",
+        "arquitectónico",
+        "audaz"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "25g",
+      "dimensions": "Diámetro: 65mm",
+      "care": "Evitar humedad excesiva. Pulir ocasionalmente."
+    },
+    {
+      "id": 6,
+      "name": "Ana",
+      "material": "Oro Amarillo 18K con Diamantes",
+      "type": "earrings",
+      "category": "gold",
+      "collection": "primas",
+      "price": 10,
+      "soldOut": false,
+      "description": "Pendientes de lujo con diamantes naturales engastados en oro amarillo. Diseño clásico que honra los vínculos familiares más preciados.",
+      "image": "images/ProductsCollections/Colección Primas/Ana/4c0279a9-fe6b-478f-acc4-22d19edfd588.jpg",
+      "images": [
+        "images/ProductsCollections/Colección Primas/Ana/4c0279a9-fe6b-478f-acc4-22d19edfd588.jpg",
+        "images/ProductsCollections/Colección Primas/Ana/5421c09c-eb35-408c-8bc7-174a4cc89b44.jpg",
+        "images/ProductsCollections/Colección Primas/Ana/5c332c42-4ce3-4bdd-99f0-86bf367e7cbd.jpg",
+        "images/ProductsCollections/Colección Primas/Ana/DSCF6501.JPG",
+        "images/ProductsCollections/Colección Primas/Ana/IMG_0124.jpeg",
+        "images/ProductsCollections/Colección Primas/Ana/IMG_1186.jpeg"
+      ],
+      "tags": [
+        "lujo",
+        "diamantes",
+        "oro amarillo",
+        "clásico"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "8g",
+      "dimensions": "Largo: 20mm",
+      "care": "Limpiar con solución especializada para diamantes."
+    },
+    {
+      "id": 7,
+      "name": "Blanca",
+      "material": "Perlas Cultivadas y Plata",
+      "type": "necklaces",
+      "category": "silver",
+      "collection": "primas",
+      "price": 10,
+      "soldOut": false,
+      "description": "Collar de perlas cultivadas montadas en plata de ley. Elegancia pura que evoca la sofisticación de generaciones pasadas.",
+      "image": "images/ProductsCollections/Colección Primas/Blanca/DSCF6434.JPG",
+      "images": [
+        "images/ProductsCollections/Colección Primas/Blanca/DSCF6434.JPG"
+      ],
+      "tags": [
+        "perlas",
+        "elegancia",
+        "sofisticación",
+        "generaciones"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "20g",
+      "dimensions": "Largo: 50cm",
+      "care": "Guardar separado de otras joyas. Limpiar con paño húmedo."
+    },
+    {
+      "id": 8,
+      "name": "Carlota",
+      "material": "Plata de Ley con Esmalte",
+      "type": "rings",
+      "category": "silver",
+      "collection": "primas",
+      "price": 10,
+      "soldOut": false,
+      "description": "Anillo artístico con detalles de esmalte que cuentan una historia única. Cada pieza es ligeramente diferente, haciendo que cada anillo sea especial.",
+      "image": "images/ProductsCollections/Colección Primas/Carlota/4c6f7e93-2d9b-490d-81ed-3d8ec29c8d2e.jpg",
+      "images": [
+        "images/ProductsCollections/Colección Primas/Carlota/4c6f7e93-2d9b-490d-81ed-3d8ec29c8d2e.jpg",
+        "images/ProductsCollections/Colección Primas/Carlota/DSCF6266.JPG",
+        "images/ProductsCollections/Colección Primas/Carlota/DSCF6271.JPG"
+      ],
+      "tags": [
+        "artístico",
+        "esmalte",
+        "único",
+        "especial"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "7g",
+      "dimensions": "Ancho: 8mm",
+      "care": "Evitar golpes. El esmalte es delicado."
+    },
+    {
+      "id": 9,
+      "name": "Leticia",
+      "material": "Plata de Ley 925",
+      "type": "earrings",
+      "category": "silver",
+      "collection": "gus",
+      "price": 10,
+      "soldOut": false,
+      "description": "Pendientes de diseño contemporáneo que reflejan la modernidad de la colección Gus. Perfectos para complementar cualquier look urbano.",
+      "image": "images/ProductsCollections/Colección Gus/Leticia/DSC_0383.JPG",
+      "images": [
+        "images/ProductsCollections/Colección Gus/Leticia/DSC_0383.JPG"
+      ],
+      "tags": [
+        "contemporáneo",
+        "urbano",
+        "plata",
+        "moderno"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "3g",
+      "dimensions": "Largo: 15mm",
+      "care": "Limpiar con paño suave después de cada uso."
+    },
+    {
+      "id": 10,
+      "name": "Lucía",
+      "material": "Oro Rosa 14K",
+      "type": "rings",
+      "category": "gold",
+      "collection": "gus",
+      "price": 10,
+      "soldOut": false,
+      "description": "Anillo de oro rosa con líneas fluidas que evocan movimiento y dinamismo. Una pieza que destaca por su carácter único y sofisticado.",
+      "image": "images/ProductsCollections/Colección Gus/Lucía/DSC_0396.JPG",
+      "images": [
+        "images/ProductsCollections/Colección Gus/Lucía/DSC_0396.JPG",
+        "images/ProductsCollections/Colección Gus/Lucía/IMG_4362.jpeg"
+      ],
+      "tags": [
+        "oro rosa",
+        "fluido",
+        "dinámico",
+        "sofisticado"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "5g",
+      "dimensions": "Ancho: 5mm",
+      "care": "Resistente al uso diario. Pulir ocasionalmente."
+    },
+    {
+      "id": 11,
+      "name": "Mónica",
+      "material": "Plata con Detalles de Oro",
+      "type": "necklaces",
+      "category": "gold",
+      "collection": "gus",
+      "price": 10,
+      "soldOut": false,
+      "description": "Collar statement que combina la elegancia de la plata con toques dorados. Diseño arquitectónico que hace una declaración de estilo audaz y contemporáneo.",
+      "image": "images/ProductsCollections/Colección Gus/Mónica/3119e84a-8500-48ca-8ba2-3e2b7d1f98f4.jpg",
+      "images": [
+        "images/ProductsCollections/Colección Gus/Mónica/3119e84a-8500-48ca-8ba2-3e2b7d1f98f4.jpg",
+        "images/ProductsCollections/Colección Gus/Mónica/c7025cc9-3116-4d82-a237-e21e0c959fbb.jpg",
+        "images/ProductsCollections/Colección Gus/Mónica/DSC_0289.JPG",
+        "images/ProductsCollections/Colección Gus/Mónica/IMG_2775.jpeg",
+        "images/ProductsCollections/Colección Gus/Mónica/IMG_2777.jpeg",
+        "images/ProductsCollections/Colección Gus/Mónica/IMG_4372.jpeg"
+      ],
+      "tags": [
+        "statement",
+        "arquitectónico",
+        "audaz",
+        "contemporáneo"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "18g",
+      "dimensions": "Largo: 42cm",
+      "care": "Evitar contacto con perfumes. Guardar en lugar seco."
+    },
+    {
+      "id": 12,
+      "name": "Cris",
+      "material": "Oro Amarillo 18K",
+      "type": "bangles",
+      "category": "gold",
+      "collection": "primas",
+      "price": 10,
+      "soldOut": false,
+      "description": "Pulsera de oro amarillo que celebra los vínculos familiares. Diseño clásico con un toque contemporáneo que la hace perfecta para cualquier generación.",
+      "image": "images/ProductsCollections/Colección Primas/Cris/IMG_9054.jpeg",
+      "images": [
+        "images/ProductsCollections/Colección Primas/Cris/IMG_9054.jpeg",
+        "images/ProductsCollections/Colección Primas/Cris/IMG_9081.jpeg",
+        "images/ProductsCollections/Colección Primas/Cris/IMG_9117.jpeg",
+        "images/ProductsCollections/Colección Primas/Cris/IMG_9424.jpeg"
+      ],
+      "tags": [
+        "oro amarillo",
+        "vínculos",
+        "clásico",
+        "generacional"
+      ],
+      "featured": false,
+      "showOnDashboard": true,
+      "weight": "12g",
+      "dimensions": "Diámetro: 60mm",
+      "care": "Limpiar con paño de joyería. Evitar químicos agresivos."
+    }
+  ]
+}

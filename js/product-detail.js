@@ -1,21 +1,36 @@
 // Enhanced Product data management with caching and error handling
 let products = [];
 
-// Load products from Drive (if enabled) or JSON file with caching
+// Load products from local @images/@ProductsCollections manifest or JSON file with caching
 async function loadProducts() {
     try {
-        // Try Drive first if configured
-        if (window.IUVENE_DRIVE_CONFIG && window.IUVENE_DRIVE_CONFIG.enabled && window.IuveneDrive) {
-            try {
-                const built = await window.IuveneDrive.buildCollectionsAndProducts();
-                if (built && built.products && built.products.length) {
-                    products = built.products;
-                    loadProductDetails();
-                    return;
-                }
-            } catch (e) {
-                console.warn('Drive source failed on detail page, falling back to JSON:', e);
+        console.log('🎯 Loading custom products for product detail...');
+        
+        // Try to load custom products first (full control)
+        try {
+            const response = await fetch('data/products-custom.json?v=' + Date.now());
+            if (response.ok) {
+                const customData = await response.json();
+                console.log('✅ Custom products loaded:', customData.products.length, 'products');
+                products = customData.products;
+                loadProductDetails();
+                return;
             }
+        } catch (error) {
+            console.log('⚠️ Custom products not found, trying automatic scanner...');
+        }
+
+        // Fallback to automatic scanner
+        console.log('🔍 Loading products from ProductsCollections for product detail...');
+        
+        const scanner = new CollectionScanner();
+        const scanResult = await scanner.scanCollections();
+
+        if (scanResult && scanResult.products && scanResult.products.length > 0) {
+            console.log('✅ Products loaded from ProductsCollections:', scanResult.products.length, 'products');
+            products = scanResult.products;
+            loadProductDetails();
+            return;
         }
 
         // Check cache first
@@ -26,8 +41,8 @@ async function loadProducts() {
         
         // Use cache if it's less than 5 minutes old
         if (cachedData && cacheAge < 300000) {
-            const data = JSON.parse(cachedData);
-            products = data.products;
+            const cached = JSON.parse(cachedData);
+            products = cached.products;
             loadProductDetails();
             return;
         }
@@ -37,13 +52,13 @@ async function loadProducts() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        const data = await response.json();
+        const jsonData = await response.json();
         
         // Cache the data
-        localStorage.setItem('iuvene-products', JSON.stringify(data));
+        localStorage.setItem('iuvene-products', JSON.stringify(jsonData));
         localStorage.setItem('iuvene-products-timestamp', now.toString());
         
-        products = data.products;
+        products = jsonData.products;
         loadProductDetails();
         
     } catch (error) {
@@ -78,7 +93,7 @@ async function loadProducts() {
                 type: "necklaces",
                 category: "silver",
                 image: "images/product-kelp-pendant.jpg",
-                description: "Beautiful kelp-inspired pendant in sterling silver. This piece reflects the natural beauty of Australia's coastal waters, with intricate detailing that mimics the graceful movement of underwater plants."
+                description: "Hermoso colgante inspirado en algas marinas en plata de ley. Esta pieza refleja la belleza natural de las aguas costeras mediterráneas, con detalles intrincados que imitan el movimiento elegante de las plantas submarinas."
             },
             {
                 id: 4,
@@ -110,6 +125,37 @@ async function loadProducts() {
         ];
         loadProductDetails();
     }
+}
+
+function buildFromCollectionsManifest(manifest) {
+    const root = (manifest.root || '').replace(/\/$/, '');
+    const products = [];
+    Object.keys(manifest.collections || {}).forEach(collectionName => {
+        const productMap = manifest.collections[collectionName] || {};
+        Object.keys(productMap).forEach(productName => {
+            const imageFiles = productMap[productName] || [];
+            if (imageFiles.length === 0) return;
+            const imagePaths = imageFiles.map(fn => encodeURI(`${root}/${collectionName}/${productName}/${fn}`));
+            products.push({
+                id: Math.abs(hashString(`${collectionName}/${productName}`)),
+                name: productName,
+                material: '',
+                image: imagePaths[0],
+                images: imagePaths
+            });
+        });
+    });
+    return { products };
+}
+
+function hashString(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i), h |= 0;
+    return h;
+}
+
+function capitalizeWords(s) {
+    return s.replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // Get product ID from URL
@@ -524,7 +570,7 @@ function loadProductDetails() {
     }
 }
 
-// Update product information with enhanced formatting
+// Update product information with enhanced formatting and custom details
 function updateProductInfo(product) {
     const elements = {
         material: document.getElementById('product-material'),
@@ -557,6 +603,21 @@ function updateProductInfo(product) {
             elements.price.className = 'product-price';
         }
     }
+    
+    // Add custom product details if available
+    addCustomProductDetails(product);
+}
+
+// Add custom product details section (DISABLED - user doesn't want details)
+function addCustomProductDetails(product) {
+    // Remove any existing details container
+    const existingContainer = document.querySelector('.product-custom-details');
+    if (existingContainer) {
+        existingContainer.remove();
+    }
+    
+    // Don't add any product details section
+    return;
 }
 
 // Update meta tags for better SEO

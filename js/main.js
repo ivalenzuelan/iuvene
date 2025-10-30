@@ -23,26 +23,55 @@ function debounce(func, wait) {
     };
 }
 
-// Load products from Drive (if enabled) or JSON file with error handling and caching
+// Load products from local @images/@ProductsCollections manifest or JSON file with error handling and caching
 async function loadProducts() {
     try {
-        // 1) Try Google Drive if enabled
-        if (window.IUVENE_DRIVE_CONFIG && window.IUVENE_DRIVE_CONFIG.enabled && window.IuveneDrive) {
-            try {
-                const built = await window.IuveneDrive.buildCollectionsAndProducts();
-                if (built && built.products && built.products.length) {
-                    products = built.products;
-                    collections = built.collections || [];
-                    filteredProducts = [...products];
-                    displayProducts(products);
-                    setupCollectionNavigation();
-                    setupFilters();
-                    setupSearch();
-                    return;
-                }
-            } catch (e) {
-                console.warn('Drive source failed, falling back to JSON:', e);
+        console.log('🎯 Loading custom products with full control...');
+        
+        // Try to load custom products first (full control)
+        try {
+            const response = await fetch('data/products-custom.json?v=' + Date.now());
+            if (response.ok) {
+                const customData = await response.json();
+                
+                console.log('✅ Custom products loaded:', customData.products.length, 'products');
+                console.log('✅ Collections found:', customData.collections.length, 'collections');
+
+                products = customData.products;
+                collections = customData.collections;
+                
+                // Filter products for dashboard display (only show products with showOnDashboard: true)
+                const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
+                filteredProducts = [...dashboardProducts];
+                
+                console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
+                displayProducts(dashboardProducts);
+                setupCollectionNavigation();
+                setupSearch();
+                return;
             }
+        } catch (error) {
+            console.log('⚠️ Custom products not found, trying automatic scanner...');
+        }
+
+        // Fallback to automatic scanner
+        console.log('🔍 Loading products from ProductsCollections structure...');
+        
+        const scanner = new CollectionScanner();
+        const data = await scanner.scanCollections();
+
+        if (data && data.products && data.products.length > 0) {
+            console.log('✅ Products loaded from ProductsCollections:', data.products.length, 'products');
+            console.log('✅ Collections found:', data.collections.length, 'collections');
+
+            products = data.products;
+            collections = data.collections;
+            filteredProducts = [...products];
+            
+            displayProducts(products);
+            setupCollectionNavigation();
+            setupSearch();
+            return;
         }
 
         // Check if data is cached in localStorage
@@ -54,13 +83,13 @@ async function loadProducts() {
         // Use cache if it's less than 5 minutes old
         if (cachedData && cacheAge < 300000) {
             console.log('Using cached data');
-            const data = JSON.parse(cachedData);
-            products = data.products;
-            collections = data.collections;
+            const cachedProductData = JSON.parse(cachedData);
+            products = cachedProductData.products;
+            collections = cachedProductData.collections;
             console.log('Cached products:', products.length, 'products');
             displayProducts(products);
             setupCollectionNavigation();
-            setupFilters();
+            setupSearch();
             return;
         }
 
@@ -69,120 +98,69 @@ async function loadProducts() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await response.json();
+        const jsonData = await response.json();
 
-        console.log('Products loaded from JSON:', data.products.length, 'products');
+        console.log('Products loaded from JSON:', jsonData.products.length, 'products');
 
         // Cache the data
-        localStorage.setItem('iuvene-products', JSON.stringify(data));
+        localStorage.setItem('iuvene-products', JSON.stringify(jsonData));
         localStorage.setItem('iuvene-products-timestamp', now.toString());
 
-        products = data.products;
-        collections = data.collections;
+        products = jsonData.products;
+        collections = jsonData.collections;
         filteredProducts = [...products];
 
         console.log('About to display products:', products);
         displayProducts(products);
         setupCollectionNavigation();
-        setupFilters();
         setupSearch();
 
     } catch (error) {
         console.error('Error loading products from JSON:', error);
         console.log('Falling back to hardcoded products...');
 
-        // Fallback to hardcoded products if JSON fails to load
-        products = [
-            {
-                id: 1,
-                name: "Fluid Ring",
-                material: "9K Gold - Sapphire",
-                type: "rings",
-                category: "gemstone",
-                collection: "oceana",
-                image: "images/products/fluid-ring/main.jpg",
-                images: ["images/products/fluid-ring/main.jpg"]
-            },
-            {
-                id: 2,
-                name: "Wakame Threader",
-                material: "Sterling Silver",
-                type: "earrings",
-                category: "silver",
-                collection: "oceana",
-                image: "images/products/wakame-threader/main.jpg",
-                images: ["images/products/wakame-threader/main.jpg"]
-            },
-            {
-                id: 3,
-                name: "Kelp Pendant",
-                material: "Sterling Silver",
-                type: "necklaces",
-                category: "silver",
-                collection: "oceana",
-                image: "images/products/kelp-pendant/main.jpg",
-                images: ["images/products/kelp-pendant/main.jpg"]
-            },
-            {
-                id: 4,
-                name: "Waterway Studs",
-                material: "9K Gold",
-                type: "earrings",
-                category: "gold",
-                collection: "everyday",
-                image: "images/products/waterway-studs/main.jpg",
-                images: ["images/products/waterway-studs/main.jpg"]
-            },
-            {
-                id: 5,
-                name: "Ripple Ring",
-                material: "Sterling Silver",
-                type: "rings",
-                category: "silver",
-                collection: "everyday",
-                image: "images/products/ripple-ring/main.jpg",
-                images: ["images/products/ripple-ring/main.jpg"]
-            },
-            {
-                id: 6,
-                name: "Elaz Threader",
-                material: "Sterling Silver",
-                type: "earrings",
-                category: "silver",
-                collection: "bespoke",
-                image: "images/products/elaz-threader/main.jpg",
-                images: ["images/products/elaz-threader/main.jpg"]
-            }
-        ];
-
-        // Fallback collections
-        collections = [
-            {
-                id: "oceana",
-                name: "Oceana",
-                description: "Inspired by Australia's coastal waters and marine life",
-                image: "images/collections/collection-oceana.jpg"
-            },
-            {
-                id: "everyday",
-                name: "Everyday",
-                description: "Timeless pieces for daily wear and special occasions",
-                image: "images/collections/collection-everyday.jpg"
-            },
-            {
-                id: "bespoke",
-                name: "Bespoke",
-                description: "Custom-made pieces tailored to your unique style",
-                image: "images/collections/collection-gemstone.jpg"
-            }
-        ];
-
         filteredProducts = [...products];
         displayProducts(products);
         setupCollectionNavigation();
-        setupFilters();
         setupSearch();
     }
+}
+
+function buildFromCollectionsManifest(manifest) {
+    const root = (manifest.root || '').replace(/\/$/, '');
+    const collections = [];
+    const products = [];
+    Object.keys(manifest.collections || {}).forEach(collectionName => {
+        const collectionId = collectionName.toLowerCase().replace(/\s+/g, '-');
+        collections.push({ id: collectionId, name: collectionName, description: '', image: '' });
+        const productMap = manifest.collections[collectionName] || {};
+        Object.keys(productMap).forEach(productName => {
+            const imageFiles = productMap[productName] || [];
+            if (imageFiles.length === 0) return;
+            const imagePaths = imageFiles.map(fn => encodeURI(`${root}/${collectionName}/${productName}/${fn}`));
+            products.push({
+                id: Math.abs(hashString(`${collectionName}/${productName}`)),
+                name: productName,
+                material: '',
+                type: 'rings',
+                category: 'silver',
+                collection: collectionId,
+                image: imagePaths[0],
+                images: imagePaths
+            });
+        });
+    });
+    return { products, collections };
+}
+
+function hashString(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i), h |= 0;
+    return h;
+}
+
+function capitalizeWords(s) {
+    return s.replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // DOM elements
@@ -255,13 +233,16 @@ function displayProducts(productsToShow) {
     }, 300);
 }
 
-// Create product card
+// Create product card with enhanced features
 function createProductCard(product) {
     const card = document.createElement('div');
-    card.className = 'product-card clickable';
+    card.className = `product-card clickable ${product.featured ? 'featured' : ''}`;
 
     // Add sold out badge if product is sold out
-    const soldOutBadge = product.soldOut ? '<div class="sold-out-badge">Sold Out</div>' : '';
+    const soldOutBadge = product.soldOut ? '<div class="sold-out-badge">Agotado</div>' : '';
+    
+    // Add price display
+    const priceDisplay = product.price ? `<div class="product-price-preview">€${product.price}</div>` : '';
 
     card.innerHTML = `
         <div class="product-image">
@@ -271,6 +252,7 @@ function createProductCard(product) {
         <div class="product-info">
             <div class="product-material">${product.material}</div>
             <div class="product-name">${product.name}</div>
+            ${priceDisplay}
         </div>
     `;
 
@@ -289,7 +271,7 @@ function handleNewsletterSubmit(e) {
 
     // Show success message
     const message = document.createElement('div');
-    message.textContent = 'Thank you for subscribing!';
+    message.textContent = '¡Gracias por suscribirte!';
     message.style.cssText = `
         position: fixed;
         top: 100px;
@@ -377,6 +359,9 @@ if ('IntersectionObserver' in window) {
 
 // Collection navigation functions
 function setupCollectionNavigation() {
+    // Create collection cards dynamically from scanned collections
+    createCollectionCards();
+    
     // Make collection cards clickable
     const collectionCards = document.querySelectorAll('.collection-card');
     collectionCards.forEach(card => {
@@ -395,6 +380,37 @@ function setupCollectionNavigation() {
     }
 }
 
+// Create collection cards dynamically
+function createCollectionCards() {
+    const collectionsGrid = document.querySelector('.collections-grid');
+    if (!collectionsGrid || !collections || collections.length === 0) return;
+    
+    console.log('🎨 Creating collection cards for', collections.length, 'collections');
+    
+    // Clear existing cards
+    collectionsGrid.innerHTML = '';
+    
+    collections.forEach(collection => {
+        const collectionCard = document.createElement('div');
+        collectionCard.className = 'collection-card';
+        collectionCard.dataset.collection = collection.id;
+        
+        collectionCard.innerHTML = `
+            <div class="collection-image">
+                <img src="${collection.image}" alt="Colección ${collection.name}" loading="lazy" 
+                     onerror="this.src='images/hero-background.jpg'">
+            </div>
+            <div class="collection-content">
+                <h3>${collection.name}</h3>
+                <p>${collection.description}</p>
+            </div>
+        `;
+        
+        collectionsGrid.appendChild(collectionCard);
+        console.log(`  ✨ Added collection card: ${collection.name}`);
+    });
+}
+
 function filterByCollection(collectionId) {
     currentCollection = collectionId;
 
@@ -406,12 +422,12 @@ function filterByCollection(collectionId) {
     const filteredProducts = products.filter(product => product.collection === collectionId);
 
     // Update page title and heading
-    document.title = `${collectionName} Collection - Iuvene`;
+    document.title = `Colección ${collectionName} - Iuvene`;
 
     // Update products section heading
     const productsHeading = document.querySelector('.products h2');
     if (productsHeading) {
-        productsHeading.textContent = `${collectionName} Collection`;
+        productsHeading.textContent = `Colección ${collectionName}`;
     }
 
     // Add collection description
@@ -454,12 +470,12 @@ function viewAllProducts() {
     currentCollection = null;
 
     // Reset page title
-    document.title = 'Iuvene - Handcrafted Jewelry & Accessories';
+    document.title = 'Iuvene - Joyería y Accesorios Artesanales';
 
     // Reset products section heading
     const productsHeading = document.querySelector('.products h2');
     if (productsHeading) {
-        productsHeading.textContent = 'Our Collection';
+        productsHeading.textContent = 'Nuestra Colección';
     }
 
     // Remove collection description
@@ -468,8 +484,8 @@ function viewAllProducts() {
         collectionDescription.textContent = '';
     }
 
-    // Display all products
-    displayProducts(products);
+    // Apply filters (this will return to dashboard filtering)
+    applyFilters();
 
     // Remove active state from all collection cards
     updateCollectionActiveState(null);
@@ -494,7 +510,7 @@ function showViewAllButton() {
     if (!viewAllBtn) {
         viewAllBtn = document.createElement('button');
         viewAllBtn.className = 'view-all-btn';
-        viewAllBtn.textContent = '← View All Collections';
+        viewAllBtn.textContent = '← Ver Todas las Colecciones';
         viewAllBtn.style.cssText = `
             background: #8b7355;
             color: white;
@@ -530,100 +546,11 @@ function hideViewAllButton() {
 }
 
 // Enhanced filtering system
-function setupFilters() {
-    // Create filter UI if it doesn't exist
-    createFilterUI();
-
-    // Setup filter event listeners
-    const typeFilter = document.getElementById('type-filter');
-    const categoryFilter = document.getElementById('category-filter');
-    const priceFilter = document.getElementById('price-filter');
-
-    if (typeFilter) {
-        typeFilter.addEventListener('change', (e) => {
-            currentFilters.type = e.target.value;
-            applyFilters();
-        });
-    }
-
-    if (categoryFilter) {
-        categoryFilter.addEventListener('change', (e) => {
-            currentFilters.category = e.target.value;
-            applyFilters();
-        });
-    }
-
-    if (priceFilter) {
-        priceFilter.addEventListener('change', (e) => {
-            currentFilters.priceRange = e.target.value;
-            applyFilters();
-        });
-    }
-}
-
-function createFilterUI() {
-    const productsSection = document.querySelector('.products .container');
-    if (!productsSection || document.querySelector('.filter-container')) return;
-
-    const filterContainer = document.createElement('div');
-    filterContainer.className = 'filter-container collapsed';
-    filterContainer.innerHTML = `
-        <div class="filter-toggle">
-            <button class="filter-toggle-btn" onclick="toggleFilters()">
-                <svg class="filter-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
-                </svg>
-                <span class="filter-text">Filtrar productos</span>
-                <svg class="chevron-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="6 9 12 15 18 9"></polyline>
-                </svg>
-            </button>
-            <div class="product-count-compact">
-                <span id="product-count">Mostrando ${products.length} productos</span>
-            </div>
-        </div>
-        <div class="filter-content">
-            <div class="filter-header">
-                <h3>Opciones de filtrado</h3>
-                <button class="clear-filters-btn" onclick="clearAllFilters()">Limpiar filtros</button>
-            </div>
-            <div class="filter-options">
-                <div class="filter-group">
-                    <label for="type-filter">Tipo:</label>
-                    <select id="type-filter">
-                        <option value="all">Todos</option>
-                        <option value="rings">Anillos</option>
-                        <option value="earrings">Pendientes</option>
-                        <option value="necklaces">Collares</option>
-                        <option value="bangles">Pulseras</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="category-filter">Material:</label>
-                    <select id="category-filter">
-                        <option value="all">Todos</option>
-                        <option value="gold">Oro</option>
-                        <option value="silver">Plata</option>
-                        <option value="brass">Latón</option>
-                        <option value="gemstone">Piedras preciosas</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="price-filter">Precio:</label>
-                    <select id="price-filter">
-                        <option value="all">Todos</option>
-                        <option value="0-100">€0 - €100</option>
-                        <option value="100-200">€100 - €200</option>
-                        <option value="200-300">€200 - €300</option>
-                        <option value="300+">€300+</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    `;
-
-    productsSection.insertBefore(filterContainer, productsGrid);
-}
+// function setupFilters() { // DISABLED
+//     createFilterUI();
+//     // Setup filter event listeners (disabled)
+// }
+// function createFilterUI() { /* disabled */ }
 
 function setupSearch() {
     const searchBtn = document.querySelector('.search-btn');
@@ -682,7 +609,11 @@ function applyFilters() {
 
     // Apply collection filter
     if (currentCollection) {
+        // When viewing a specific collection, show ALL products in that collection
         filtered = filtered.filter(product => product.collection === currentCollection);
+    } else {
+        // When on main dashboard, only show products with showOnDashboard: true
+        filtered = filtered.filter(product => product.showOnDashboard !== false);
     }
 
     // Apply type filter
@@ -784,7 +715,7 @@ function filterByCollection(collectionId) {
     const collectionName = collection ? collection.name : 'Collection';
 
     // Update page title and heading
-    document.title = `${collectionName} Collection - Iuvene`;
+    document.title = `Colección ${collectionName} - Iuvene`;
 
     // Update products section heading
     const productsHeading = document.querySelector('.products h2');
@@ -963,7 +894,7 @@ function clearAllFilters() {
     hideViewAllButton();
 
     // Reset page title and description
-    document.title = 'Iuvene - Handcrafted Jewelry & Accessories';
+    document.title = 'Iuvene - Joyería y Accesorios Artesanales';
     const productsHeading = document.querySelector('.products h2');
     if (productsHeading) {
         productsHeading.textContent = 'Nuestra Colección';

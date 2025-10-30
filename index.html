@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iuvene - Handcrafted Jewelry & Accessories</title>
-    <meta name="description" content="Discover our ethically made jewelry collection, crafted with traditional handcrafted methods in our Melbourne workshop.">
+    <title>Iuvene - Joyería y Accesorios Artesanales</title>
+    <meta name="description" content="Descubre nuestra colección de joyería ética, elaborada con métodos artesanales tradicionales en nuestro taller de Madrid.">
     
     <!-- Favicon and App Icons -->
     <link rel="icon" type="image/x-icon" sizes="16x16" href="favicon/favicon-16x16.png">
@@ -29,7 +29,9 @@
         <nav class="nav">
             <div class="nav-container">
                 <div class="logo">
-                    <h1>Iuvene</h1>
+                    <a href="index.html" aria-label="Iuvene home">
+                        <img src="images/logoIUVENE.png" alt="Iuvene" />
+                    </a>
                 </div>
                 <div class="nav-links">
                     <a href="#collections">Colecciones</a>
@@ -43,7 +45,7 @@
                     </a>
                 </div>
                 <div class="nav-actions">
-                    <button class="search-btn" aria-label="Search">
+                    <button class="search-btn" aria-label="Buscar">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
@@ -57,9 +59,7 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h2 class="hero-title">Iuvene</h2>
-            <p class="hero-subtitle">Honrando el</p>
-            <p class="hero-subtitle">paisaje y tradiciones de Madrid</p>
+            
             <a href="#shop" class="cta-button">Explorar Catálogo</a>
         </div>
     </section>
@@ -80,31 +80,31 @@
         <div class="container">
             <h2 class="section-title">Colecciones</h2>
             <div class="collections-grid">
-                <div class="collection-card" data-collection="oceana">
+                <div class="collection-card" data-collection="galicia">
                     <div class="collection-image">
-                        <img src="images/collections/collection-oceana.jpg" alt="Oceana Collection" loading="lazy">
+                        <img src="images/ProductsCollections/Colección Galicia/background.jpg" alt="Colección Galicia" loading="lazy">
                     </div>
                     <div class="collection-content">
-                        <h3>Oceana</h3>
-                        <p>Inspirada en las aguas costeras y vida marina de Australia</p>
+                        <h3>Galicia</h3>
+                        <p>Inspirada en la belleza natural y tradiciones de Galicia</p>
                     </div>
                 </div>
-                <div class="collection-card" data-collection="everyday">
+                <div class="collection-card" data-collection="gus">
                     <div class="collection-image">
-                        <img src="images/collections/collection-everyday.jpg" alt="Everyday Collection" loading="lazy">
+                        <img src="images/ProductsCollections/Colección Gus/background.jpg" alt="Colección Gus" loading="lazy">
                     </div>
                     <div class="collection-content">
-                        <h3>Cotidiana</h3>
-                        <p>Piezas atemporales para uso diario y ocasiones especiales</p>
+                        <h3>Gus</h3>
+                        <p>Colección contemporánea con diseños únicos y modernos</p>
                     </div>
                 </div>
-                <div class="collection-card" data-collection="bespoke">
+                <div class="collection-card" data-collection="primas">
                     <div class="collection-image">
-                        <img src="images/collections/collection-gemstone.jpg" alt="Bespoke Collection" loading="lazy">
+                        <img src="images/ProductsCollections/Colección Primas/background.jpg" alt="Colección Primas" loading="lazy">
                     </div>
                     <div class="collection-content">
-                        <h3>A Medida</h3>
-                        <p>Piezas personalizadas adaptadas a tu estilo único</p>
+                        <h3>Primas</h3>
+                        <p>Piezas elegantes dedicadas a la familia y vínculos especiales</p>
                     </div>
                 </div>
             </div>
@@ -117,8 +117,8 @@
             <div class="about-content">
                 <div class="about-text">
                     <h2>Nuestra Historia</h2>
-                    <p>Fundada en Melbourne, Iuvene te trae joyería artesanal que celebra la belleza natural de Australia. Cada pieza está cuidadosamente diseñada y meticulosamente elaborada usando técnicas tradicionales transmitidas de generación en generación.</p>
-                    <p>Creemos en crear joyería que no solo adorna, sino que cuenta una historia: de artesanía, sostenibilidad y el carácter único de nuestra tierra natal.</p>
+                    <p>Fundada en Madrid, Iuvene te trae joyería artesanal que celebra la rica tradición española y la belleza de nuestro patrimonio cultural. Cada pieza está cuidadosamente diseñada y meticulosamente elaborada usando técnicas tradicionales transmitidas de generación en generación.</p>
+                    <p>Creemos en crear joyería que no solo adorna, sino que cuenta una historia: de artesanía, sostenibilidad y el carácter único de nuestra herencia española.</p>
                 </div>
                 <div class="about-image">
                     <img src="images/aboutus/6773A021-5D04-482B-BADD-578875E3B782_1_201_a.jpeg" alt="Our Workshop" loading="lazy">
@@ -131,14 +131,23 @@
     <section class="newsletter">
         <div class="container">
             <div class="newsletter-content">
-                <h2>Seamos amigos</h2>
-                <p>Sé el primero en conocer nuestras nuevas colecciones, actualizaciones, ofertas especiales y disfruta del 10% de descuento en tu primera compra.</p>
-                <p class="newsletter-note">No te preocupes, sin spam, solo cosas buenas!</p>
-                <form class="newsletter-form" id="newsletter-form">
-                    <input type="email" name="email" placeholder="Ingresa tu email" required>
-                    <button type="submit">Suscribirse</button>
+                <h2 class="newsletter-title">Dejanos tu mail!</h2>
+                <p class="newsletter-desc">
+                    Únete para descubrir antes que nadie nuestras nuevas colecciones, ofertas exclusivas y mucho más.
+                </p>
+                <form action="https://formspree.io/f/manlbpge" method="POST" class="newsletter-form-ui">
+                    <input
+                        type="email"
+                        name="email"
+                        class="newsletter-input"
+                        placeholder="Tu correo electrónico"
+                        required
+                    />
+                    <button type="submit" class="newsletter-btn">
+                        Unirme
+                    </button>
                 </form>
-                <div class="newsletter-message" id="newsletter-message"></div>
+                <small class="newsletter-note"></small>
             </div>
         </div>
     </section>
@@ -150,9 +159,9 @@
                 <div class="footer-section">
                     <h3>Contacto</h3>
                     <ul>
-                        <li><a href="mailto:hello@iuvene.com">Consultas generales</a></li>
-                        <li><a href="mailto:orders@iuvene.com">Consultas de pedidos</a></li>
-                        <li><a href="mailto:press@iuvene.com">Consultas de prensa</a></li>
+                        <li><a href="mailto:iuvene.info@gmail.com">Consultas generales</a></li>
+                        <li><a href="mailto:iuvene.info@gmail.com">Consultas de pedidos</a></li>
+                        <li><a href="mailto:iuvene.info@gmail.com">Consultas de prensa</a></li>
                     </ul>
                 </div>
                 <div class="social-links">
@@ -163,7 +172,7 @@
                         Síguenos en Instagram
                     </a>
                 </div>
-                <p class="copyright">© Iuvene • Melbourne, Australia</p>
+                <p class="copyright">© Iuvene • Madrid, España</p>
             </div>
         </div>
     </footer>
@@ -171,7 +180,9 @@
 
 
     <script src="js/performance.js"></script>
-    <script src="js/main.js?v=17"></script>
+    <script src="js/collection-scanner.js"></script>
+    <script src="js/background-slideshow.js"></script>
+    <script src="js/main.js?v=18"></script>
     <script src="js/newsletter-config.js"></script>
     <script src="js/newsletter.js"></script>
 </body>

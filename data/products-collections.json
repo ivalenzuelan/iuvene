@@ -1,0 +1,13 @@
+{
+  "root": "images/ProductsCollections",
+  "collections": {
+    "Colección Galicia": {
+      "Carmen": ["main.jpg"],
+      "Bea": ["main.jpg"],
+      "Almu": ["main.jpg"],
+      "Ale": ["main.jpg"]
+    }
+  }
+}
+
+
