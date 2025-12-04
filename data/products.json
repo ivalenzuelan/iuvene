@@ -11,62 +11,62 @@
     {
       "id": 1001,
       "name": "Carmen",
-      "material": "",
+      "material": "Plata de Ley 925",
       "type": "rings",
       "category": "silver",
       "collection": "coleccion-galicia",
-      "price": 0,
+      "price": 45,
       "soldOut": false,
       "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Carmen/main.jpg",
       "images": [
         "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Carmen/main.jpg"
       ],
-      "description": ""
+      "description": "Anillo de diseño orgánico inspirado en las formas de Galicia."
     },
     {
       "id": 1002,
       "name": "Bea",
-      "material": "",
+      "material": "Plata de Ley 925",
       "type": "rings",
       "category": "silver",
       "collection": "coleccion-galicia",
-      "price": 0,
+      "price": 38,
       "soldOut": false,
       "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Bea/main.jpg",
       "images": [
         "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Bea/main.jpg"
       ],
-      "description": ""
+      "description": "Elegancia y sencillez en una pieza única."
     },
     {
       "id": 1003,
       "name": "Almu",
-      "material": "",
+      "material": "Plata de Ley 925",
       "type": "rings",
       "category": "silver",
       "collection": "coleccion-galicia",
-      "price": 0,
+      "price": 42,
       "soldOut": false,
       "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Almu/main.jpg",
       "images": [
         "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Almu/main.jpg"
       ],
-      "description": ""
+      "description": "Diseño contemporáneo para el día a día."
     },
     {
       "id": 1004,
       "name": "Ale",
-      "material": "",
+      "material": "Plata de Ley 925",
       "type": "rings",
       "category": "silver",
       "collection": "coleccion-galicia",
-      "price": 0,
+      "price": 40,
       "soldOut": false,
       "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Ale/main.jpg",
       "images": [
         "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Ale/main.jpg"
       ],
-      "description": ""
+      "description": "Detalles sutiles que marcan la diferencia."
     }
   ]
 }

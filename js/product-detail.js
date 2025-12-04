@@ -2,128 +2,31 @@
 let products = [];
 
 // Load products from local @images/@ProductsCollections manifest or JSON file with caching
+// Load products using ProductManager
 async function loadProducts() {
     try {
-        console.log('🎯 Loading custom products for product detail...');
+        console.log('⏳ ProductDetail: Waiting for ProductManager...');
 
-        // Try to load custom products first (full control)
-        try {
-            const response = await fetch('data/products-custom.json?v=' + Date.now());
-            if (response.ok) {
-                const customData = await response.json();
-                console.log('✅ Custom products loaded:', customData.products.length, 'products');
-                products = customData.products;
-                loadProductDetails();
-                return;
-            }
-        } catch (error) {
-            console.log('⚠️ Custom products not found, trying automatic scanner...');
+        // Ensure ProductManager is available
+        if (!window.productManager) {
+            throw new Error('ProductManager not found');
         }
 
-        // Fallback to automatic scanner
-        console.log('🔍 Loading products from ProductsCollections for product detail...');
+        await window.productManager.init();
+        products = window.productManager.getAllProducts();
 
-        const scanner = new CollectionScanner();
-        const scanResult = await scanner.scanCollections();
+        console.log('✅ ProductDetail: Products loaded:', products.length);
 
-        if (scanResult && scanResult.products && scanResult.products.length > 0) {
-            console.log('✅ Products loaded from ProductsCollections:', scanResult.products.length, 'products');
-            products = scanResult.products;
-            loadProductDetails();
+        if (products.length === 0) {
+            console.warn('⚠️ ProductDetail: No products found');
+            showErrorMessage('No se encontraron productos.');
             return;
         }
 
-        // Check cache first
-        const cachedData = localStorage.getItem('iuvene-products');
-        const cacheTimestamp = localStorage.getItem('iuvene-products-timestamp');
-        const now = Date.now();
-        const cacheAge = now - (cacheTimestamp || 0);
-
-        // Use cache if it's less than 5 minutes old
-        if (cachedData && cacheAge < 300000) {
-            const cached = JSON.parse(cachedData);
-            products = cached.products;
-            loadProductDetails();
-            return;
-        }
-
-        const response = await fetch('data/products.json?v=' + now);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const jsonData = await response.json();
-
-        // Cache the data
-        localStorage.setItem('iuvene-products', JSON.stringify(jsonData));
-        localStorage.setItem('iuvene-products-timestamp', now.toString());
-
-        products = jsonData.products;
         loadProductDetails();
-
     } catch (error) {
-        console.error('Error loading products from JSON:', error);
-        showErrorMessage('Error cargando el producto. Intentando con datos de respaldo...');
-        console.log('Falling back to hardcoded products...');
-
-        // Fallback to hardcoded products if JSON fails to load
-        products = [
-            {
-                id: 1,
-                name: "Fluid Ring",
-                material: "9K Gold - Sapphire",
-                type: "rings",
-                category: "gemstone",
-                image: "images/product-fluid-ring.jpg",
-                description: "A stunning fluid ring featuring 9K gold with sapphire accents. This piece showcases the perfect balance of elegance and sophistication, making it an ideal choice for those who appreciate fine craftsmanship and timeless beauty."
-            },
-            {
-                id: 2,
-                name: "Wakame Threader",
-                material: "Sterling Silver",
-                type: "earrings",
-                category: "silver",
-                image: "images/product-wakame-threader.jpg",
-                description: "Elegant sterling silver threader earrings inspired by ocean seaweed. The delicate design captures the organic flow of marine life, creating a unique and wearable piece of art."
-            },
-            {
-                id: 3,
-                name: "Kelp Pendant",
-                material: "Sterling Silver",
-                type: "necklaces",
-                category: "silver",
-                image: "images/product-kelp-pendant.jpg",
-                description: "Hermoso colgante inspirado en algas marinas en plata de ley. Esta pieza refleja la belleza natural de las aguas costeras mediterráneas, con detalles intrincados que imitan el movimiento elegante de las plantas submarinas."
-            },
-            {
-                id: 4,
-                name: "Waterway Studs",
-                material: "9K Gold",
-                type: "earrings",
-                category: "gold",
-                image: "images/product-waterway-studs.jpg",
-                description: "Sophisticated 9K gold studs with water-inspired design. These elegant earrings feature a unique pattern that evokes the gentle flow of water, perfect for everyday wear or special occasions."
-            },
-            {
-                id: 5,
-                name: "Ripple Ring",
-                material: "Sterling Silver",
-                type: "rings",
-                category: "silver",
-                image: "images/product-ripple-ring.jpg",
-                description: "Delicate ripple ring in sterling silver. Inspired by the gentle ripples on water's surface, this ring features a subtle texture that catches the light beautifully and adds dimension to any outfit."
-            },
-            {
-                id: 6,
-                name: "Elaz Threader",
-                material: "Sterling Silver",
-                type: "earrings",
-                category: "silver",
-                image: "images/product-elaz-threader.jpg",
-                description: "Minimalist sterling silver threader earrings. Clean lines and simple elegance make these earrings versatile for any occasion, from casual day wear to sophisticated evening events."
-            }
-        ];
-        loadProductDetails();
+        console.error('❌ ProductDetail: Error loading products:', error);
+        showErrorMessage('Error cargando el producto. Por favor recarga la página.');
     }
 }
 
@@ -170,14 +73,18 @@ let productImages = [];
 
 // Load product details
 function loadProductDetails() {
-    const productId = getProductIdFromUrl();
-    const product = products.find(p => p.id === productId);
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+
+    const product = products.find(p => p.id == productId);
 
     if (!product) {
-        // Redirect to home if product not found
-        window.location.href = 'index.html';
+        console.error('❌ ProductDetail: Product not found for ID:', productId);
+        showErrorMessage('Producto no encontrado.');
         return;
     }
+
+
 
     // Update page title
     document.title = `${product.name} - Iuvene`;
@@ -317,7 +224,25 @@ function updateNavigationButtons() {
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function () {
-    loadProducts();
+    function onProductsReady(e) {
+        products = e.detail.products;
+        loadProductDetails();
+    }
+
+    window.addEventListener('products:ready', onProductsReady);
+
+    window.addEventListener('products:error', function (e) {
+        console.error('Error loading products:', e.detail.error);
+        showErrorMessage('Error cargando datos de productos.');
+    });
+
+    // Check if already loaded
+    if (window.productManager && window.productManager.isLoaded) {
+        products = window.productManager.getAllProducts();
+        loadProductDetails();
+    } else if (window.productManager) {
+        window.productManager.init().catch(console.error);
+    }
 });
 // Enhanced error handling and user feedback
 function showErrorMessage(message) {
@@ -791,44 +716,22 @@ function setupAddToCart(product) {
         }
     });
 
+    // Remove any existing listener to prevent duplicates
+    const newBtn = addToCartBtn.cloneNode(true);
+    addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
+
+    // Re-select the button
+    const btn = document.getElementById('add-to-cart-btn');
+
     // Add to cart click
-    addToCartBtn.addEventListener('click', () => {
+    btn.addEventListener('click', () => {
         const quantity = parseInt(quantityInput.value) || 1;
-        
-        // Helper function to get cart with retry
-        const getCart = () => {
-            return window.cart || document.cart;
-        };
-        
-        // Try to get cart, with a small delay if needed
-        let cart = getCart();
-        if (!cart) {
-            // Wait a bit and try again (in case cart.js is still loading)
-            setTimeout(() => {
-                cart = getCart();
-                if (cart && typeof cart.addItem === 'function') {
-                    const success = cart.addItem(product, quantity);
-                    if (!success) {
-                        console.error('Failed to add product to cart:', product);
-                        alert('Error al añadir el producto al carrito. Por favor, inténtalo de nuevo.');
-                    }
-                } else {
-                    console.error('Cart not available after retry');
-                    alert('Error: El carrito no está disponible. Por favor, recarga la página.');
-                }
-            }, 100);
-            return;
-        }
-        
-        if (typeof cart.addItem === 'function') {
-            const success = cart.addItem(product, quantity);
-            if (!success) {
-                console.error('Failed to add product to cart:', product);
-                alert('Error al añadir el producto al carrito. Por favor, inténtalo de nuevo.');
-            }
+
+        if (window.cart) {
+            console.log('🛒 Adding to cart:', product.name, 'Qty:', quantity);
+            window.cart.addItem(product, quantity);
         } else {
-            console.error('Cart addItem method not available');
-            alert('Error: El carrito no está disponible. Por favor, recarga la página.');
+            console.error('Cart not initialized');
         }
     });
 }

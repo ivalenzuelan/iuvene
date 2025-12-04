@@ -24,105 +24,27 @@ function debounce(func, wait) {
 }
 
 // Load products from local @images/@ProductsCollections manifest or JSON file with error handling and caching
+// Load products using ProductManager
 async function loadProducts() {
     try {
-        console.log('🎯 Loading custom products with full control...');
+        // Wait for ProductManager to be ready
+        await window.productManager.init();
 
-        // Try to load custom products first (full control)
-        try {
-            const response = await fetch('data/products-custom.json?v=' + Date.now());
-            if (response.ok) {
-                const customData = await response.json();
+        products = window.productManager.getAllProducts();
+        collections = window.productManager.getAllCollections();
 
-                console.log('✅ Custom products loaded:', customData.products.length, 'products');
-                console.log('✅ Collections found:', customData.collections.length, 'collections');
+        // Filter products for dashboard display (only show products with showOnDashboard: true)
+        const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
+        filteredProducts = [...dashboardProducts];
 
-                products = customData.products;
-                collections = customData.collections;
-
-                // Filter products for dashboard display (only show products with showOnDashboard: true)
-                const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
-                filteredProducts = [...dashboardProducts];
-
-                console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
-                displayProducts(dashboardProducts);
-                setupCollectionNavigation();
-                setupSearch();
-                return;
-            }
-        } catch (error) {
-            console.log('⚠️ Custom products not found, trying automatic scanner...');
-        }
-
-        // Fallback to automatic scanner
-        console.log('🔍 Loading products from ProductsCollections structure...');
-
-        const scanner = new CollectionScanner();
-        const data = await scanner.scanCollections();
-
-        if (data && data.products && data.products.length > 0) {
-            console.log('✅ Products loaded from ProductsCollections:', data.products.length, 'products');
-            console.log('✅ Collections found:', data.collections.length, 'collections');
-
-            products = data.products;
-            collections = data.collections;
-            filteredProducts = [...products];
-
-            displayProducts(products);
-            setupCollectionNavigation();
-            setupSearch();
-            return;
-        }
-
-        // Check if data is cached in localStorage
-        const cachedData = localStorage.getItem('iuvene-products');
-        const cacheTimestamp = localStorage.getItem('iuvene-products-timestamp');
-        const now = Date.now();
-        const cacheAge = now - (cacheTimestamp || 0);
-
-        // Use cache if it's less than 5 minutes old
-        if (cachedData && cacheAge < 300000) {
-            console.log('Using cached data');
-            const cachedProductData = JSON.parse(cachedData);
-            products = cachedProductData.products;
-            collections = cachedProductData.collections;
-            console.log('Cached products:', products.length, 'products');
-            displayProducts(products);
-            setupCollectionNavigation();
-            setupSearch();
-            return;
-        }
-
-        const response = await fetch('data/products.json?v=' + now);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const jsonData = await response.json();
-
-        console.log('Products loaded from JSON:', jsonData.products.length, 'products');
-
-        // Cache the data
-        localStorage.setItem('iuvene-products', JSON.stringify(jsonData));
-        localStorage.setItem('iuvene-products-timestamp', now.toString());
-
-        products = jsonData.products;
-        collections = jsonData.collections;
-        filteredProducts = [...products];
-
-        console.log('About to display products:', products);
-        displayProducts(products);
+        console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
+        displayProducts(dashboardProducts);
         setupCollectionNavigation();
         setupSearch();
 
     } catch (error) {
-        console.error('Error loading products from JSON:', error);
-        console.log('Falling back to hardcoded products...');
-
-        filteredProducts = [...products];
-        displayProducts(products);
-        setupCollectionNavigation();
-        setupSearch();
+        console.error('Error loading products:', error);
+        productsGrid.innerHTML = '<div class="error-message">Error cargando productos. Por favor recarga la página.</div>';
     }
 }
 
@@ -274,36 +196,13 @@ function createProductCard(product) {
         addToCartBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             e.preventDefault();
-            
-            // Helper function to get cart with retry
-            const getCart = () => {
-                return window.cart || document.cart;
-            };
-            
-            // Try to get cart, with a small delay if needed
-            let cart = getCart();
-            if (!cart) {
-                // Wait a bit and try again (in case cart.js is still loading)
-                setTimeout(() => {
-                    cart = getCart();
-                    if (cart && typeof cart.addItem === 'function') {
-                        cart.addItem(product, 1);
-                    } else {
-                        console.error('Cart not available after retry');
-                        alert('Error: El carrito no está disponible. Por favor, recarga la página.');
-                    }
-                }, 100);
-                return;
-            }
-            
-            if (typeof cart.addItem === 'function') {
-                const success = cart.addItem(product, 1);
-                if (!success) {
-                    console.error('Failed to add product to cart:', product);
-                }
+
+            // Use global cart instance
+            if (window.cart) {
+                window.cart.addItem(product, 1);
             } else {
-                console.error('Cart addItem method not available');
-                alert('Error: El carrito no está disponible. Por favor, recarga la página.');
+                console.error('Cart not initialized');
+                alert('Error: El carrito no está disponible.');
             }
         });
     }
