@@ -27,23 +27,23 @@ function debounce(func, wait) {
 async function loadProducts() {
     try {
         console.log('🎯 Loading custom products with full control...');
-        
+
         // Try to load custom products first (full control)
         try {
             const response = await fetch('data/products-custom.json?v=' + Date.now());
             if (response.ok) {
                 const customData = await response.json();
-                
+
                 console.log('✅ Custom products loaded:', customData.products.length, 'products');
                 console.log('✅ Collections found:', customData.collections.length, 'collections');
 
                 products = customData.products;
                 collections = customData.collections;
-                
+
                 // Filter products for dashboard display (only show products with showOnDashboard: true)
                 const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
                 filteredProducts = [...dashboardProducts];
-                
+
                 console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
                 displayProducts(dashboardProducts);
                 setupCollectionNavigation();
@@ -56,7 +56,7 @@ async function loadProducts() {
 
         // Fallback to automatic scanner
         console.log('🔍 Loading products from ProductsCollections structure...');
-        
+
         const scanner = new CollectionScanner();
         const data = await scanner.scanCollections();
 
@@ -67,7 +67,7 @@ async function loadProducts() {
             products = data.products;
             collections = data.collections;
             filteredProducts = [...products];
-            
+
             displayProducts(products);
             setupCollectionNavigation();
             setupSearch();
@@ -170,12 +170,12 @@ let productsGrid;
 document.addEventListener('DOMContentLoaded', function () {
     // Get DOM elements after DOM is ready
     productsGrid = document.getElementById('products-grid');
-    
+
     if (!productsGrid) {
         console.error('Products grid element not found!');
         return;
     }
-    
+
     console.log('Products grid found:', productsGrid);
     loadProducts();
     setupEventListeners();
@@ -193,7 +193,7 @@ function setupEventListeners() {
 // Enhanced display products with loading states and animations
 function displayProducts(productsToShow) {
     console.log('displayProducts called with:', productsToShow.length, 'products');
-    
+
     if (!productsGrid) {
         console.error('Products grid not found in displayProducts!');
         return;
@@ -240,7 +240,7 @@ function createProductCard(product) {
 
     // Add sold out badge if product is sold out
     const soldOutBadge = product.soldOut ? '<div class="sold-out-badge">Agotado</div>' : '';
-    
+
     // Add price display
     const priceDisplay = product.price ? `<div class="product-price-preview">€${product.price}</div>` : '';
 
@@ -253,13 +253,31 @@ function createProductCard(product) {
             <div class="product-material">${product.material}</div>
             <div class="product-name">${product.name}</div>
             ${priceDisplay}
+            <button class="add-to-cart-card-btn" ${product.soldOut ? 'disabled' : ''}>
+                ${product.soldOut ? 'Agotado' : 'Añadir al Carrito'}
+            </button>
         </div>
     `;
 
-    // Make entire card clickable
-    card.addEventListener('click', () => {
-        window.location.href = `product-detail.html?id=${product.id}`;
+    // Make image and info clickable (navigate to detail), but not the button
+    const clickableElements = card.querySelectorAll('.product-image, .product-material, .product-name, .product-price-preview');
+    clickableElements.forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.location.href = `product-detail.html?id=${product.id}`;
+        });
     });
+
+    // Add to cart click handler
+    const addToCartBtn = card.querySelector('.add-to-cart-card-btn');
+    if (addToCartBtn) {
+        addToCartBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (window.cart) {
+                window.cart.addItem(product, 1);
+            }
+        });
+    }
 
     return card;
 }
@@ -361,7 +379,7 @@ if ('IntersectionObserver' in window) {
 function setupCollectionNavigation() {
     // Create collection cards dynamically from scanned collections
     createCollectionCards();
-    
+
     // Make collection cards clickable
     const collectionCards = document.querySelectorAll('.collection-card');
     collectionCards.forEach(card => {
@@ -384,17 +402,17 @@ function setupCollectionNavigation() {
 function createCollectionCards() {
     const collectionsGrid = document.querySelector('.collections-grid');
     if (!collectionsGrid || !collections || collections.length === 0) return;
-    
+
     console.log('🎨 Creating collection cards for', collections.length, 'collections');
-    
+
     // Clear existing cards
     collectionsGrid.innerHTML = '';
-    
+
     collections.forEach(collection => {
         const collectionCard = document.createElement('div');
         collectionCard.className = 'collection-card';
         collectionCard.dataset.collection = collection.id;
-        
+
         collectionCard.innerHTML = `
             <div class="collection-image">
                 <img src="${collection.image}" alt="Colección ${collection.name}" loading="lazy" 
@@ -405,7 +423,7 @@ function createCollectionCards() {
                 <p>${collection.description}</p>
             </div>
         `;
-        
+
         collectionsGrid.appendChild(collectionCard);
         console.log(`  ✨ Added collection card: ${collection.name}`);
     });

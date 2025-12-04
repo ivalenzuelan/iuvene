@@ -5,7 +5,7 @@ let products = [];
 async function loadProducts() {
     try {
         console.log('🎯 Loading custom products for product detail...');
-        
+
         // Try to load custom products first (full control)
         try {
             const response = await fetch('data/products-custom.json?v=' + Date.now());
@@ -22,7 +22,7 @@ async function loadProducts() {
 
         // Fallback to automatic scanner
         console.log('🔍 Loading products from ProductsCollections for product detail...');
-        
+
         const scanner = new CollectionScanner();
         const scanResult = await scanner.scanCollections();
 
@@ -38,7 +38,7 @@ async function loadProducts() {
         const cacheTimestamp = localStorage.getItem('iuvene-products-timestamp');
         const now = Date.now();
         const cacheAge = now - (cacheTimestamp || 0);
-        
+
         // Use cache if it's less than 5 minutes old
         if (cachedData && cacheAge < 300000) {
             const cached = JSON.parse(cachedData);
@@ -51,21 +51,21 @@ async function loadProducts() {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const jsonData = await response.json();
-        
+
         // Cache the data
         localStorage.setItem('iuvene-products', JSON.stringify(jsonData));
         localStorage.setItem('iuvene-products-timestamp', now.toString());
-        
+
         products = jsonData.products;
         loadProductDetails();
-        
+
     } catch (error) {
         console.error('Error loading products from JSON:', error);
         showErrorMessage('Error cargando el producto. Intentando con datos de respaldo...');
         console.log('Falling back to hardcoded products...');
-        
+
         // Fallback to hardcoded products if JSON fails to load
         products = [
             {
@@ -172,31 +172,31 @@ let productImages = [];
 function loadProductDetails() {
     const productId = getProductIdFromUrl();
     const product = products.find(p => p.id === productId);
-    
+
     if (!product) {
         // Redirect to home if product not found
         window.location.href = 'index.html';
         return;
     }
-    
+
     // Update page title
     document.title = `${product.name} - Iuvene`;
-    
+
     // Set up image slider
     setupImageSlider(product);
-    
+
     // Update product information
     document.getElementById('product-material').textContent = product.material;
     document.getElementById('product-title').textContent = product.name;
     document.getElementById('product-description').textContent = product.description;
-    
+
     // Update price
     const priceElement = document.getElementById('product-price');
     console.log('Price element found:', priceElement);
     console.log('Product data:', product);
     console.log('Product price:', product.price);
     console.log('Product soldOut:', product.soldOut);
-    
+
     if (priceElement) {
         if (product.soldOut) {
             priceElement.textContent = 'Sold Out';
@@ -210,12 +210,12 @@ function loadProductDetails() {
     } else {
         console.error('Price element not found!');
     }
-    
+
     // Update WhatsApp link
     const whatsappLink = document.getElementById('whatsapp-link');
     const message = `Hi! I'm interested in ${product.name} - ${product.material}`;
     whatsappLink.href = `https://wa.me/1234567890?text=${encodeURIComponent(message)}`;
-    
+
     // Update meta description for SEO
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
@@ -228,16 +228,16 @@ function setupImageSlider(product) {
     // Use images array if available, otherwise fallback to single image
     productImages = product.images || [product.image];
     currentImageIndex = 0;
-    
+
     // Update main image
     updateMainImage();
-    
+
     // Create thumbnails
     createThumbnails();
-    
+
     // Set up navigation buttons
     setupNavigationButtons();
-    
+
     // Update navigation button states
     updateNavigationButtons();
 }
@@ -246,7 +246,7 @@ function setupImageSlider(product) {
 function updateMainImage() {
     const productImage = document.getElementById('product-main-image');
     const currentImage = productImages[currentImageIndex];
-    
+
     if (currentImage) {
         productImage.src = currentImage;
         productImage.alt = `Product image ${currentImageIndex + 1}`;
@@ -257,19 +257,19 @@ function updateMainImage() {
 function createThumbnails() {
     const thumbnailGallery = document.getElementById('thumbnail-gallery');
     thumbnailGallery.innerHTML = '';
-    
+
     productImages.forEach((image, index) => {
         const thumbnail = document.createElement('div');
         thumbnail.className = `thumbnail ${index === currentImageIndex ? 'active' : ''}`;
         thumbnail.innerHTML = `<img src="${image}" alt="Thumbnail ${index + 1}" loading="lazy">`;
-        
+
         thumbnail.addEventListener('click', () => {
             currentImageIndex = index;
             updateMainImage();
             updateThumbnails();
             updateNavigationButtons();
         });
-        
+
         thumbnailGallery.appendChild(thumbnail);
     });
 }
@@ -286,7 +286,7 @@ function updateThumbnails() {
 function setupNavigationButtons() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
-    
+
     prevBtn.addEventListener('click', () => {
         if (currentImageIndex > 0) {
             currentImageIndex--;
@@ -295,7 +295,7 @@ function setupNavigationButtons() {
             updateNavigationButtons();
         }
     });
-    
+
     nextBtn.addEventListener('click', () => {
         if (currentImageIndex < productImages.length - 1) {
             currentImageIndex++;
@@ -310,13 +310,13 @@ function setupNavigationButtons() {
 function updateNavigationButtons() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
-    
+
     prevBtn.disabled = currentImageIndex === 0;
     nextBtn.disabled = currentImageIndex === productImages.length - 1;
 }
 
 // Initialize page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     loadProducts();
 });
 // Enhanced error handling and user feedback
@@ -336,9 +336,9 @@ function showErrorMessage(message) {
         animation: slideInRight 0.3s ease;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     `;
-    
+
     document.body.appendChild(errorDiv);
-    
+
     setTimeout(() => {
         errorDiv.style.animation = 'slideOutRight 0.3s ease';
         setTimeout(() => {
@@ -362,25 +362,25 @@ function setupImageSlider(product) {
     // Use images array if available, otherwise fallback to single image
     productImages = product.images || [product.image];
     currentImageIndex = 0;
-    
+
     // Preload all images for better performance
     preloadImages(productImages);
-    
+
     // Update main image
     updateMainImage();
-    
+
     // Create thumbnails
     createThumbnails();
-    
+
     // Set up navigation buttons
     setupNavigationButtons();
-    
+
     // Set up keyboard navigation
     setupKeyboardNavigation();
-    
+
     // Set up touch/swipe navigation
     setupTouchNavigation();
-    
+
     // Update navigation button states
     updateNavigationButtons();
 }
@@ -408,24 +408,24 @@ function setupKeyboardNavigation() {
 function setupTouchNavigation() {
     const mainImage = document.getElementById('product-main-image');
     if (!mainImage) return;
-    
+
     let startX = 0;
     let startY = 0;
     let endX = 0;
     let endY = 0;
-    
+
     mainImage.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
         startY = e.touches[0].clientY;
     });
-    
+
     mainImage.addEventListener('touchend', (e) => {
         endX = e.changedTouches[0].clientX;
         endY = e.changedTouches[0].clientY;
-        
+
         const deltaX = endX - startX;
         const deltaY = endY - startY;
-        
+
         // Only trigger swipe if horizontal movement is greater than vertical
         if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
             if (deltaX > 0 && currentImageIndex > 0) {
@@ -449,11 +449,11 @@ function setupTouchNavigation() {
 function updateMainImage() {
     const productImage = document.getElementById('product-main-image');
     const currentImage = productImages[currentImageIndex];
-    
+
     if (currentImage && productImage) {
         // Show loading state
         productImage.style.opacity = '0.5';
-        
+
         // Create new image to test loading
         const img = new Image();
         img.onload = () => {
@@ -474,23 +474,23 @@ function updateMainImage() {
 function createThumbnails() {
     const thumbnailGallery = document.getElementById('thumbnail-gallery');
     if (!thumbnailGallery) return;
-    
+
     thumbnailGallery.innerHTML = '';
-    
+
     productImages.forEach((image, index) => {
         const thumbnail = document.createElement('div');
         thumbnail.className = `thumbnail ${index === currentImageIndex ? 'active' : ''}`;
         thumbnail.setAttribute('role', 'button');
         thumbnail.setAttribute('tabindex', '0');
         thumbnail.setAttribute('aria-label', `Ver imagen ${index + 1}`);
-        
+
         const img = document.createElement('img');
         img.src = image;
         img.alt = `Miniatura ${index + 1}`;
         img.loading = 'lazy';
-        
+
         thumbnail.appendChild(img);
-        
+
         // Click handler
         thumbnail.addEventListener('click', () => {
             currentImageIndex = index;
@@ -498,7 +498,7 @@ function createThumbnails() {
             updateThumbnails();
             updateNavigationButtons();
         });
-        
+
         // Keyboard handler
         thumbnail.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -509,7 +509,7 @@ function createThumbnails() {
                 updateNavigationButtons();
             }
         });
-        
+
         thumbnailGallery.appendChild(thumbnail);
     });
 }
@@ -518,7 +518,7 @@ function createThumbnails() {
 function setupWhatsAppLink(product) {
     const whatsappLink = document.getElementById('whatsapp-link');
     if (!whatsappLink || !product) return;
-    
+
     const message = `¡Hola! Me interesa el ${product.name} en ${product.material}. 
     
 ¿Podrías darme más información sobre:
@@ -528,7 +528,7 @@ function setupWhatsAppLink(product) {
 - Tiempo de entrega
 
 ¡Gracias!`;
-    
+
     // You should replace this with your actual WhatsApp number
     const phoneNumber = '34123456789'; // Replace with actual number
     whatsappLink.href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
@@ -538,7 +538,7 @@ function setupWhatsAppLink(product) {
 function loadProductDetails() {
     const productId = getProductIdFromUrl();
     const product = products.find(p => p.id === productId);
-    
+
     if (!product) {
         showErrorMessage('Producto no encontrado. Redirigiendo...');
         setTimeout(() => {
@@ -546,24 +546,27 @@ function loadProductDetails() {
         }, 2000);
         return;
     }
-    
+
     try {
         // Update page title and meta
         document.title = `${product.name} - ${product.material} | Iuvene`;
         updateMetaTags(product);
-        
+
         // Set up image slider
         setupImageSlider(product);
-        
+
         // Update product information
         updateProductInfo(product);
-        
+
         // Setup WhatsApp link
         setupWhatsAppLink(product);
-        
+
         // Add structured data for SEO
         addStructuredData(product);
-        
+
+        // Setup Add to Cart
+        setupAddToCart(product);
+
     } catch (error) {
         console.error('Error loading product details:', error);
         showErrorMessage('Error cargando los detalles del producto.');
@@ -578,19 +581,19 @@ function updateProductInfo(product) {
         description: document.getElementById('product-description'),
         price: document.getElementById('product-price')
     };
-    
+
     if (elements.material) {
         elements.material.textContent = product.material;
     }
-    
+
     if (elements.title) {
         elements.title.textContent = product.name;
     }
-    
+
     if (elements.description) {
         elements.description.textContent = product.description || 'Hermosa pieza artesanal creada con técnicas tradicionales.';
     }
-    
+
     if (elements.price) {
         if (product.soldOut) {
             elements.price.textContent = 'Agotado';
@@ -603,7 +606,7 @@ function updateProductInfo(product) {
             elements.price.className = 'product-price';
         }
     }
-    
+
     // Add custom product details if available
     addCustomProductDetails(product);
 }
@@ -615,7 +618,7 @@ function addCustomProductDetails(product) {
     if (existingContainer) {
         existingContainer.remove();
     }
-    
+
     // Don't add any product details section
     return;
 }
@@ -627,7 +630,7 @@ function updateMetaTags(product) {
     if (metaDescription) {
         metaDescription.content = `${product.name} - ${product.material}. ${product.description || 'Joyería artesanal de alta calidad.'}`;
     }
-    
+
     // Add Open Graph tags
     addOpenGraphTags(product);
 }
@@ -641,7 +644,7 @@ function addOpenGraphTags(product) {
         { property: 'og:url', content: window.location.href },
         { property: 'og:type', content: 'product' }
     ];
-    
+
     ogTags.forEach(tag => {
         let meta = document.querySelector(`meta[property="${tag.property}"]`);
         if (!meta) {
@@ -672,7 +675,7 @@ function addStructuredData(product) {
             "availability": product.soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock"
         }
     };
-    
+
     let script = document.querySelector('script[type="application/ld+json"]');
     if (!script) {
         script = document.createElement('script');
@@ -692,7 +695,7 @@ function addBreadcrumbs() {
     const productId = getProductIdFromUrl();
     const product = products.find(p => p.id === productId);
     if (!product) return;
-    
+
     const breadcrumb = document.createElement('nav');
     breadcrumb.className = 'breadcrumb';
     breadcrumb.innerHTML = `
@@ -702,7 +705,7 @@ function addBreadcrumbs() {
         <span>›</span>
         <span>${product.name}</span>
     `;
-    
+
     const productDetail = document.querySelector('.product-detail');
     if (productDetail) {
         productDetail.insertBefore(breadcrumb, productDetail.firstChild);
@@ -713,14 +716,14 @@ function addRelatedProducts() {
     const productId = getProductIdFromUrl();
     const product = products.find(p => p.id === productId);
     if (!product) return;
-    
+
     // Find related products (same collection or type)
     const relatedProducts = products
         .filter(p => p.id !== productId && (p.collection === product.collection || p.type === product.type))
         .slice(0, 3);
-    
+
     if (relatedProducts.length === 0) return;
-    
+
     const relatedSection = document.createElement('section');
     relatedSection.className = 'related-products';
     relatedSection.innerHTML = `
@@ -740,7 +743,7 @@ function addRelatedProducts() {
             </div>
         </div>
     `;
-    
+
     const backToProducts = document.querySelector('.back-to-products');
     if (backToProducts) {
         backToProducts.parentNode.insertBefore(relatedSection, backToProducts);
@@ -748,11 +751,53 @@ function addRelatedProducts() {
 }
 
 // Initialize enhanced features
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     loadProducts();
-    
+
     // Setup enhanced navigation after products load
     setTimeout(() => {
         setupEnhancedNavigation();
     }, 1000);
 });
+
+// Add to Cart functionality
+function setupAddToCart(product) {
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    const quantityInput = document.getElementById('quantity');
+    const minusBtn = document.querySelector('.qty-btn.minus');
+    const plusBtn = document.querySelector('.qty-btn.plus');
+
+    if (!addToCartBtn || !quantityInput) return;
+
+    // Update button state
+    if (product.soldOut) {
+        addToCartBtn.disabled = true;
+        addToCartBtn.textContent = 'Agotado';
+        return;
+    }
+
+    // Quantity controls
+    minusBtn.addEventListener('click', () => {
+        const currentValue = parseInt(quantityInput.value);
+        if (currentValue > 1) {
+            quantityInput.value = currentValue - 1;
+        }
+    });
+
+    plusBtn.addEventListener('click', () => {
+        const currentValue = parseInt(quantityInput.value);
+        if (currentValue < 10) {
+            quantityInput.value = currentValue + 1;
+        }
+    });
+
+    // Add to cart click
+    addToCartBtn.addEventListener('click', () => {
+        const quantity = parseInt(quantityInput.value);
+        if (window.cart) {
+            window.cart.addItem(product, quantity);
+        } else {
+            console.error('Cart not initialized');
+        }
+    });
+}

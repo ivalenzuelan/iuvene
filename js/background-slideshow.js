@@ -12,7 +12,7 @@ class BackgroundSlideshow {
             'images/Pruebas portada/IMG_9358.JPG',
             'images/Pruebas portada/iuvene (1).png'
         ];
-        
+
         this.currentIndex = 0;
         this.intervalId = null;
         this.transitionDuration = 1000; // 1 second transition
@@ -30,26 +30,26 @@ class BackgroundSlideshow {
         }
 
         console.log('🎬 Initializing background slideshow with', this.images.length, 'images');
-        
+
         // Preload all images for smooth transitions
         this.preloadImages();
-        
+
         // Set initial background
         this.setBackground(0);
-        
+
         // Start the slideshow
         this.start();
-        
+
         // Controls disabled per user request
         // this.addControls();
-        
+
         this.isInitialized = true;
     }
 
     // Preload all images for smooth transitions
     preloadImages() {
         console.log('📸 Preloading background images...');
-        
+
         this.images.forEach((src, index) => {
             const img = new Image();
             img.onload = () => {
@@ -67,9 +67,9 @@ class BackgroundSlideshow {
     // Set background image with smooth transition
     setBackground(index) {
         if (!this.heroElement || !this.images[index]) return;
-        
+
         const imageUrl = this.images[index];
-        
+
         // Create new background layer for smooth transition
         const newBackground = document.createElement('div');
         newBackground.className = 'hero-background-layer';
@@ -87,14 +87,14 @@ class BackgroundSlideshow {
             transition: opacity ${this.transitionDuration}ms ease-in-out;
             z-index: -2;
         `;
-        
+
         this.heroElement.appendChild(newBackground);
-        
+
         // Fade in new background
         setTimeout(() => {
             newBackground.style.opacity = '1';
         }, 50);
-        
+
         // Remove old background layers after transition
         setTimeout(() => {
             const oldLayers = this.heroElement.querySelectorAll('.hero-background-layer');
@@ -104,16 +104,16 @@ class BackgroundSlideshow {
                 }
             });
         }, this.transitionDuration + 100);
-        
+
         console.log(`🖼️ Background changed to: ${imageUrl.split('/').pop()}`);
     }
 
     // Start the automatic slideshow
     start() {
         if (this.intervalId) return; // Already running
-        
+
         console.log('▶️ Starting background slideshow');
-        
+
         this.intervalId = setInterval(() => {
             this.next();
         }, this.displayDuration);
@@ -178,12 +178,12 @@ class BackgroundSlideshow {
                 </svg>
             </button>
         `;
-        
+
         this.heroElement.appendChild(controlsContainer);
-        
+
         // Create indicators
         this.createIndicators();
-        
+
         // Add event listeners
         this.setupControlEvents();
     }
@@ -192,9 +192,9 @@ class BackgroundSlideshow {
     createIndicators() {
         const indicatorsContainer = this.heroElement.querySelector('.slideshow-indicators');
         if (!indicatorsContainer) return;
-        
+
         indicatorsContainer.innerHTML = '';
-        
+
         this.images.forEach((_, index) => {
             const indicator = document.createElement('button');
             indicator.className = `slideshow-indicator ${index === 0 ? 'active' : ''}`;
@@ -204,7 +204,7 @@ class BackgroundSlideshow {
                 this.stop(); // Stop auto-play when user interacts
                 setTimeout(() => this.start(), 10000); // Resume after 10 seconds
             });
-            
+
             indicatorsContainer.appendChild(indicator);
         });
     }
@@ -214,7 +214,7 @@ class BackgroundSlideshow {
         const prevBtn = this.heroElement.querySelector('.prev-btn');
         const nextBtn = this.heroElement.querySelector('.next-btn');
         const playPauseBtn = this.heroElement.querySelector('.play-pause-btn');
-        
+
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
                 this.previous();
@@ -222,7 +222,7 @@ class BackgroundSlideshow {
                 setTimeout(() => this.start(), 10000);
             });
         }
-        
+
         if (nextBtn) {
             nextBtn.addEventListener('click', () => {
                 this.next();
@@ -230,18 +230,18 @@ class BackgroundSlideshow {
                 setTimeout(() => this.start(), 10000);
             });
         }
-        
+
         if (playPauseBtn) {
             playPauseBtn.addEventListener('click', () => {
                 this.togglePlayPause();
             });
         }
-        
+
         // Pause on hover
         this.heroElement.addEventListener('mouseenter', () => {
             this.stop();
         });
-        
+
         this.heroElement.addEventListener('mouseleave', () => {
             this.start();
         });
@@ -251,7 +251,7 @@ class BackgroundSlideshow {
     togglePlayPause() {
         const playIcon = this.heroElement.querySelector('.play-icon');
         const pauseIcon = this.heroElement.querySelector('.pause-icon');
-        
+
         if (this.intervalId) {
             this.stop();
             if (playIcon) playIcon.style.display = 'block';
@@ -275,8 +275,8 @@ class BackgroundSlideshow {
     setupKeyboardNavigation() {
         document.addEventListener('keydown', (e) => {
             if (!this.isInitialized) return;
-            
-            switch(e.key) {
+
+            switch (e.key) {
                 case 'ArrowLeft':
                     e.preventDefault();
                     this.previous();
@@ -298,7 +298,7 @@ class BackgroundSlideshow {
         // Adjust slideshow for different screen sizes
         const isMobile = window.innerWidth <= 768;
         const controls = this.heroElement.querySelector('.slideshow-controls');
-        
+
         if (controls) {
             controls.style.display = isMobile ? 'none' : 'flex';
         }
@@ -313,12 +313,12 @@ document.addEventListener('DOMContentLoaded', () => {
         slideshow.init();
         // Keyboard navigation disabled (no controls)
         // slideshow.setupKeyboardNavigation();
-        
+
         // Handle window resize
         window.addEventListener('resize', () => {
             slideshow.handleResize();
         });
-        
+
         // Expose to global scope for debugging
         window.backgroundSlideshow = slideshow;
     }, 1000);
