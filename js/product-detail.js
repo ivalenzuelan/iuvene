@@ -793,11 +793,42 @@ function setupAddToCart(product) {
 
     // Add to cart click
     addToCartBtn.addEventListener('click', () => {
-        const quantity = parseInt(quantityInput.value);
-        if (window.cart) {
-            window.cart.addItem(product, quantity);
+        const quantity = parseInt(quantityInput.value) || 1;
+        
+        // Helper function to get cart with retry
+        const getCart = () => {
+            return window.cart || document.cart;
+        };
+        
+        // Try to get cart, with a small delay if needed
+        let cart = getCart();
+        if (!cart) {
+            // Wait a bit and try again (in case cart.js is still loading)
+            setTimeout(() => {
+                cart = getCart();
+                if (cart && typeof cart.addItem === 'function') {
+                    const success = cart.addItem(product, quantity);
+                    if (!success) {
+                        console.error('Failed to add product to cart:', product);
+                        alert('Error al añadir el producto al carrito. Por favor, inténtalo de nuevo.');
+                    }
+                } else {
+                    console.error('Cart not available after retry');
+                    alert('Error: El carrito no está disponible. Por favor, recarga la página.');
+                }
+            }, 100);
+            return;
+        }
+        
+        if (typeof cart.addItem === 'function') {
+            const success = cart.addItem(product, quantity);
+            if (!success) {
+                console.error('Failed to add product to cart:', product);
+                alert('Error al añadir el producto al carrito. Por favor, inténtalo de nuevo.');
+            }
         } else {
-            console.error('Cart not initialized');
+            console.error('Cart addItem method not available');
+            alert('Error: El carrito no está disponible. Por favor, recarga la página.');
         }
     });
 }

@@ -273,8 +273,37 @@ function createProductCard(product) {
     if (addToCartBtn) {
         addToCartBtn.addEventListener('click', (e) => {
             e.stopPropagation();
-            if (window.cart) {
-                window.cart.addItem(product, 1);
+            e.preventDefault();
+            
+            // Helper function to get cart with retry
+            const getCart = () => {
+                return window.cart || document.cart;
+            };
+            
+            // Try to get cart, with a small delay if needed
+            let cart = getCart();
+            if (!cart) {
+                // Wait a bit and try again (in case cart.js is still loading)
+                setTimeout(() => {
+                    cart = getCart();
+                    if (cart && typeof cart.addItem === 'function') {
+                        cart.addItem(product, 1);
+                    } else {
+                        console.error('Cart not available after retry');
+                        alert('Error: El carrito no está disponible. Por favor, recarga la página.');
+                    }
+                }, 100);
+                return;
+            }
+            
+            if (typeof cart.addItem === 'function') {
+                const success = cart.addItem(product, 1);
+                if (!success) {
+                    console.error('Failed to add product to cart:', product);
+                }
+            } else {
+                console.error('Cart addItem method not available');
+                alert('Error: El carrito no está disponible. Por favor, recarga la página.');
             }
         });
     }

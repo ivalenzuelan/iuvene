@@ -17,6 +17,36 @@ class ShoppingCart {
     }
 
     addItem(product, quantity = 1) {
+        // Validate product object
+        if (!product) {
+            console.error('Cart: Cannot add item - product is null or undefined');
+            this.showNotification('Error: Producto no válido', 'error');
+            return false;
+        }
+
+        // Validate required fields
+        if (!product.id) {
+            console.error('Cart: Cannot add item - product.id is missing', product);
+            this.showNotification('Error: Producto sin ID válido', 'error');
+            return false;
+        }
+
+        if (!product.name) {
+            console.error('Cart: Cannot add item - product.name is missing', product);
+            this.showNotification('Error: Producto sin nombre', 'error');
+            return false;
+        }
+
+        // Ensure quantity is a valid number
+        quantity = parseInt(quantity) || 1;
+        if (quantity <= 0) {
+            quantity = 1;
+        }
+
+        // Ensure price is a valid number (default to 0 if missing)
+        const price = parseFloat(product.price) || 0;
+
+        // Find existing item
         const existingItem = this.items.find(item => item.id === product.id);
         
         if (existingItem) {
@@ -25,8 +55,8 @@ class ShoppingCart {
             this.items.push({
                 id: product.id,
                 name: product.name,
-                price: product.price,
-                image: product.image,
+                price: price,
+                image: product.image || '',
                 quantity: quantity
             });
         }
@@ -34,7 +64,8 @@ class ShoppingCart {
         this.saveCart();
         this.calculateTotals();
         this.updateUI();
-        this.showNotification('Producto añadido al carrito');
+        this.showNotification('Producto añadido al carrito', 'success');
+        return true;
     }
 
     removeItem(productId) {
@@ -66,8 +97,12 @@ class ShoppingCart {
     }
 
     calculateTotals() {
-        this.count = this.items.reduce((sum, item) => sum + item.quantity, 0);
-        this.total = this.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        this.count = this.items.reduce((sum, item) => sum + (parseInt(item.quantity) || 0), 0);
+        this.total = this.items.reduce((sum, item) => {
+            const price = parseFloat(item.price) || 0;
+            const quantity = parseInt(item.quantity) || 0;
+            return sum + (price * quantity);
+        }, 0);
     }
 
     saveCart() {
@@ -77,14 +112,29 @@ class ShoppingCart {
     renderCartIcon() {
         const cartBtn = document.querySelector('.cart-btn');
         if (cartBtn) {
+            // Ensure cart-btn has position relative for absolute positioning of badge
+            const cartBtnStyle = window.getComputedStyle(cartBtn);
+            if (cartBtnStyle.position === 'static') {
+                cartBtn.style.position = 'relative';
+            }
+
             let countBadge = cartBtn.querySelector('.cart-count');
             if (!countBadge) {
                 countBadge = document.createElement('span');
                 countBadge.className = 'cart-count';
                 cartBtn.appendChild(countBadge);
             }
+            
             countBadge.textContent = this.count;
-            countBadge.style.display = this.count > 0 ? 'flex' : 'none';
+            
+            // Show/hide badge based on count
+            if (this.count > 0) {
+                countBadge.style.display = 'flex';
+                countBadge.style.visibility = 'visible';
+            } else {
+                countBadge.style.display = 'none';
+                countBadge.style.visibility = 'hidden';
+            }
         }
     }
 
@@ -97,21 +147,26 @@ class ShoppingCart {
             document.body.appendChild(modal);
         }
 
-        const itemsHtml = this.items.map(item => `
-            <div class="cart-item">
-                <img src="${item.image}" alt="${item.name}">
+        const itemsHtml = this.items.map(item => {
+            const itemId = item.id;
+            const itemQuantity = parseInt(item.quantity) || 1;
+            const itemPrice = parseFloat(item.price) || 0;
+            return `
+            <div class="cart-item" data-item-id="${itemId}">
+                <img src="${item.image || ''}" alt="${item.name || 'Producto'}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'%3E%3Crect width=\'100\' height=\'100\' fill=\'%23f0f0f0\'/%3E%3C/svg%3E'">
                 <div class="cart-item-details">
-                    <h4>${item.name}</h4>
-                    <p>€${item.price}</p>
+                    <h4>${item.name || 'Producto'}</h4>
+                    <p class="cart-item-price">€${itemPrice.toFixed(2)}</p>
                     <div class="quantity-controls">
-                        <button onclick="cart.updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
-                        <span>${item.quantity}</span>
-                        <button onclick="cart.updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                        <button class="qty-decrease" data-item-id="${itemId}">-</button>
+                        <span>${itemQuantity}</span>
+                        <button class="qty-increase" data-item-id="${itemId}">+</button>
                     </div>
                 </div>
-                <button class="remove-item" onclick="cart.removeItem(${item.id})">×</button>
+                <button class="remove-item" data-item-id="${itemId}">×</button>
             </div>
-        `).join('');
+        `;
+        }).join('');
 
         modal.innerHTML = `
             <div class="cart-content">
@@ -134,11 +189,43 @@ class ShoppingCart {
             </div>
         `;
 
-        // Re-attach event listeners for the new modal content
+        // Attach event listeners using event delegation
+        this.attachCartModalListeners(modal);
+    }
+
+    attachCartModalListeners(modal) {
+        // Close button
         const closeBtn = modal.querySelector('.close-cart');
         if (closeBtn) {
             closeBtn.addEventListener('click', () => this.toggleCart());
         }
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                this.toggleCart();
+            }
+        });
+
+        // Quantity controls and remove buttons using event delegation
+        modal.addEventListener('click', (e) => {
+            const itemId = parseInt(e.target.getAttribute('data-item-id'));
+            if (!itemId) return;
+
+            if (e.target.classList.contains('qty-decrease')) {
+                const item = this.items.find(i => i.id === itemId);
+                if (item) {
+                    this.updateQuantity(itemId, (parseInt(item.quantity) || 1) - 1);
+                }
+            } else if (e.target.classList.contains('qty-increase')) {
+                const item = this.items.find(i => i.id === itemId);
+                if (item) {
+                    this.updateQuantity(itemId, (parseInt(item.quantity) || 1) + 1);
+                }
+            } else if (e.target.classList.contains('remove-item')) {
+                this.removeItem(itemId);
+            }
+        });
     }
 
     toggleCart() {
@@ -162,9 +249,13 @@ class ShoppingCart {
         }
     }
 
-    showNotification(message) {
+    showNotification(message, type = 'success') {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification');
+        existingNotifications.forEach(n => n.remove());
+
         const notification = document.createElement('div');
-        notification.className = 'notification success';
+        notification.className = `notification ${type}`;
         notification.textContent = message;
         document.body.appendChild(notification);
         
@@ -188,6 +279,27 @@ class ShoppingCart {
     }
 }
 
-// Initialize cart
-const cart = new ShoppingCart();
-window.cart = cart; // Make accessible globally
+// Initialize cart - ensure it's available globally before DOM is ready
+let cart;
+
+// Initialize cart when DOM is ready or immediately if already loaded
+function initializeCart() {
+    if (!cart) {
+        cart = new ShoppingCart();
+        window.cart = cart; // Make accessible globally
+        
+        // Also expose it on document for compatibility
+        document.cart = cart;
+        
+        console.log('Cart initialized successfully');
+    }
+    return cart;
+}
+
+// Initialize immediately if DOM is already loaded
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCart);
+} else {
+    // DOM is already loaded
+    initializeCart();
+}
