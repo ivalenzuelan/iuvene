@@ -630,7 +630,7 @@ a:hover {
 
 .product-detail-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(300px, 500px) 1fr;
     gap: 4rem;
     align-items: start;
 }
