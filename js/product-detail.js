@@ -106,17 +106,36 @@ function loadProductDetails() {
 
     if (priceElement) {
         if (product.soldOut) {
-            priceElement.textContent = 'Sold Out';
+            priceElement.textContent = 'Agotado';
             priceElement.className = 'product-price sold-out';
-            console.log('Set price to Sold Out');
+            console.log('Set price to Agotado');
         } else {
-            priceElement.textContent = `$${product.price}`;
+            priceElement.textContent = `€${product.price || 'Consultar'}`;
             priceElement.className = 'product-price';
-            console.log('Set price to $' + product.price);
+            console.log('Set price to €' + product.price);
         }
     } else {
         console.error('Price element not found!');
     }
+
+    // Update add to cart button
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    if (addToCartBtn) {
+        if (product.soldOut === true) {
+            addToCartBtn.textContent = 'Agotado';
+            addToCartBtn.disabled = true;
+            addToCartBtn.style.opacity = '0.6';
+            addToCartBtn.style.cursor = 'not-allowed';
+        } else {
+            addToCartBtn.textContent = 'Añadir al Carrito';
+            addToCartBtn.disabled = false;
+            addToCartBtn.style.opacity = '1';
+            addToCartBtn.style.cursor = 'pointer';
+        }
+    }
+
+    // Setup Add to Cart functionality
+    setupAddToCart(product);
 
     // Update WhatsApp link
     const whatsappLink = document.getElementById('whatsapp-link');
@@ -529,6 +548,22 @@ function updateProductInfo(product) {
         } else {
             elements.price.textContent = 'Precio bajo consulta';
             elements.price.className = 'product-price';
+        }
+    }
+
+    // Update add to cart button if product is sold out
+    const addToCartBtn = document.getElementById('add-to-cart-btn');
+    if (addToCartBtn) {
+        if (product.soldOut === true) {
+            addToCartBtn.textContent = 'Agotado';
+            addToCartBtn.disabled = true;
+            addToCartBtn.style.opacity = '0.6';
+            addToCartBtn.style.cursor = 'not-allowed';
+        } else {
+            addToCartBtn.textContent = 'Añadir al Carrito';
+            addToCartBtn.disabled = false;
+            addToCartBtn.style.opacity = '1';
+            addToCartBtn.style.cursor = 'pointer';
         }
     }
 
