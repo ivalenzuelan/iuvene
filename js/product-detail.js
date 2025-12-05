@@ -688,33 +688,16 @@ document.addEventListener('DOMContentLoaded', function () {
 // Add to Cart functionality
 function setupAddToCart(product) {
     const addToCartBtn = document.getElementById('add-to-cart-btn');
-    const quantityInput = document.getElementById('quantity');
-    const minusBtn = document.querySelector('.qty-btn.minus');
-    const plusBtn = document.querySelector('.qty-btn.plus');
+    if (!addToCartBtn) return;
 
-    if (!addToCartBtn || !quantityInput) return;
-
-    // Update button state
-    if (product.soldOut) {
+    // Check if product is sold out
+    if (product.soldOut === true) {
         addToCartBtn.disabled = true;
         addToCartBtn.textContent = 'Agotado';
-        return;
+        addToCartBtn.style.opacity = '0.6';
+        addToCartBtn.style.cursor = 'not-allowed';
+        return; // Don't add event listener for sold out products
     }
-
-    // Quantity controls
-    minusBtn.addEventListener('click', () => {
-        const currentValue = parseInt(quantityInput.value);
-        if (currentValue > 1) {
-            quantityInput.value = currentValue - 1;
-        }
-    });
-
-    plusBtn.addEventListener('click', () => {
-        const currentValue = parseInt(quantityInput.value);
-        if (currentValue < 10) {
-            quantityInput.value = currentValue + 1;
-        }
-    });
 
     // Remove any existing listener to prevent duplicates
     const newBtn = addToCartBtn.cloneNode(true);
@@ -725,7 +708,16 @@ function setupAddToCart(product) {
 
     // Add to cart click
     btn.addEventListener('click', () => {
-        const quantity = parseInt(quantityInput.value) || 1;
+        // Double-check sold out status before adding
+        if (product.soldOut === true) {
+            console.warn('Attempted to add sold out product:', product.name);
+            if (window.cart) {
+                window.cart.showNotification('Este producto está agotado', 'error');
+            }
+            return;
+        }
+
+        const quantity = 1;
 
         if (window.cart) {
             console.log('🛒 Adding to cart:', product.name, 'Qty:', quantity);

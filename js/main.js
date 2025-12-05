@@ -197,6 +197,15 @@ function createProductCard(product) {
             e.stopPropagation();
             e.preventDefault();
 
+            // Prevent adding sold out products
+            if (product.soldOut === true) {
+                console.warn('Attempted to add sold out product:', product.name);
+                if (window.cart) {
+                    window.cart.showNotification('Este producto está agotado', 'error');
+                }
+                return;
+            }
+
             // Use global cart instance
             if (window.cart) {
                 window.cart.addItem(product, 1);

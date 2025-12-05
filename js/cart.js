@@ -185,6 +185,13 @@ class ShoppingCart {
             return false;
         }
 
+        // Check if product is sold out
+        if (product.soldOut === true) {
+            console.warn('Cart: Cannot add sold out product', product.name);
+            this.showNotification('Este producto está agotado y no se puede añadir al carrito', 'error');
+            return false;
+        }
+
         quantity = Math.max(1, parseInt(quantity) || 1);
         const price = parseFloat(product.price) || 0;
 
