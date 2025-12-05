@@ -33,12 +33,12 @@ async function loadProducts() {
         products = window.productManager.getAllProducts();
         collections = window.productManager.getAllCollections();
 
-        // Filter products for dashboard display (only show products with showOnDashboard: true)
-        const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
-        filteredProducts = [...dashboardProducts];
+                // Filter products for dashboard display (only show products with showOnDashboard: true)
+                const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
+                filteredProducts = [...dashboardProducts];
 
-        console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
-        displayProducts(dashboardProducts);
+                console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
+                displayProducts(dashboardProducts);
         setupCollectionNavigation();
         setupSearch();
 
@@ -168,7 +168,7 @@ function createProductCard(product) {
 
     card.innerHTML = `
         <div class="product-image">
-            <img src="${product.image}" alt="${product.name}" loading="lazy">
+            <img src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low">
             ${soldOutBadge}
         </div>
         <div class="product-info">

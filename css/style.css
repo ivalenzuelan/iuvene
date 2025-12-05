@@ -209,6 +209,11 @@ a:hover {
     align-items: center;
     justify-content: center;
     text-align: center;
+    position: relative;
+    overflow: hidden;
+    /* Performance optimizations */
+    will-change: contents;
+    contain: layout style paint;
     padding-top: 80px;
     position: relative;
     overflow: hidden;
@@ -498,9 +503,33 @@ a:hover {
 
 .about-content {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4rem;
+    grid-template-columns: 1fr;
+    gap: 2rem;
     align-items: center;
+}
+
+/* Desktop: Image on left, text on right */
+@media (min-width: 769px) {
+    .about-content {
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+    }
+    
+    /* Reorder: Image first (left), then text (right) */
+    .about-text {
+        order: 2;
+    }
+    
+    .about-image {
+        order: 1;
+    }
+    
+    /* Constrain image size on desktop */
+    .about-image img {
+        max-width: 100%;
+        height: auto;
+        object-fit: cover;
+    }
 }
 
 .about-text h2 {
@@ -664,8 +693,8 @@ a:hover {
 /* Desktop layout - only apply on screens wider than 768px */
 @media (min-width: 769px) {
     .product-detail-content {
-        grid-template-columns: minmax(300px, 500px) 1fr;
-        gap: 4rem;
+    grid-template-columns: minmax(300px, 500px) 1fr;
+    gap: 4rem;
     }
 }
 
@@ -887,11 +916,6 @@ a:hover {
 
 .hero-title {
     font-size: 2.5rem;
-}
-
-.about-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
 }
 
 .filter-options {
@@ -2204,6 +2228,13 @@ uct Price Preview in Cards */
     right: 0;
     bottom: 0;
     z-index: -2;
+    /* Performance optimizations */
+    will-change: opacity;
+    transform: translateZ(0); /* Force GPU acceleration */
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
 }
 
 /* Mobile responsive slideshow controls */

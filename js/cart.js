@@ -197,7 +197,7 @@ class ShoppingCart {
 
         // Ensure ID is consistent (string comparison)
         const existingItem = this.items.find(item => item.id == product.id);
-
+        
         if (existingItem) {
             existingItem.quantity += quantity;
         } else {
@@ -296,7 +296,7 @@ class ShoppingCart {
         notification.className = `notification ${type}`;
         notification.textContent = message;
         document.body.appendChild(notification);
-
+        
         // Force reflow
         notification.offsetHeight;
 
@@ -304,9 +304,9 @@ class ShoppingCart {
             notification.classList.add('show');
         });
 
-        setTimeout(() => {
-            notification.classList.remove('show');
-            setTimeout(() => notification.remove(), 300);
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
 }

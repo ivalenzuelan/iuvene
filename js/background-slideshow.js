@@ -19,6 +19,8 @@ class BackgroundSlideshow {
         this.displayDuration = 5000; // 5 seconds per image
         this.heroElement = null;
         this.isInitialized = false;
+        this.loadedImages = new Set(); // Track loaded images
+        this.preloadQueue = []; // Queue for progressive loading
     }
 
     // Initialize the slideshow
@@ -31,11 +33,14 @@ class BackgroundSlideshow {
 
         console.log('🎬 Initializing background slideshow with', this.images.length, 'images');
 
-        // Preload all images for smooth transitions
-        this.preloadImages();
+        // Load first image immediately for fast initial display
+        this.preloadImage(0, true);
 
         // Set initial background
         this.setBackground(0);
+
+        // Preload next images progressively (not all at once)
+        this.preloadNextImages(1, 2); // Preload next 2 images
 
         // Start the slideshow
         this.start();
@@ -46,22 +51,60 @@ class BackgroundSlideshow {
         this.isInitialized = true;
     }
 
-    // Preload all images for smooth transitions
-    preloadImages() {
-        console.log('📸 Preloading background images...');
+    // Preload a single image
+    preloadImage(index, immediate = false) {
+        if (index < 0 || index >= this.images.length) return;
 
-        this.images.forEach((src, index) => {
+        const src = this.images[index];
+        if (!src) return;
+
+        // Check if already loaded
+        if (this.loadedImages && this.loadedImages.has(src)) {
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve, reject) => {
             const img = new Image();
+            
             img.onload = () => {
+                if (!this.loadedImages) this.loadedImages = new Set();
+                this.loadedImages.add(src);
                 console.log(`✅ Preloaded image ${index + 1}/${this.images.length}: ${src.split('/').pop()}`);
+                resolve(img);
             };
+            
             img.onerror = () => {
                 console.warn(`❌ Failed to load image: ${src}`);
                 // Remove failed image from array
-                this.images.splice(this.images.indexOf(src), 1);
+                const indexToRemove = this.images.indexOf(src);
+                if (indexToRemove > -1) {
+                    this.images.splice(indexToRemove, 1);
+                }
+                reject(new Error(`Failed to load: ${src}`));
             };
+            
             img.src = src;
         });
+    }
+
+    // Preload next N images progressively
+    preloadNextImages(startIndex, count = 2) {
+        if (!('requestIdleCallback' in window)) {
+            // Fallback for browsers without requestIdleCallback
+            for (let i = 0; i < count; i++) {
+                const index = (startIndex + i) % this.images.length;
+                setTimeout(() => this.preloadImage(index), i * 500);
+            }
+            return;
+        }
+
+        // Use requestIdleCallback for non-critical image loading
+        requestIdleCallback(() => {
+            for (let i = 0; i < count; i++) {
+                const index = (startIndex + i) % this.images.length;
+                this.preloadImage(index);
+            }
+        }, { timeout: 2000 });
     }
 
     // Set background image with smooth transition
@@ -69,6 +112,20 @@ class BackgroundSlideshow {
         if (!this.heroElement || !this.images[index]) return;
 
         const imageUrl = this.images[index];
+
+        // Check if image is loaded, if not, wait for it
+        const isLoaded = this.loadedImages && this.loadedImages.has(imageUrl);
+        
+        if (!isLoaded) {
+            // If image not loaded yet, preload it first
+            this.preloadImage(index, true).then(() => {
+                this.setBackground(index);
+            }).catch(() => {
+                // If image fails, skip to next
+                this.next();
+            });
+            return;
+        }
 
         // Create new background layer for smooth transition
         const newBackground = document.createElement('div');
@@ -86,14 +143,18 @@ class BackgroundSlideshow {
             opacity: 0;
             transition: opacity ${this.transitionDuration}ms ease-in-out;
             z-index: -2;
+            will-change: opacity;
         `;
 
         this.heroElement.appendChild(newBackground);
 
+        // Force reflow to ensure transition works
+        newBackground.offsetHeight;
+
         // Fade in new background
-        setTimeout(() => {
+        requestAnimationFrame(() => {
             newBackground.style.opacity = '1';
-        }, 50);
+        });
 
         // Remove old background layers after transition
         setTimeout(() => {
@@ -131,6 +192,12 @@ class BackgroundSlideshow {
     // Go to next image
     next() {
         this.currentIndex = (this.currentIndex + 1) % this.images.length;
+        
+        // Preload upcoming images before they're needed
+        const nextIndex = (this.currentIndex + 1) % this.images.length;
+        const nextNextIndex = (this.currentIndex + 2) % this.images.length;
+        this.preloadNextImages(nextIndex, 2);
+        
         this.setBackground(this.currentIndex);
         this.updateIndicators();
     }
@@ -305,21 +372,47 @@ class BackgroundSlideshow {
     }
 }
 
+// Polyfill for requestIdleCallback (for older browsers)
+if (!window.requestIdleCallback) {
+    window.requestIdleCallback = function(callback, options) {
+        const timeout = options && options.timeout ? options.timeout : 0;
+        const start = performance.now();
+        return setTimeout(function() {
+            callback({
+                didTimeout: timeout > 0 && (performance.now() - start) > timeout,
+                timeRemaining: function() {
+                    return Math.max(0, 50 - (performance.now() - start));
+                }
+            });
+        }, 1);
+    };
+}
+
+if (!window.cancelIdleCallback) {
+    window.cancelIdleCallback = function(id) {
+        clearTimeout(id);
+    };
+}
+
 // Initialize background slideshow when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-    // Wait a bit for hero element to be ready
-    setTimeout(() => {
+    // Use requestAnimationFrame for better timing
+    requestAnimationFrame(() => {
         const slideshow = new BackgroundSlideshow();
         slideshow.init();
         // Keyboard navigation disabled (no controls)
         // slideshow.setupKeyboardNavigation();
 
-        // Handle window resize
+        // Handle window resize (debounced)
+        let resizeTimer;
         window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
             slideshow.handleResize();
-        });
+            }, 250);
+        }, { passive: true });
 
         // Expose to global scope for debugging
         window.backgroundSlideshow = slideshow;
-    }, 1000);
+    });
 });
