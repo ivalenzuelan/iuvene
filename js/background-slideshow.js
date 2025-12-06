@@ -127,9 +127,18 @@ class BackgroundSlideshow {
             return;
         }
 
+        // Detect if mobile device
+        const isMobile = window.innerWidth <= 768;
+        
         // Create new background layer for smooth transition
         const newBackground = document.createElement('div');
         newBackground.className = 'hero-background-layer';
+        
+        // Mobile-specific background sizing
+        const backgroundSize = isMobile ? 'cover' : 'cover';
+        const backgroundPosition = isMobile ? 'center center' : 'center';
+        const backgroundAttachment = isMobile ? 'scroll' : 'fixed';
+        
         newBackground.style.cssText = `
             position: absolute;
             top: 0;
@@ -137,9 +146,10 @@ class BackgroundSlideshow {
             right: 0;
             bottom: 0;
             background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('${imageUrl}');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-size: ${backgroundSize};
+            background-position: ${backgroundPosition};
+            background-attachment: ${backgroundAttachment};
+            background-repeat: no-repeat;
             opacity: 0;
             transition: opacity ${this.transitionDuration}ms ease-in-out;
             z-index: -2;
@@ -369,6 +379,20 @@ class BackgroundSlideshow {
         if (controls) {
             controls.style.display = isMobile ? 'none' : 'flex';
         }
+        
+        // Update background attachment for mobile
+        const backgroundLayers = this.heroElement.querySelectorAll('.hero-background-layer');
+        backgroundLayers.forEach(layer => {
+            if (isMobile) {
+                layer.style.backgroundAttachment = 'scroll';
+                layer.style.backgroundSize = 'cover';
+                layer.style.backgroundPosition = 'center center';
+            } else {
+                layer.style.backgroundAttachment = 'fixed';
+                layer.style.backgroundSize = 'cover';
+                layer.style.backgroundPosition = 'center';
+            }
+        });
     }
 }
 

@@ -2313,6 +2313,32 @@ uct Price Preview in Cards */
     image-rendering: crisp-edges;
 }
 
+/* Mobile-specific background image sizing */
+@media (max-width: 768px) {
+    .hero {
+        height: 100vh;
+        min-height: 100vh;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .hero-background-layer {
+        background-size: cover !important;
+        background-position: center center !important;
+        background-attachment: scroll !important;
+        background-repeat: no-repeat !important;
+        /* Ensure proper sizing on mobile */
+        min-height: 100vh !important;
+        width: 100% !important;
+        left: 0 !important;
+        right: 0 !important;
+        /* Better image scaling for mobile */
+        -webkit-background-size: cover !important;
+        -moz-background-size: cover !important;
+        -o-background-size: cover !important;
+    }
+}
+
 /* Mobile responsive slideshow controls */
 @media (max-width: 768px) {
     .slideshow-controls {
