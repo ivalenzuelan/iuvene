@@ -194,7 +194,24 @@ function setupNavigationButtons() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
-    prevBtn.addEventListener('click', () => {
+    if (!prevBtn || !nextBtn) return;
+
+    // Remove any existing event listeners by cloning the buttons
+    const newPrevBtn = prevBtn.cloneNode(true);
+    const newNextBtn = nextBtn.cloneNode(true);
+    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
+    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
+
+    // Get the new button references
+    const prev = document.getElementById('prev-btn');
+    const next = document.getElementById('next-btn');
+
+    // Previous button - stop at first image
+    prev.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Only navigate if not at first image
         if (currentImageIndex > 0) {
             currentImageIndex--;
             updateMainImage();
@@ -203,7 +220,12 @@ function setupNavigationButtons() {
         }
     });
 
-    nextBtn.addEventListener('click', () => {
+    // Next button - stop at last image
+    next.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Only navigate if not at last image
         if (currentImageIndex < productImages.length - 1) {
             currentImageIndex++;
             updateMainImage();
@@ -211,6 +233,9 @@ function setupNavigationButtons() {
             updateNavigationButtons();
         }
     });
+
+    // Initial button state update
+    updateNavigationButtons();
 }
 
 // Update navigation button states
@@ -218,8 +243,35 @@ function updateNavigationButtons() {
     const prevBtn = document.getElementById('prev-btn');
     const nextBtn = document.getElementById('next-btn');
 
-    prevBtn.disabled = currentImageIndex === 0;
-    nextBtn.disabled = currentImageIndex === productImages.length - 1;
+    if (!prevBtn || !nextBtn) return;
+
+    // Disable previous button at first image
+    const isFirst = currentImageIndex === 0;
+    prevBtn.disabled = isFirst;
+    prevBtn.setAttribute('aria-disabled', isFirst);
+    if (isFirst) {
+        prevBtn.style.opacity = '0.5';
+        prevBtn.style.cursor = 'not-allowed';
+        prevBtn.style.pointerEvents = 'none';
+    } else {
+        prevBtn.style.opacity = '1';
+        prevBtn.style.cursor = 'pointer';
+        prevBtn.style.pointerEvents = 'auto';
+    }
+
+    // Disable next button at last image
+    const isLast = currentImageIndex === productImages.length - 1;
+    nextBtn.disabled = isLast;
+    nextBtn.setAttribute('aria-disabled', isLast);
+    if (isLast) {
+        nextBtn.style.opacity = '0.5';
+        nextBtn.style.cursor = 'not-allowed';
+        nextBtn.style.pointerEvents = 'none';
+    } else {
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+        nextBtn.style.pointerEvents = 'auto';
+    }
 }
 
 // Initialize page
