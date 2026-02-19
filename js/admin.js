@@ -604,24 +604,18 @@ async function handleImageFiles(files) {
 function resetProductForm() {
     state.editingId = null;
     state.currentImages = [];
+    state.currentProductCollectionId = null;
     state.modalBaseline = '';
     state.modalDirty = false;
     state.uploadingImages = false;
 
     elements.productForm.reset();
-    clearDynamicSelectOptions();
     elements.productId.value = '';
     elements.productStatus.value = '';
     elements.productDashboard.checked = true;
     elements.productFeatured.checked = false;
     elements.productSoldOut.checked = false;
 
-    const collectionId = state.collections[0]?.id || FALLBACK_COLLECTION.id;
-    syncCollectionValue(collectionId);
-    setFieldSelectValue(elements.productCollection, String(collectionId), String(collectionId));
-    setFieldSelectValue(elements.productType, 'chockers', 'chockers');
-    setFieldSelectValue(elements.productCategory, 'other', 'other');
-    setFieldSelectValue(elements.productStatus, '', '');
     if (elements.imageUrlInput) {
         elements.imageUrlInput.value = '';
     }
@@ -643,19 +637,14 @@ function openModal(product = null) {
         elements.productName.value = product.name || '';
         elements.productPrice.value = Number.isFinite(Number(product.price)) ? Number(product.price) : '';
 
-        const collectionId = product.collection_id || product.collection || (state.collections[0]?.id || FALLBACK_COLLECTION.id);
-        syncCollectionValue(collectionId);
-        setFieldSelectValue(elements.productCollection, collectionId, String(state.collections[0]?.id || FALLBACK_COLLECTION.id));
-        ensureSelectOption(elements.productCategory, product.category || 'other');
-        ensureSelectOption(elements.productType, product.type || 'chockers');
+        // Preserve collection_id silently (no UI field anymore)
+        state.currentProductCollectionId = product.collection_id || product.collection || (state.collections[0]?.id || null);
+
         ensureSelectOption(elements.productStatus, product.status || '');
-        setFieldSelectValue(elements.productCategory, product.category || 'other', 'other');
-        setFieldSelectValue(elements.productType, product.type || 'chockers', 'chockers');
-        elements.productMaterial.value = product.material || '';
+        setFieldSelectValue(elements.productStatus, product.status || '', '');
         elements.productDescription.value = product.description || '';
 
         elements.productSoldOut.checked = product.sold_out === true;
-        setFieldSelectValue(elements.productStatus, product.status || '', '');
         elements.productDashboard.checked = product.show_on_dashboard !== false;
         elements.productFeatured.checked = product.featured === true;
 
@@ -700,11 +689,11 @@ function buildPayloadFromForm() {
     const payload = {
         name: elements.productName.value.trim(),
         price: Number(elements.productPrice.value),
-        collection_id: elements.productCollection.value,
-        collection: elements.productCollection.value,
-        category: elements.productCategory.value,
-        type: elements.productType.value,
-        material: elements.productMaterial.value.trim(),
+        collection_id: state.editingId ? (state.currentProductCollectionId || null) : null,
+        collection: state.editingId ? (state.currentProductCollectionId || null) : null,
+        category: 'other',
+        type: 'chockers',
+        material: '',
         description: elements.productDescription.value.trim(),
         image: primaryImage,
         images: gallery,
@@ -728,12 +717,6 @@ function validatePayload(payload) {
     if (!Number.isFinite(payload.price) || payload.price < 0) {
         showToast('El precio debe ser un número válido mayor o igual a 0.', 'error');
         elements.productPrice.focus();
-        return false;
-    }
-
-    if (!payload.collection_id) {
-        showToast('Selecciona una colección.', 'error');
-        elements.productCollection.focus();
         return false;
     }
 
