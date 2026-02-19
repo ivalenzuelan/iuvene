@@ -8,11 +8,11 @@ const SUPABASE_URL = 'https://ekjlewkhubalcdwwtmjv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVramxld2todWJhbGNkd3d0bWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NTk1NDksImV4cCI6MjA4NzAzNTU0OX0.iI2K0RY1s-tA3P2xu6IhmOch7YldfrTNw1wCzdE6o08';
 
 // Initialize Supabase Client safely
-let supabase;
+let supabaseClient;
 
 try {
     if (window.supabase) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     } else {
         console.error('❌ Supabase client not found on window object');
     }
@@ -32,8 +32,8 @@ class ProductManager {
         this.isLoaded = false;
         this.loadingPromise = null;
 
-        // Initialize only if supabase is available
-        if (supabase) {
+        // Initialize only if supabaseClient is available
+        if (supabaseClient) {
             this.init();
         } else {
             console.error('❌ ProductManager: Supabase not initialized, skipping data load');
@@ -48,7 +48,7 @@ class ProductManager {
     }
 
     async loadProducts() {
-        if (!supabase) {
+        if (!supabaseClient) {
             console.error('❌ ProductManager: Cannot load products, Supabase client missing');
             return;
         }
@@ -85,8 +85,8 @@ class ProductManager {
     async fetchFromSupabase() {
         try {
             const [productsResult, collectionsResult] = await Promise.all([
-                supabase.from('products').select('*').order('id'),
-                supabase.from('collections').select('*')
+                supabaseClient.from('products').select('*').order('id'),
+                supabaseClient.from('collections').select('*')
             ]);
 
             if (productsResult.error) throw productsResult.error;
