@@ -285,32 +285,31 @@ class ProductManager {
     }
 
     async loadProducts() {
-        // Prioritize local catalog so site edits are reflected immediately.
-        const localData = await this.fetchFromLocalSources();
-        if (localData) {
-            this.applyData(localData, 'local');
-            this.writeCache(this.products, this.collections);
-            return;
-        }
-
-        const freshCache = this.readCache();
-        if (freshCache) {
-            this.applyData(freshCache, 'cache');
-            return;
-        }
-
+        // 1. Network First: Try Supabase
         try {
             const supabaseData = await this.fetchFromSupabase();
             this.applyData(supabaseData, 'supabase');
             this.writeCache(this.products, this.collections);
+            console.log('✅ ProductManager: Loaded from Supabase');
             return;
         } catch (supabaseError) {
-            console.warn('ProductManager: Supabase load failed, trying local fallback', supabaseError);
+            console.warn('ProductManager: Supabase load failed, trying fallbacks', supabaseError);
         }
 
-        const staleCache = this.readCache({ allowExpired: true });
-        if (staleCache) {
-            this.applyData(staleCache, 'cache-stale');
+        // 2. Fallback: Cache
+        const freshCache = this.readCache({ allowExpired: true });
+        if (freshCache) {
+            this.applyData(freshCache, 'cache');
+            console.log('ProductManager: Loaded from cache (fallback)');
+            return;
+        }
+
+        // 3. Fallback: Local Sources
+        const localData = await this.fetchFromLocalSources();
+        if (localData) {
+            this.applyData(localData, 'local');
+            this.writeCache(this.products, this.collections);
+            console.log('ProductManager: Loaded from local sources (fallback)');
             return;
         }
 
