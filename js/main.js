@@ -348,7 +348,7 @@ function showNotification(message, type = 'info') {
 function observeRevealElements() {
     if (!revealObserver) return;
 
-    const targets = document.querySelectorAll('.product-card, .product-group, .section-title, .hero-content, .atelier-content, .contact-section .container');
+    const targets = document.querySelectorAll('.product-card, .section-title, .hero-content, .atelier-content, .contact-section .container');
     targets.forEach((target) => {
         target.classList.add('reveal');
         revealObserver.observe(target);

@@ -105,6 +105,28 @@ function resolveImageSrc(path) {
     return `../${value}`;
 }
 
+/**
+ * Generates an optimised Supabase Storage image URL using the built-in
+ * Image Transformation API (/render/image/public/…) which resizes and
+ * converts images to WebP on-the-fly — no extra cost, just fast.
+ *
+ * Falls back to the original URL for non-Supabase sources (local paths, etc).
+ *
+ * @param {string} src  - Raw image URL / path
+ * @param {number} width    - Target width in px (Supabase will preserve aspect ratio)
+ * @param {number} quality  - JPEG/WebP quality 1-100
+ */
+function supabaseImageUrl(src, width = 400, quality = 75) {
+    const resolved = resolveImageSrc(src);
+    // Only transform Supabase storage /object/public/ URLs
+    const SUPABASE_OBJECT_RE = /^(https:\/\/[^/]+\.supabase\.co\/storage\/v1\/)object\/(public\/.+)$/;
+    const match = resolved.match(SUPABASE_OBJECT_RE);
+    if (!match) return resolved; // local or external image — serve as-is
+
+    // Rewrite to render/image endpoint with transform params
+    return `${match[1]}render/image/${match[2]}?width=${width}&quality=${quality}&format=webp`;
+}
+
 function getCollectionById(collectionId) {
     return state.collections.find((collection) => String(collection.id) === String(collectionId)) || null;
 }
@@ -208,14 +230,14 @@ function updateModalPreview() {
     if (!elements.previewMainImage || !elements.previewGallery || !elements.previewMeta) return;
 
     const main = state.currentImages[0] || 'images/hero-background.jpg';
-    elements.previewMainImage.src = resolveImageSrc(main);
+    elements.previewMainImage.src = supabaseImageUrl(main, 600, 80);
     elements.previewMainImage.onerror = () => {
         elements.previewMainImage.src = '../images/hero-background.jpg';
     };
 
     const gallery = state.currentImages.slice(0, 4);
     elements.previewGallery.innerHTML = gallery.map((src) => (
-        `<img src="${escapeHtml(resolveImageSrc(src))}" alt="Vista previa imagen">`
+        `<img src="${escapeHtml(supabaseImageUrl(src, 300, 75))}" alt="Vista previa imagen">`
     )).join('');
 
     const name = elements.productName.value.trim() || 'Sin nombre';
@@ -405,7 +427,7 @@ function renderProducts() {
                 <div class="product-image-wrap">
                     ${mainBadge}
                     ${hiddenBadge}
-                    <img src="${escapeHtml(resolveImageSrc(product.image))}" class="product-img" alt="${escapeHtml(product.name || 'Producto')}" onerror="this.src='../images/hero-background.jpg'">
+                    <img src="${escapeHtml(supabaseImageUrl(product.image, 400, 75))}" class="product-img" alt="${escapeHtml(product.name || 'Producto')}" loading="lazy" onerror="this.src='../images/hero-background.jpg'">
                 </div>
                 <div class="product-content">
                     <h3 class="product-name">${escapeHtml(product.name || 'Sin nombre')}</h3>
@@ -458,7 +480,7 @@ function renderImageManagerGrid() {
         const isCover = index === 0;
         return `
             <div class="img-thumbnail-card" draggable="true" data-index="${index}">
-                <img src="${escapeHtml(resolveImageSrc(src))}" loading="lazy">
+                <img src="${escapeHtml(supabaseImageUrl(src, 240, 75))}" loading="lazy">
                 <div class="cover-badge">PORTADA</div>
                 <div class="img-actions">
                     ${!isCover ? `
