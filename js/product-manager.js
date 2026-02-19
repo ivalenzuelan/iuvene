@@ -7,7 +7,18 @@
 const SUPABASE_URL = 'https://ekjlewkhubalcdwwtmjv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVramxld2todWJhbGNkd3d0bWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NTk1NDksImV4cCI6MjA4NzAzNTU0OX0.iI2K0RY1s-tA3P2xu6IhmOch7YldfrTNw1wCzdE6o08';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Initialize Supabase Client safely
+let supabase;
+
+try {
+    if (window.supabase) {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    } else {
+        console.error('❌ Supabase client not found on window object');
+    }
+} catch (e) {
+    console.error('❌ Error initializing Supabase client:', e);
+}
 
 class ProductManager {
     constructor() {
@@ -21,8 +32,12 @@ class ProductManager {
         this.isLoaded = false;
         this.loadingPromise = null;
 
-        // Initialize
-        this.init();
+        // Initialize only if supabase is available
+        if (supabase) {
+            this.init();
+        } else {
+            console.error('❌ ProductManager: Supabase not initialized, skipping data load');
+        }
     }
 
     async init() {
@@ -33,6 +48,10 @@ class ProductManager {
     }
 
     async loadProducts() {
+        if (!supabase) {
+            console.error('❌ ProductManager: Cannot load products, Supabase client missing');
+            return;
+        }
         try {
             console.log('🎯 ProductManager: Loading products from Supabase...');
 
@@ -42,6 +61,7 @@ class ProductManager {
             const now = Date.now();
 
             if (cachedData && (now - (cacheTimestamp || 0) < 300000)) {
+                // ... (rest of caching logic)
                 const data = JSON.parse(cachedData);
                 this.products = data.products;
                 this.collections = data.collections;
@@ -61,7 +81,7 @@ class ProductManager {
             this.dispatchErrorEvent(error);
         }
     }
-
+    // ... rest of class methods ...
     async fetchFromSupabase() {
         try {
             const [productsResult, collectionsResult] = await Promise.all([

@@ -33,12 +33,12 @@ async function loadProducts() {
         products = window.productManager.getAllProducts();
         collections = window.productManager.getAllCollections();
 
-                // Filter products for dashboard display (only show products with showOnDashboard: true)
-                const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
-                filteredProducts = [...dashboardProducts];
+        // Filter products for dashboard display (only show products with showOnDashboard: true)
+        const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
+        filteredProducts = [...dashboardProducts];
 
-                console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
-                displayProducts(dashboardProducts);
+        console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
+        displayProducts(dashboardProducts);
         setupCollectionNavigation();
         setupSearch();
 
@@ -907,7 +907,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.classList.add('active');
+                entry.target.classList.add('active');
                 observer.unobserve(entry.target);
             }
         });
