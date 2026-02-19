@@ -745,30 +745,7 @@ async function handleProductListClick(event) {
     }
 }
 
-function renderPreviewFromFields() {
-    const mainImage = elements.productImage.value.trim();
-    const galleryFromText = parseImageList(elements.productImages.value);
 
-    const images = Array.from(new Set([mainImage, ...galleryFromText].filter(Boolean)));
-    const main = images[0] || 'images/hero-background.jpg';
-
-    elements.imagePreview.src = resolveImageSrc(main);
-
-    elements.imageGalleryPreview.innerHTML = images.slice(0, 8).map((src) =>
-        `<img src="${escapeHtml(resolveImageSrc(src))}" alt="preview" onerror="this.src='../images/hero-background.jpg'">`
-    ).join('');
-}
-
-function handleImageFilePreview() {
-    const file = elements.productImageFile.files?.[0];
-    if (!file) {
-        renderPreviewFromFields();
-        return;
-    }
-
-    const blobUrl = URL.createObjectURL(file);
-    elements.imagePreview.src = blobUrl;
-}
 
 function exportProductsAsJson() {
     const payload = {
@@ -889,7 +866,7 @@ function cacheElements() {
     elements.productDashboard = $('p-dashboard');
     elements.productFeatured = $('p-featured');
 
-    elements.productImageFile = $('p-image-file');
+
     elements.productImage = $('p-image');
     elements.productImages = $('p-images');
 
