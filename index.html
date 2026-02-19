@@ -104,31 +104,70 @@
                         agotado o jugar con colores y formas desde cero para co-crear algo totalmente nuevo.</p>
                     <p>Para más información, déjanos tus datos y nos pondremos en contacto contigo.</p>
                 </div>
-                <form class="atelier-form">
-                    <label for="atelier-name">Nombre y apellidos</label>
-                    <input id="atelier-name" name="nombre_apellidos" type="text" required
-                        placeholder="Tu nombre completo">
+                <form class="atelier-form" id="atelier-form">
+                    <div class="atelier-form-header">
+                        <h3>Cuéntanos tu idea</h3>
+                        <p>Completa lo esencial y añade opcionales con el botón <strong>+</strong>.</p>
+                    </div>
 
-                    <label for="atelier-email">Correo electrónico</label>
-                    <input id="atelier-email" name="email" type="email" required placeholder="tu@email.com">
+                    <div class="atelier-main-grid">
+                        <div class="atelier-field">
+                            <label for="atelier-name">Nombre y apellidos *</label>
+                            <input id="atelier-name" name="nombre_apellidos" type="text" required
+                                placeholder="Tu nombre completo">
+                        </div>
+                        <div class="atelier-field">
+                            <label for="atelier-contact">¿Cómo prefieres que te contactemos? *</label>
+                            <input id="atelier-contact" name="contact_preference" type="text" required
+                                placeholder="Teléfono o correo electrónico">
+                        </div>
+                    </div>
 
-                    <label for="atelier-phone">Teléfono / WhatsApp</label>
-                    <input id="atelier-phone" name="phone" type="tel" required placeholder="+34 600 000 000">
+                    <button type="button" class="atelier-add-optional" id="atelier-toggle-optional">
+                        <span aria-hidden="true">+</span>
+                        Añadir campos opcionales
+                    </button>
 
-                    <label for="atelier-event">¿Cuándo es tu evento u ocasión especial?</label>
-                    <input id="atelier-event" name="fecha_evento" type="date" required>
+                    <div class="atelier-optional-wrap" id="atelier-optional-wrap" hidden>
+                        <div class="atelier-main-grid">
+                            <div class="atelier-field">
+                                <label for="atelier-event">¿Cuándo es tu evento u ocasión especial?</label>
+                                <input id="atelier-event" name="fecha_evento" type="date">
+                            </div>
+                            <div class="atelier-field">
+                                <label for="atelier-product">¿Te gusta algún producto similar?</label>
+                                <select id="atelier-product" name="related_product">
+                                    <option value="">-- Selecciona un producto (opcional) --</option>
+                                    <!-- Options populated via JS -->
+                                </select>
+                            </div>
+                            <div class="atelier-field">
+                                <label for="atelier-email">Correo electrónico (opcional)</label>
+                                <input id="atelier-email" name="email" type="email" placeholder="tu@email.com">
+                            </div>
+                            <div class="atelier-field">
+                                <label for="atelier-phone">Teléfono / WhatsApp (opcional)</label>
+                                <input id="atelier-phone" name="phone" type="tel" placeholder="+34 600 000 000">
+                            </div>
+                        </div>
 
-                    <label for="atelier-product">¿Te gusta algún producto similar?</label>
-                    <select id="atelier-product" name="related_product">
-                        <option value="">-- Selecciona un producto (Opcional) --</option>
-                        <!-- Options populated via JS -->
-                    </select>
+                        <div class="atelier-field">
+                            <label for="atelier-details">Cuéntanos tu idea o detalles</label>
+                            <textarea id="atelier-details" name="details" rows="4"
+                                placeholder="Describe lo que tienes en mente..."></textarea>
+                        </div>
 
-                    <label for="atelier-details">Cuéntanos tu idea o detalles</label>
-                    <textarea id="atelier-details" name="details" rows="4"
-                        placeholder="Describe lo que tienes en mente..."></textarea>
+                        <div class="atelier-extra-builder">
+                            <div class="atelier-extra-header">
+                                <p>Campos opcionales personalizados</p>
+                                <button type="button" class="atelier-add-row" id="atelier-add-row">+ Campo</button>
+                            </div>
+                            <div class="atelier-extra-rows" id="atelier-extra-rows"></div>
+                        </div>
+                    </div>
 
                     <button type="submit" class="atelier-submit">Quiero diseñar mi pieza</button>
+                    <p class="atelier-note">* Campos necesarios para poder contactarte.</p>
                 </form>
             </div>
         </div>

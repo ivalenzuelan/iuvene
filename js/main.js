@@ -417,19 +417,79 @@ function initializePage() {
 }
 
 function setupAtelierForm() {
-    const form = document.querySelector('.atelier-form');
+    const form = document.getElementById('atelier-form') || document.querySelector('.atelier-form');
     if (!form) return;
 
-    // Populate Product Select
     const productSelect = document.getElementById('atelier-product');
+    const optionalWrap = document.getElementById('atelier-optional-wrap');
+    const toggleOptionalBtn = document.getElementById('atelier-toggle-optional');
+    const addOptionalRowBtn = document.getElementById('atelier-add-row');
+    const optionalRows = document.getElementById('atelier-extra-rows');
+
+    const defaultToggleText = 'Añadir campos opcionales';
+    const openedToggleText = 'Ocultar campos opcionales';
+
+    const createOptionalRow = (label = '', value = '') => {
+        const row = document.createElement('div');
+        row.className = 'atelier-extra-row';
+        row.innerHTML = `
+            <input type="text" name="extra_label[]" placeholder="Nombre del campo (ej. Color)" value="${label}">
+            <input type="text" name="extra_value[]" placeholder="Valor" value="${value}">
+            <button type="button" class="atelier-remove-row" aria-label="Eliminar campo">×</button>
+        `;
+        return row;
+    };
+
+    const ensureSupabaseClient = () => {
+        if (window.supabaseClient) return window.supabaseClient;
+        if (window.productManager && window.productManager.supabaseClient) {
+            window.supabaseClient = window.productManager.supabaseClient;
+        }
+        return window.supabaseClient || null;
+    };
+
+    if (toggleOptionalBtn && optionalWrap) {
+        toggleOptionalBtn.addEventListener('click', () => {
+            const isOpen = !optionalWrap.hidden;
+            optionalWrap.hidden = isOpen;
+            toggleOptionalBtn.classList.toggle('is-open', !isOpen);
+            toggleOptionalBtn.innerHTML = `<span aria-hidden="true">+</span> ${isOpen ? defaultToggleText : openedToggleText}`;
+        });
+    }
+
+    if (addOptionalRowBtn && optionalRows) {
+        addOptionalRowBtn.addEventListener('click', () => {
+            optionalRows.appendChild(createOptionalRow());
+        });
+        optionalRows.addEventListener('click', (event) => {
+            const removeBtn = event.target.closest('.atelier-remove-row');
+            if (!removeBtn) return;
+            const row = removeBtn.closest('.atelier-extra-row');
+            if (row) row.remove();
+        });
+    }
+
     if (productSelect && window.productManager) {
-        // Wait for products to load if needed
         const populate = () => {
-            const products = window.productManager.getAllProducts();
-            products.forEach(p => {
+            const initialOption = productSelect.querySelector('option');
+            productSelect.innerHTML = '';
+            if (initialOption) {
+                productSelect.appendChild(initialOption);
+            } else {
                 const option = document.createElement('option');
-                option.value = p.name; // Storing name is easier for now, or ID
-                option.textContent = p.name;
+                option.value = '';
+                option.textContent = '-- Selecciona un producto (opcional) --';
+                productSelect.appendChild(option);
+            }
+
+            const products = window.productManager.getAllProducts();
+            const names = Array.from(new Set(products.map((product) => product.name).filter(Boolean)))
+                .sort((a, b) => a.localeCompare(b, 'es'));
+
+            names.forEach((name) => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
                 productSelect.appendChild(option);
             });
         };
@@ -437,39 +497,112 @@ function setupAtelierForm() {
         if (window.productManager.isLoaded) {
             populate();
         } else {
-            window.addEventListener('products:ready', populate);
+            window.addEventListener('products:ready', populate, { once: true });
         }
     }
 
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
         const submitBtn = form.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
         submitBtn.textContent = 'Enviando...';
 
         const formData = new FormData(form);
-        const data = {
-            name: formData.get('nombre_apellidos'),
-            contact: `${formData.get('email')} | ${formData.get('phone')}`, // Legacy support
-            email: formData.get('email'),
-            phone: formData.get('phone'),
-            event_date: formData.get('fecha_evento'),
-            related_product: formData.get('related_product'),
-            details: formData.get('details'),
+        const name = (formData.get('nombre_apellidos') || '').toString().trim();
+        const preferredContact = (formData.get('contact_preference') || '').toString().trim();
+        const email = (formData.get('email') || '').toString().trim();
+        const phone = (formData.get('phone') || '').toString().trim();
+
+        if (!name || !preferredContact) {
+            showNotification('Completa nombre y contacto preferido.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+            return;
+        }
+
+        const extraLabels = formData.getAll('extra_label[]');
+        const extraValues = formData.getAll('extra_value[]');
+        const extraDetails = [];
+
+        for (let i = 0; i < Math.max(extraLabels.length, extraValues.length); i += 1) {
+            const label = (extraLabels[i] || '').toString().trim();
+            const value = (extraValues[i] || '').toString().trim();
+            if (!label && !value) continue;
+            if (label && value) {
+                extraDetails.push(`${label}: ${value}`);
+            } else if (value) {
+                extraDetails.push(value);
+            } else {
+                extraDetails.push(label);
+            }
+        }
+
+        const detailsParts = [];
+        const baseDetails = (formData.get('details') || '').toString().trim();
+        if (baseDetails) detailsParts.push(baseDetails);
+        if (extraDetails.length > 0) {
+            detailsParts.push(`Campos opcionales:\n${extraDetails.join('\n')}`);
+        }
+
+        const fullPayload = {
+            name,
+            contact: preferredContact,
+            email: email || null,
+            phone: phone || null,
+            event_date: (formData.get('fecha_evento') || '').toString() || null,
+            related_product: (formData.get('related_product') || '').toString() || null,
+            details: detailsParts.join('\n\n') || null,
             status: 'new'
         };
 
         try {
-            if (window.productManager && window.supabaseClient) {
-                const { error } = await window.supabaseClient.from('atelier_requests').insert(data);
-                if (error) throw error;
-
-                showNotification('¡Solicitud enviada! Te contactaremos pronto.', 'success');
-                form.reset();
-            } else {
+            const supabase = ensureSupabaseClient();
+            if (!supabase) {
                 console.error('Supabase client not ready');
                 showNotification('Error de conexión. Inténtalo más tarde.', 'error');
+                return;
+            }
+
+            let insertError = null;
+            const payloadVariants = [
+                fullPayload,
+                {
+                    name: fullPayload.name,
+                    contact: fullPayload.contact,
+                    event_date: fullPayload.event_date,
+                    related_product: fullPayload.related_product,
+                    details: fullPayload.details,
+                    status: fullPayload.status
+                },
+                {
+                    name: fullPayload.name,
+                    contact: fullPayload.contact,
+                    details: fullPayload.details,
+                    status: fullPayload.status
+                }
+            ];
+
+            for (const payload of payloadVariants) {
+                const { error } = await supabase.from('atelier_requests').insert(payload);
+                if (!error) {
+                    insertError = null;
+                    break;
+                }
+                insertError = error;
+            }
+
+            if (insertError) {
+                throw insertError;
+            }
+
+            showNotification('¡Solicitud enviada! Te contactaremos pronto.', 'success');
+            form.reset();
+            if (optionalRows) optionalRows.innerHTML = '';
+            if (optionalWrap && toggleOptionalBtn) {
+                optionalWrap.hidden = true;
+                toggleOptionalBtn.classList.remove('is-open');
+                toggleOptionalBtn.innerHTML = `<span aria-hidden="true">+</span> ${defaultToggleText}`;
             }
         } catch (error) {
             console.error('Atelier error:', error);

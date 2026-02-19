@@ -2617,13 +2617,15 @@ body {
 }
 
 .atelier-section {
-    padding: 4.5rem 0;
-    background: #f8f6f2;
+    padding: 4.8rem 0;
+    background:
+        radial-gradient(circle at 90% 10%, rgba(139, 115, 85, 0.12), transparent 45%),
+        #f8f6f2;
 }
 
 .atelier-content {
     display: grid;
-    grid-template-columns: 1.25fr 1fr;
+    grid-template-columns: 1.2fr 1fr;
     gap: 2rem;
     align-items: start;
 }
@@ -2634,46 +2636,198 @@ body {
 }
 
 .atelier-form {
-    background: #ffffff;
-    border-radius: 14px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background: linear-gradient(180deg, #ffffff 0%, #fdfbf8 100%);
+    border-radius: 18px;
+    padding: 1.6rem;
+    box-shadow: 0 16px 40px rgba(28, 19, 10, 0.12);
+    border: 1px solid #ece3d7;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
 }
 
-.atelier-form label {
-    font-weight: 600;
-    color: #2c2c2c;
+.atelier-form-header h3 {
+    margin-bottom: 0.35rem;
+    font-size: 1.35rem;
+}
+
+.atelier-form-header p {
+    margin: 0;
+    color: #6f6558;
     font-size: 0.95rem;
 }
 
-.atelier-form input {
-    border: 1px solid #d8d8d8;
-    border-radius: 8px;
-    padding: 0.8rem 0.95rem;
-    font-size: 1rem;
+.atelier-main-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
 }
 
-.atelier-form input:focus {
+.atelier-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.atelier-field label {
+    font-weight: 600;
+    color: #2c2c2c;
+    font-size: 0.9rem;
+}
+
+.atelier-field input,
+.atelier-field select,
+.atelier-field textarea {
+    border: 1px solid #d7ccbe;
+    border-radius: 10px;
+    padding: 0.8rem 0.95rem;
+    font-size: 0.98rem;
+    background: #fff;
+    color: #2c2c2c;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.atelier-field textarea {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.atelier-field input:focus,
+.atelier-field select:focus,
+.atelier-field textarea:focus {
     border-color: #8b7355;
+    box-shadow: 0 0 0 3px rgba(139, 115, 85, 0.12);
     outline: none;
 }
 
-.atelier-submit {
-    margin-top: 0.4rem;
-    border: none;
-    border-radius: 8px;
-    padding: 0.9rem 1.1rem;
+.atelier-add-optional {
+    border: 1px solid #d8cab6;
+    border-radius: 999px;
+    padding: 0.65rem 1rem;
+    background: #f6efe5;
+    color: #4b3e2f;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    width: fit-content;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.atelier-add-optional span {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: #8b7355;
     color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.atelier-add-optional:hover {
+    background: #efe4d6;
+}
+
+.atelier-add-optional.is-open {
+    background: #e8dbc9;
+    border-color: #bfa98f;
+}
+
+.atelier-optional-wrap {
+    border: 1px solid #e4d8c8;
+    border-radius: 14px;
+    padding: 1rem;
+    background: #fffdfa;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.atelier-extra-builder {
+    border-top: 1px solid #ebdfcf;
+    padding-top: 0.9rem;
+}
+
+.atelier-extra-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    margin-bottom: 0.7rem;
+}
+
+.atelier-extra-header p {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #5f5346;
+}
+
+.atelier-add-row {
+    border: 1px solid #d8cab6;
+    border-radius: 999px;
+    background: #fff;
+    color: #5a4a39;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
 }
 
+.atelier-extra-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.atelier-extra-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 0.5rem;
+}
+
+.atelier-extra-row input {
+    border: 1px solid #d7ccbe;
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    font-size: 0.92rem;
+}
+
+.atelier-remove-row {
+    border: 1px solid #dec5b1;
+    border-radius: 10px;
+    background: #fff6f2;
+    color: #b74825;
+    width: 38px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.atelier-submit {
+    margin-top: 0.2rem;
+    border: none;
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    background: linear-gradient(120deg, #8b7355, #6f5d48);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
 .atelier-submit:hover {
-    background: #715d43;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(90, 63, 35, 0.26);
+}
+
+.atelier-note {
+    margin: 0;
+    color: #796a59;
+    font-size: 0.84rem;
 }
 
 .contact-section {
@@ -2702,6 +2856,10 @@ body {
     .atelier-content {
         grid-template-columns: 1fr;
     }
+
+    .atelier-main-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 768px) {
@@ -2711,5 +2869,18 @@ body {
 
     .section-header {
         margin-bottom: 1.5rem;
+    }
+
+    .atelier-form {
+        padding: 1.1rem;
+    }
+
+    .atelier-extra-row {
+        grid-template-columns: 1fr;
+    }
+
+    .atelier-remove-row {
+        width: 100%;
+        padding: 0.55rem;
     }
 }
