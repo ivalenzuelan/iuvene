@@ -1164,7 +1164,7 @@ async function loadAtelier() {
                     <span class="status-badge status-${normalizeText(req.status)}">${escapeHtml(req.status)}</span>
                 </div>
 
-                <div style="display:grid; gap:0.5rem; font-size:0.95rem; margin-bottom:1rem;">
+                    <div><strong>Preferencia Contacto:</strong> ${escapeHtml(req.contact)}</div>
                     <div><strong>Email:</strong> ${escapeHtml(req.email || '-')}</div>
                     <div><strong>Teléfono:</strong> ${escapeHtml(req.phone || '-')}</div>
                     <div><strong>Fecha Evento:</strong> ${escapeHtml(req.event_date || 'No especificada')}</div>
