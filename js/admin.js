@@ -183,22 +183,11 @@ function ensureSelectOption(selectElement, value, label = value) {
     selectElement.appendChild(option);
 }
 
-function syncCollectionValue(collectionId) {
-    const current = String(collectionId || '').trim();
-    if (!current) return;
-
-    const hasOption = Array.from(elements.productCollection.options).some((opt) => opt.value === current);
-    if (hasOption) return;
-
-    const option = document.createElement('option');
-    option.value = current;
-    option.textContent = `${current} (actual)`;
-    option.dataset.dynamic = 'true';
-    elements.productCollection.appendChild(option);
-}
+// No-op: collection field removed from form
+function syncCollectionValue(_collectionId) { }
 
 function clearDynamicSelectOptions() {
-    const selects = [elements.productCollection, elements.productCategory, elements.productType, elements.productStatus];
+    const selects = [elements.productStatus];
     selects.filter(Boolean).forEach((select) => {
         Array.from(select.querySelectorAll('option[data-dynamic="true"]')).forEach((option) => option.remove());
     });
@@ -231,7 +220,6 @@ function updateModalPreview() {
 
     const name = elements.productName.value.trim() || 'Sin nombre';
     const price = Number(elements.productPrice.value);
-    const type = elements.productType.value || '-';
     const status = elements.productSoldOut.checked
         ? 'AGOTADO'
         : (elements.productStatus.value || 'ACTIVO');
@@ -239,7 +227,7 @@ function updateModalPreview() {
     elements.previewMeta.innerHTML = [
         `<div><strong>${escapeHtml(name)}</strong></div>`,
         `<div>${escapeHtml(Number.isFinite(price) ? formatPrice(price) : '€0')}</div>`,
-        `<div>${escapeHtml(type)} · ${escapeHtml(status)}</div>`,
+        `<div>${escapeHtml(status)}</div>`,
         `<div>${state.currentImages.length} imagen${state.currentImages.length === 1 ? '' : 'es'}</div>`
     ].join('');
 }
@@ -274,25 +262,15 @@ function isModalOpen() {
 
 function renderCollectionOptions() {
     const list = state.collections.length > 0 ? state.collections : [FALLBACK_COLLECTION];
-    const currentProductCollection = elements.productCollection?.value || '';
     const currentFilterCollection = elements.filterCollection?.value || 'all';
 
     const optionsHtml = list
         .map((collection) => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.name)}</option>`)
         .join('');
 
-    elements.productCollection.innerHTML = optionsHtml;
-
+    // Update only the filter dropdown (product form no longer has a collection field)
     elements.filterCollection.innerHTML =
-        '<option value="all">Todas</option>' +
-        list.map((collection) => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.name)}</option>`).join('');
-
-    if (currentProductCollection) {
-        syncCollectionValue(currentProductCollection);
-        setFieldSelectValue(elements.productCollection, currentProductCollection, String(list[0]?.id || FALLBACK_COLLECTION.id));
-    } else {
-        setFieldSelectValue(elements.productCollection, String(list[0]?.id || FALLBACK_COLLECTION.id));
-    }
+        '<option value="all">Todas</option>' + optionsHtml;
 
     setFieldSelectValue(elements.filterCollection, currentFilterCollection, 'all');
 }
@@ -1280,10 +1258,7 @@ function bindModalEvents() {
     const watchFields = [
         elements.productName,
         elements.productPrice,
-        elements.productCollection,
-        elements.productCategory,
-        elements.productType,
-        elements.productMaterial,
+
         elements.productDescription,
         elements.productStatus,
         elements.productSoldOut,
