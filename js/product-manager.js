@@ -6,7 +6,7 @@
 const SUPABASE_URL = 'https://ekjlewkhubalcdwwtmjv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVramxld2todWJhbGNkd3d0bWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NTk1NDksImV4cCI6MjA4NzAzNTU0OX0.iI2K0RY1s-tA3P2xu6IhmOch7YldfrTNw1wCzdE6o08';
 
-const CACHE_KEY = 'iuvene-products-cache-v2';
+const CACHE_KEY = 'iuvene-products-cache-v3';
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const LOCAL_DATA_SOURCES = [
     'data/products-custom.json',

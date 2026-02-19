@@ -550,14 +550,20 @@ async function initializeProductPage() {
     try {
         await loadProducts();
 
+        console.log('ProductDetail: Products loaded:', products.length);
+
         const productId = getProductIdFromUrl();
+        console.log('ProductDetail: Looking for ID:', productId);
+
         const product = findProductById(productId);
 
         if (!product) {
+            console.error('ProductDetail: Product not found. Available IDs:', products.map(p => p.id));
             showErrorMessage('Producto no encontrado. Redirigiendo...', true);
             return;
         }
 
+        console.log('ProductDetail: Rendering product:', product);
         renderProduct(product);
     } catch (error) {
         console.error('ProductDetail: failed to initialize', error);
