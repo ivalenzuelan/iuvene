@@ -154,12 +154,7 @@ function createProductCard(product) {
     return card;
 }
 
-function updateProductCount(count) {
-    const countElement = document.getElementById('product-count');
-    if (!countElement) return;
 
-    countElement.textContent = `Mostrando ${count} producto${count === 1 ? '' : 's'}`;
-}
 
 function renderEmptyState() {
     if (!productsRoot) return;
@@ -216,8 +211,6 @@ function renderGroupedProducts(products) {
     });
 
     productsRoot.replaceChildren(fragment);
-    updateProductCount(products.length);
-
     window.dispatchEvent(new CustomEvent('products:rendered', {
         detail: { count: products.length }
     }));
