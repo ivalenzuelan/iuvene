@@ -1,7 +1,13 @@
 /**
  * Product Manager
- * Centralizes product loading, caching, and retrieval.
+ * Centralizes product loading, caching, and retrieval from Supabase.
  */
+
+// Initialize Supabase Client
+const SUPABASE_URL = 'https://ekjlewkhubalcdwwtmjv.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVramxld2todWJhbGNkd3d0bWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NTk1NDksImV4cCI6MjA4NzAzNTU0OX0.iI2K0RY1s-tA3P2xu6IhmOch7YldfrTNw1wCzdE6o08';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 class ProductManager {
     constructor() {
@@ -28,80 +34,72 @@ class ProductManager {
 
     async loadProducts() {
         try {
-            console.log('🎯 ProductManager: Loading products...');
+            console.log('🎯 ProductManager: Loading products from Supabase...');
 
-            // 1. Try custom products
-            try {
-                const response = await fetch('data/products-custom.json?v=' + Date.now());
-                if (response.ok) {
-                    const data = await response.json();
-                    this.products = data.products || [];
-                    this.collections = data.collections || [];
-                    this.isLoaded = true;
-                    this.dispatchReadyEvent();
-                    console.log('✅ ProductManager: Loaded custom products');
-                    return;
-                }
-            } catch (e) {
-                console.log('⚠️ ProductManager: Custom products not found');
-            }
-
-            // 2. Try automatic scanner (if available globally)
-            if (window.CollectionScanner) {
-                try {
-                    const scanner = new CollectionScanner();
-                    const data = await scanner.scanCollections();
-                    if (data && data.products && data.products.length > 0) {
-                        this.products = data.products;
-                        this.collections = data.collections;
-                        this.isLoaded = true;
-                        this.dispatchReadyEvent();
-                        console.log('✅ ProductManager: Loaded scanned products');
-                        return;
-                    }
-                } catch (e) {
-                    console.error('⚠️ ProductManager: Scanner failed', e);
-                }
-            }
-
-            // 3. Check Cache
-            const cachedData = localStorage.getItem('iuvene-products');
-            const cacheTimestamp = localStorage.getItem('iuvene-products-timestamp');
+            // 1. Check Cache (5 min TTL) implementation remains for perf
+            const cachedData = localStorage.getItem('iuvene-products-supa');
+            const cacheTimestamp = localStorage.getItem('iuvene-products-supa-timestamp');
             const now = Date.now();
 
-            if (cachedData && (now - (cacheTimestamp || 0) < 300000)) { // 5 min cache
+            if (cachedData && (now - (cacheTimestamp || 0) < 300000)) {
                 const data = JSON.parse(cachedData);
                 this.products = data.products;
                 this.collections = data.collections;
                 this.isLoaded = true;
                 this.dispatchReadyEvent();
                 console.log('✅ ProductManager: Loaded cached products');
+                // Background refresh
+                this.fetchFromSupabase();
                 return;
             }
 
-            // 4. Fallback to main JSON
-            const response = await fetch('data/products.json?v=' + now);
-            if (response.ok) {
-                const data = await response.json();
-                this.products = data.products;
-                this.collections = data.collections;
-
-                // Update cache
-                localStorage.setItem('iuvene-products', JSON.stringify(data));
-                localStorage.setItem('iuvene-products-timestamp', now.toString());
-
-                this.isLoaded = true;
-                this.dispatchReadyEvent();
-                console.log('✅ ProductManager: Loaded JSON products');
-            } else {
-                throw new Error('Failed to load products.json');
-            }
+            // 2. Fetch from Supabase
+            await this.fetchFromSupabase();
 
         } catch (error) {
             console.error('❌ ProductManager: Error loading products', error);
-            // Fallback hardcoded data could go here if absolutely necessary
             this.dispatchErrorEvent(error);
         }
+    }
+
+    async fetchFromSupabase() {
+        try {
+            const [productsResult, collectionsResult] = await Promise.all([
+                supabase.from('products').select('*').order('id'),
+                supabase.from('collections').select('*')
+            ]);
+
+            if (productsResult.error) throw productsResult.error;
+            if (collectionsResult.error) throw collectionsResult.error;
+
+            // Transform data to match frontend expectations (camelCase)
+            this.products = productsResult.data.map(this.transformProduct);
+            this.collections = collectionsResult.data;
+
+            // Update cache
+            const cacheData = { products: this.products, collections: this.collections };
+            localStorage.setItem('iuvene-products-supa', JSON.stringify(cacheData));
+            localStorage.setItem('iuvene-products-supa-timestamp', Date.now().toString());
+
+            this.isLoaded = true;
+            this.dispatchReadyEvent();
+            console.log('✅ ProductManager: Loaded Supabase products');
+
+        } catch (error) {
+            console.error('❌ ProductManager: Supabase fetch error', error);
+            throw error;
+        }
+    }
+
+    transformProduct(p) {
+        return {
+            ...p,
+            collection: p.collection_id, // Map snake_case to camelCase
+            soldOut: p.sold_out,
+            showOnDashboard: p.show_on_dashboard,
+            // Ensure images is always an array
+            images: p.images || [p.image]
+        };
     }
 
     dispatchReadyEvent() {
@@ -124,7 +122,7 @@ class ProductManager {
     }
 
     getProductsByCollection(collectionId) {
-        return this.products.filter(p => p.collection === collectionId);
+        return this.products.filter(p => p.collection_id === collectionId);
     }
 
     getAllCollections() {

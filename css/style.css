@@ -1,8 +1,33 @@
 /* Reset and Base Styles */
+:root {
+    --primary: #8b7355;
+    --primary-light: #a08a6a;
+    --dark: #2c2c2c;
+    --light: #f8f6f3;
+    --white: #ffffff;
+    --gray: #6b6b6b;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
+    --transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+}
+
+/* Scroll Animations */
+.reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: var(--transition);
+}
+
+.reveal.active {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 html {
@@ -412,18 +437,18 @@ a:hover {
         max-width: 1200px;
         margin: 0 auto;
     }
-    
+
     .collection-card {
         height: 100%;
         display: flex;
         flex-direction: column;
     }
-    
+
     .collection-image {
         flex: 1;
         min-height: 250px;
     }
-    
+
     .collection-content {
         flex-shrink: 0;
     }
@@ -527,16 +552,16 @@ a:hover {
         grid-template-columns: 1fr 1fr;
         gap: 4rem;
     }
-    
+
     /* Reorder: Image first (left), then text (right) */
     .about-text {
         order: 2;
     }
-    
+
     .about-image {
         order: 1;
     }
-    
+
     /* Constrain image size on desktop */
     .about-image img {
         max-width: 100%;
@@ -706,15 +731,16 @@ a:hover {
 /* Desktop layout - only apply on screens wider than 768px */
 @media (min-width: 769px) {
     .product-detail-content {
-    grid-template-columns: minmax(300px, 500px) 1fr;
-    gap: 4rem;
+        grid-template-columns: minmax(300px, 500px) 1fr;
+        gap: 4rem;
     }
 }
 
 .product-images {
     max-width: 100%;
     width: 100%;
-    min-width: 0; /* Allow grid to constrain it */
+    min-width: 0;
+    /* Allow grid to constrain it */
 }
 
 .product-images .main-image {
@@ -725,7 +751,8 @@ a:hover {
     position: relative;
     max-width: 100%;
     width: 100%;
-    min-width: 0; /* Allow grid to constrain it */
+    min-width: 0;
+    /* Allow grid to constrain it */
 }
 
 .image-navigation {
@@ -897,17 +924,17 @@ a:hover {
     .nav-links {
         display: none;
     }
-    
+
     .nav-container {
         grid-template-columns: auto 1fr;
         padding: 0 15px;
     }
-    
+
     .nav-actions {
         gap: 0.5rem;
         justify-content: flex-end;
     }
-    
+
     .search-btn,
     .cart-btn {
         min-width: 44px;
@@ -917,7 +944,7 @@ a:hover {
         align-items: center;
         justify-content: center;
     }
-    
+
     .search-btn svg,
     .cart-btn svg {
         width: 20px;
@@ -954,7 +981,7 @@ a:hover {
         align-items: center;
         width: 100%;
     }
-    
+
     .product-images .main-image {
         border-radius: 8px;
         margin: 0;
@@ -1474,20 +1501,20 @@ a:hover {
         gap: 0.75rem;
         justify-content: flex-end;
     }
-    
+
     .search-btn,
     .cart-btn {
         min-width: 44px;
         min-height: 44px;
         padding: 0.75rem;
     }
-    
+
     .search-btn svg,
     .cart-btn svg {
         width: 22px;
         height: 22px;
     }
-    
+
     .cart-count {
         width: 20px;
         height: 20px;
@@ -2306,7 +2333,8 @@ uct Price Preview in Cards */
     z-index: -2;
     /* Performance optimizations */
     will-change: opacity;
-    transform: translateZ(0); /* Force GPU acceleration */
+    transform: translateZ(0);
+    /* Force GPU acceleration */
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     image-rendering: -webkit-optimize-contrast;
@@ -2321,7 +2349,7 @@ uct Price Preview in Cards */
         overflow: hidden;
         position: relative;
     }
-    
+
     .hero-background-layer {
         background-size: cover !important;
         background-position: center center !important;
@@ -2462,4 +2490,67 @@ uct Price Preview in Cards */
         width: 100%;
         border-radius: 12px;
     }
+}
+/* Premium Enhancements */
+
+/* Glassmorphism Header */
+.header {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Premium Buttons */
+.cta-button, .newsletter-btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 1rem 2rem;
+    font-family: var(--font-heading);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+    border-radius: 4px; /* Slightly rounded, not full pill for more elegance */
+}
+
+.cta-button:hover, .newsletter-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    background: var(--primary-light);
+    color: var(--white);
+}
+
+/* Product Cards Premium */
+.product-card {
+    border: none;
+    border-radius: 0; /* Sharp corners for luxury feel? Or soft? Let's go soft 4px */
+    border-radius: 4px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    background: var(--white);
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.product-image img {
+    transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.product-card:hover .product-image img {
+    transform: scale(1.08);
+}
+
+/* Typography Refinements */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--dark);
+    letter-spacing: -0.02em;
+}
+
+body {
+    color: #4a4a4a;
 }

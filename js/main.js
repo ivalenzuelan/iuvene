@@ -897,3 +897,33 @@ function updateFilterState() {
         }
     }
 }
+// Scroll Animation Observer (Premium Feel)
+document.addEventListener('DOMContentLoaded', () => {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: "0px 0px -50px 0px"
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.classList.add('active');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    const observeElements = () => {
+        document.querySelectorAll('.product-card, .collection-card, .section-title, .hero-content').forEach(el => {
+            el.classList.add('reveal');
+            observer.observe(el);
+        });
+    };
+
+    observeElements();
+
+    // Re-observe dynamic products when they load
+    window.addEventListener('products:ready', () => {
+        setTimeout(observeElements, 100);
+    });
+});
