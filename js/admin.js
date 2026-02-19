@@ -1103,10 +1103,7 @@ function cacheElements() {
     elements.productId = $('p-id');
     elements.productName = $('p-name');
     elements.productPrice = $('p-price');
-    elements.productCollection = $('p-collection');
-    elements.productCategory = $('p-category');
-    elements.productType = $('p-type');
-    elements.productMaterial = $('p-material');
+
     elements.productDescription = $('p-description');
     elements.productStatus = $('p-status');
     elements.productSoldOut = $('p-soldout');
@@ -1147,7 +1144,6 @@ function ensureRequiredElements() {
         'product-form',
         'p-name',
         'p-price',
-        'p-collection',
         'save-btn',
         'toast-root'
     ];
