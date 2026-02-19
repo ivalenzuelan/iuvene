@@ -2,7 +2,13 @@
 // Supabase Config
 const SUPABASE_URL = 'https://ekjlewkhubalcdwwtmjv.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVramxld2todWJhbGNkd3d0bWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NTk1NDksImV4cCI6MjA4NzAzNTU0OX0.iI2K0RY1s-tA3P2xu6IhmOch7YldfrTNw1wCzdE6o08';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Initialize Supabase Client safely
+let supabaseClient;
+if (window.supabase) {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} else {
+    console.error('Supabase client not loaded');
+}
 
 // State
 let products = [];
@@ -35,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Auth
 async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) {
         showDashboard();
     } else {
@@ -48,7 +54,7 @@ async function handleLogin(e) {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
 
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     if (error) {
         alert('Error: ' + error.message);
@@ -58,7 +64,7 @@ async function handleLogin(e) {
 }
 
 async function handleLogout() {
-    await supabase.auth.signOut();
+    await supabaseClient.auth.signOut();
     showLogin();
 }
 
@@ -75,7 +81,7 @@ function showDashboard() {
 
 // Data
 async function loadCollections() {
-    const { data, error } = await supabase.from('collections').select('*');
+    const { data, error } = await supabaseClient.from('collections').select('*');
     if (data) {
         collections = data;
         const select = document.getElementById('p-collection');
@@ -85,7 +91,7 @@ async function loadCollections() {
 
 async function loadProducts() {
     productsList.innerHTML = '<p>Cargando...</p>';
-    const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
+    const { data, error } = await supabaseClient.from('products').select('*').order('id', { ascending: false });
 
     if (error) {
         productsList.innerHTML = '<p>Error cargando productos.</p>';
@@ -125,7 +131,7 @@ window.editProduct = (id) => {
 window.deleteProduct = async (id) => {
     if (!confirm('¿Estás seguro de que quieres borrar este producto?')) return;
 
-    const { error } = await supabase.from('products').delete().eq('id', id);
+    const { error } = await supabaseClient.from('products').delete().eq('id', id);
     if (error) {
         alert('Error borrando: ' + error.message);
     } else {
@@ -166,7 +172,7 @@ async function handleSave(e) {
         const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
 
-        const { data, error: uploadError } = await supabase.storage
+        const { data, error: uploadError } = await supabaseClient.storage
             .from('product-images')
             .upload(filePath, file);
 
@@ -175,7 +181,7 @@ async function handleSave(e) {
             return;
         }
 
-        const { data: { publicUrl } } = supabase.storage
+        const { data: { publicUrl } } = supabaseClient.storage
             .from('product-images')
             .getPublicUrl(filePath);
 
@@ -200,13 +206,13 @@ async function handleSave(e) {
     let error;
     if (editingId) {
         // Update
-        const res = await supabase.from('products').update(newProduct).eq('id', editingId);
+        const res = await supabaseClient.from('products').update(newProduct).eq('id', editingId);
         error = res.error;
     } else {
         // Create
         // Need a random ID since we aren't using auto-increment integer.
         newProduct.id = Date.now(); // Simple timestamp ID
-        const res = await supabase.from('products').insert(newProduct);
+        const res = await supabaseClient.from('products').insert(newProduct);
         error = res.error;
     }
 
