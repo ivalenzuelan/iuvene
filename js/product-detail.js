@@ -1,781 +1,555 @@
-// Enhanced Product data management with caching and error handling
 let products = [];
-
-// Load products from local @images/@ProductsCollections manifest or JSON file with caching
-// Load products using ProductManager
-async function loadProducts() {
-    try {
-        console.log('⏳ ProductDetail: Waiting for ProductManager...');
-
-        // Ensure ProductManager is available
-        if (!window.productManager) {
-            throw new Error('ProductManager not found');
-        }
-
-        await window.productManager.init();
-        products = window.productManager.getAllProducts();
-
-        console.log('✅ ProductDetail: Products loaded:', products.length);
-
-        if (products.length === 0) {
-            console.warn('⚠️ ProductDetail: No products found');
-            showErrorMessage('No se encontraron productos.');
-            return;
-        }
-
-        loadProductDetails();
-    } catch (error) {
-        console.error('❌ ProductDetail: Error loading products:', error);
-        showErrorMessage('Error cargando el producto. Por favor recarga la página.');
-    }
-}
-
-function buildFromCollectionsManifest(manifest) {
-    const root = (manifest.root || '').replace(/\/$/, '');
-    const products = [];
-    Object.keys(manifest.collections || {}).forEach(collectionName => {
-        const productMap = manifest.collections[collectionName] || {};
-        Object.keys(productMap).forEach(productName => {
-            const imageFiles = productMap[productName] || [];
-            if (imageFiles.length === 0) return;
-            const imagePaths = imageFiles.map(fn => encodeURI(`${root}/${collectionName}/${productName}/${fn}`));
-            products.push({
-                id: Math.abs(hashString(`${collectionName}/${productName}`)),
-                name: productName,
-                material: '',
-                image: imagePaths[0],
-                images: imagePaths
-            });
-        });
-    });
-    return { products };
-}
-
-function hashString(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i), h |= 0;
-    return h;
-}
-
-function capitalizeWords(s) {
-    return s.replace(/\b\w/g, c => c.toUpperCase());
-}
-
-// Get product ID from URL
-function getProductIdFromUrl() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return parseInt(urlParams.get('id')) || 1;
-}
-
-// Global variables for image slider
-let currentImageIndex = 0;
+let currentProduct = null;
 let productImages = [];
+let currentImageIndex = 0;
 
-// Load product details
-function loadProductDetails() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id');
+let keydownHandler = null;
+let touchStartHandler = null;
+let touchEndHandler = null;
 
-    const product = products.find(p => p.id == productId);
-
-    if (!product) {
-        console.error('❌ ProductDetail: Product not found for ID:', productId);
-        showErrorMessage('Producto no encontrado.');
-        return;
-    }
-
-
-
-    // Update page title
-    document.title = `${product.name} - Iuvene`;
-
-    // Set up image slider
-    setupImageSlider(product);
-
-    // Update product information
-    document.getElementById('product-material').textContent = product.material;
-    document.getElementById('product-title').textContent = product.name;
-    document.getElementById('product-description').textContent = product.description;
-
-    // Update price
-    const priceElement = document.getElementById('product-price');
-    console.log('Price element found:', priceElement);
-    console.log('Product data:', product);
-    console.log('Product price:', product.price);
-    console.log('Product soldOut:', product.soldOut);
-
-    if (priceElement) {
-        if (product.soldOut) {
-            priceElement.textContent = 'Sold Out';
-            priceElement.className = 'product-price sold-out';
-            console.log('Set price to Sold Out');
-        } else {
-            priceElement.textContent = `$${product.price}`;
-            priceElement.className = 'product-price';
-            console.log('Set price to $' + product.price);
-        }
-    } else {
-        console.error('Price element not found!');
-    }
-
-    // Update WhatsApp link
-    const whatsappLink = document.getElementById('whatsapp-link');
-    const message = `Hi! I'm interested in ${product.name} - ${product.material}`;
-    whatsappLink.href = `https://wa.me/1234567890?text=${encodeURIComponent(message)}`;
-
-    // Update meta description for SEO
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-        metaDescription.content = `Discover the ${product.name} - ${product.material}. ${product.description}`;
-    }
+function toText(value, fallback = '') {
+    return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
 
-// Set up image slider
-function setupImageSlider(product) {
-    // Use images array if available, otherwise fallback to single image
-    productImages = product.images || [product.image];
-    currentImageIndex = 0;
+function normalizeProductId(value) {
+    const raw = String(value ?? '').trim();
+    if (!raw) return null;
 
-    // Update main image
-    updateMainImage();
-
-    // Create thumbnails
-    createThumbnails();
-
-    // Set up navigation buttons
-    setupNavigationButtons();
-
-    // Update navigation button states
-    updateNavigationButtons();
+    const num = Number(raw);
+    return Number.isFinite(num) ? num : raw;
 }
 
-// Update main image
-function updateMainImage() {
-    const productImage = document.getElementById('product-main-image');
-    const currentImage = productImages[currentImageIndex];
-
-    if (currentImage) {
-        productImage.src = currentImage;
-        productImage.alt = `Product image ${currentImageIndex + 1}`;
-    }
+function getProductIdFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    return normalizeProductId(params.get('id'));
 }
 
-// Create thumbnail gallery
-function createThumbnails() {
-    const thumbnailGallery = document.getElementById('thumbnail-gallery');
-    thumbnailGallery.innerHTML = '';
+function findProductById(productId) {
+    if (productId == null) return null;
 
-    productImages.forEach((image, index) => {
-        const thumbnail = document.createElement('div');
-        thumbnail.className = `thumbnail ${index === currentImageIndex ? 'active' : ''}`;
-        thumbnail.innerHTML = `<img src="${image}" alt="Thumbnail ${index + 1}" loading="lazy">`;
-
-        thumbnail.addEventListener('click', () => {
-            currentImageIndex = index;
-            updateMainImage();
-            updateThumbnails();
-            updateNavigationButtons();
-        });
-
-        thumbnailGallery.appendChild(thumbnail);
-    });
+    const asString = String(productId);
+    return products.find((product) => String(product.id) === asString) || null;
 }
 
-// Update thumbnail states
-function updateThumbnails() {
-    const thumbnails = document.querySelectorAll('.thumbnail');
-    thumbnails.forEach((thumbnail, index) => {
-        thumbnail.classList.toggle('active', index === currentImageIndex);
-    });
+function formatPrice(product) {
+    if (product.soldOut) return 'Agotado';
+    if (product.price == null || Number.isNaN(Number(product.price))) return 'Precio bajo consulta';
+
+    return `€${Number(product.price).toFixed(2).replace('.00', '')}`;
 }
 
-// Set up navigation buttons
-function setupNavigationButtons() {
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
+function showErrorMessage(message, redirectToHome = false) {
+    const existing = document.querySelector('.error-message-floating');
+    if (existing) existing.remove();
 
-    if (!prevBtn || !nextBtn) return;
+    const error = document.createElement('div');
+    error.className = 'error-message error-message-floating';
+    error.textContent = message;
+    error.style.position = 'fixed';
+    error.style.top = '100px';
+    error.style.right = '20px';
+    error.style.background = '#dc3545';
+    error.style.color = '#fff';
+    error.style.padding = '1rem 1.25rem';
+    error.style.borderRadius = '8px';
+    error.style.zIndex = '2000';
 
-    // Remove any existing event listeners by cloning the buttons
-    const newPrevBtn = prevBtn.cloneNode(true);
-    const newNextBtn = nextBtn.cloneNode(true);
-    prevBtn.parentNode.replaceChild(newPrevBtn, prevBtn);
-    nextBtn.parentNode.replaceChild(newNextBtn, nextBtn);
-
-    // Get the new button references
-    const prev = document.getElementById('prev-btn');
-    const next = document.getElementById('next-btn');
-
-    // Previous button - stop at first image
-    prev.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Only navigate if not at first image
-        if (currentImageIndex > 0) {
-            currentImageIndex--;
-            updateMainImage();
-            updateThumbnails();
-            updateNavigationButtons();
-        }
-    });
-
-    // Next button - stop at last image
-    next.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Only navigate if not at last image
-        if (currentImageIndex < productImages.length - 1) {
-            currentImageIndex++;
-            updateMainImage();
-            updateThumbnails();
-            updateNavigationButtons();
-        }
-    });
-
-    // Initial button state update
-    updateNavigationButtons();
-}
-
-// Update navigation button states
-function updateNavigationButtons() {
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
-
-    if (!prevBtn || !nextBtn) return;
-
-    // Disable previous button at first image
-    const isFirst = currentImageIndex === 0;
-    prevBtn.disabled = isFirst;
-    prevBtn.setAttribute('aria-disabled', isFirst);
-    if (isFirst) {
-        prevBtn.style.opacity = '0.5';
-        prevBtn.style.cursor = 'not-allowed';
-        prevBtn.style.pointerEvents = 'none';
-    } else {
-        prevBtn.style.opacity = '1';
-        prevBtn.style.cursor = 'pointer';
-        prevBtn.style.pointerEvents = 'auto';
-    }
-
-    // Disable next button at last image
-    const isLast = currentImageIndex === productImages.length - 1;
-    nextBtn.disabled = isLast;
-    nextBtn.setAttribute('aria-disabled', isLast);
-    if (isLast) {
-        nextBtn.style.opacity = '0.5';
-        nextBtn.style.cursor = 'not-allowed';
-        nextBtn.style.pointerEvents = 'none';
-    } else {
-        nextBtn.style.opacity = '1';
-        nextBtn.style.cursor = 'pointer';
-        nextBtn.style.pointerEvents = 'auto';
-    }
-}
-
-// Initialize page
-document.addEventListener('DOMContentLoaded', function () {
-    function onProductsReady(e) {
-        products = e.detail.products;
-        loadProductDetails();
-    }
-
-    window.addEventListener('products:ready', onProductsReady);
-
-    window.addEventListener('products:error', function (e) {
-        console.error('Error loading products:', e.detail.error);
-        showErrorMessage('Error cargando datos de productos.');
-    });
-
-    // Check if already loaded
-    if (window.productManager && window.productManager.isLoaded) {
-        products = window.productManager.getAllProducts();
-        loadProductDetails();
-    } else if (window.productManager) {
-        window.productManager.init().catch(console.error);
-    }
-});
-// Enhanced error handling and user feedback
-function showErrorMessage(message) {
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.textContent = message;
-    errorDiv.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #dc3545;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        z-index: 1002;
-        animation: slideInRight 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    `;
-
-    document.body.appendChild(errorDiv);
+    document.body.appendChild(error);
 
     setTimeout(() => {
-        errorDiv.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => {
-            if (document.body.contains(errorDiv)) {
-                document.body.removeChild(errorDiv);
-            }
-        }, 300);
-    }, 5000);
+        error.remove();
+        if (redirectToHome) {
+            window.location.href = 'index.html';
+        }
+    }, 2600);
 }
 
-// Enhanced image preloading
 function preloadImages(images) {
-    images.forEach(src => {
+    images.forEach((src) => {
+        if (!src) return;
         const img = new Image();
         img.src = src;
     });
 }
 
-// Enhanced image slider with keyboard navigation
-function setupImageSlider(product) {
-    // Use images array if available, otherwise fallback to single image
-    productImages = product.images || [product.image];
-    currentImageIndex = 0;
-
-    // Preload all images for better performance
-    preloadImages(productImages);
-
-    // Update main image
-    updateMainImage();
-
-    // Create thumbnails
-    createThumbnails();
-
-    // Set up navigation buttons
-    setupNavigationButtons();
-
-    // Set up keyboard navigation
-    setupKeyboardNavigation();
-
-    // Set up touch/swipe navigation
-    setupTouchNavigation();
-
-    // Update navigation button states
-    updateNavigationButtons();
-}
-
-// Keyboard navigation for image slider
-function setupKeyboardNavigation() {
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft' && currentImageIndex > 0) {
-            e.preventDefault();
-            currentImageIndex--;
-            updateMainImage();
-            updateThumbnails();
-            updateNavigationButtons();
-        } else if (e.key === 'ArrowRight' && currentImageIndex < productImages.length - 1) {
-            e.preventDefault();
-            currentImageIndex++;
-            updateMainImage();
-            updateThumbnails();
-            updateNavigationButtons();
-        }
-    });
-}
-
-// Touch/swipe navigation for mobile
-function setupTouchNavigation() {
+function updateMainImage() {
     const mainImage = document.getElementById('product-main-image');
     if (!mainImage) return;
 
-    let startX = 0;
-    let startY = 0;
-    let endX = 0;
-    let endY = 0;
+    const imageSrc = productImages[currentImageIndex];
+    if (!imageSrc) return;
 
-    mainImage.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
-    });
+    mainImage.style.opacity = '0.6';
 
-    mainImage.addEventListener('touchend', (e) => {
-        endX = e.changedTouches[0].clientX;
-        endY = e.changedTouches[0].clientY;
+    const testImage = new Image();
+    testImage.onload = () => {
+        mainImage.src = imageSrc;
+        mainImage.alt = `${currentProduct?.name || 'Producto'} - imagen ${currentImageIndex + 1}`;
+        mainImage.style.opacity = '1';
+    };
 
-        const deltaX = endX - startX;
-        const deltaY = endY - startY;
+    testImage.onerror = () => {
+        mainImage.style.opacity = '1';
+        console.warn('ProductDetail: failed to load image', imageSrc);
+    };
 
-        // Only trigger swipe if horizontal movement is greater than vertical
-        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
-            if (deltaX > 0 && currentImageIndex > 0) {
-                // Swipe right - previous image
-                currentImageIndex--;
-                updateMainImage();
-                updateThumbnails();
-                updateNavigationButtons();
-            } else if (deltaX < 0 && currentImageIndex < productImages.length - 1) {
-                // Swipe left - next image
-                currentImageIndex++;
-                updateMainImage();
-                updateThumbnails();
-                updateNavigationButtons();
-            }
-        }
+    testImage.src = imageSrc;
+}
+
+function updateNavigationButtons() {
+    const prevButton = document.getElementById('prev-btn');
+    const nextButton = document.getElementById('next-btn');
+
+    if (!prevButton || !nextButton) return;
+
+    const atFirst = currentImageIndex <= 0;
+    const atLast = currentImageIndex >= productImages.length - 1;
+
+    prevButton.disabled = atFirst;
+    nextButton.disabled = atLast;
+
+    prevButton.style.opacity = atFirst ? '0.5' : '1';
+    nextButton.style.opacity = atLast ? '0.5' : '1';
+    prevButton.style.pointerEvents = atFirst ? 'none' : 'auto';
+    nextButton.style.pointerEvents = atLast ? 'none' : 'auto';
+}
+
+function updateThumbnails() {
+    document.querySelectorAll('.thumbnail').forEach((thumbnail, index) => {
+        thumbnail.classList.toggle('active', index === currentImageIndex);
     });
 }
 
-// Enhanced image loading with error handling
-function updateMainImage() {
-    const productImage = document.getElementById('product-main-image');
-    const currentImage = productImages[currentImageIndex];
-
-    if (currentImage && productImage) {
-        // Show loading state
-        productImage.style.opacity = '0.5';
-
-        // Create new image to test loading
-        const img = new Image();
-        img.onload = () => {
-            productImage.src = currentImage;
-            productImage.alt = `Imagen del producto ${currentImageIndex + 1} de ${productImages.length}`;
-            productImage.style.opacity = '1';
-        };
-        img.onerror = () => {
-            console.error('Failed to load image:', currentImage);
-            productImage.style.opacity = '1';
-            // Could show placeholder image here
-        };
-        img.src = currentImage;
-    }
+function setImageIndex(index) {
+    if (index < 0 || index >= productImages.length) return;
+    currentImageIndex = index;
+    updateMainImage();
+    updateThumbnails();
+    updateNavigationButtons();
 }
 
-// Enhanced thumbnail creation with lazy loading
-function createThumbnails() {
-    const thumbnailGallery = document.getElementById('thumbnail-gallery');
-    if (!thumbnailGallery) return;
+function renderThumbnails() {
+    const gallery = document.getElementById('thumbnail-gallery');
+    if (!gallery) return;
 
-    thumbnailGallery.innerHTML = '';
+    const fragment = document.createDocumentFragment();
 
-    productImages.forEach((image, index) => {
-        const thumbnail = document.createElement('div');
-        thumbnail.className = `thumbnail ${index === currentImageIndex ? 'active' : ''}`;
-        thumbnail.setAttribute('role', 'button');
-        thumbnail.setAttribute('tabindex', '0');
+    productImages.forEach((src, index) => {
+        const thumbnail = document.createElement('button');
+        thumbnail.type = 'button';
+        thumbnail.className = `thumbnail${index === currentImageIndex ? ' active' : ''}`;
         thumbnail.setAttribute('aria-label', `Ver imagen ${index + 1}`);
 
-        const img = document.createElement('img');
-        img.src = image;
-        img.alt = `Miniatura ${index + 1}`;
-        img.loading = 'lazy';
+        const image = document.createElement('img');
+        image.src = src;
+        image.alt = `Miniatura ${index + 1}`;
+        image.loading = 'lazy';
 
-        thumbnail.appendChild(img);
+        thumbnail.appendChild(image);
+        thumbnail.addEventListener('click', () => setImageIndex(index));
 
-        // Click handler
-        thumbnail.addEventListener('click', () => {
-            currentImageIndex = index;
-            updateMainImage();
-            updateThumbnails();
-            updateNavigationButtons();
+        thumbnail.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            setImageIndex(index);
         });
 
-        // Keyboard handler
-        thumbnail.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                currentImageIndex = index;
-                updateMainImage();
-                updateThumbnails();
-                updateNavigationButtons();
-            }
-        });
+        fragment.appendChild(thumbnail);
+    });
 
-        thumbnailGallery.appendChild(thumbnail);
+    gallery.replaceChildren(fragment);
+}
+
+function bindGalleryButtons() {
+    const previousButton = document.getElementById('prev-btn');
+    const nextButton = document.getElementById('next-btn');
+
+    if (!previousButton || !nextButton) return;
+
+    const newPrev = previousButton.cloneNode(true);
+    const newNext = nextButton.cloneNode(true);
+
+    previousButton.parentNode.replaceChild(newPrev, previousButton);
+    nextButton.parentNode.replaceChild(newNext, nextButton);
+
+    newPrev.addEventListener('click', (event) => {
+        event.preventDefault();
+        setImageIndex(currentImageIndex - 1);
+    });
+
+    newNext.addEventListener('click', (event) => {
+        event.preventDefault();
+        setImageIndex(currentImageIndex + 1);
     });
 }
 
-// Enhanced WhatsApp integration with better message formatting
-function setupWhatsAppLink(product) {
-    const whatsappLink = document.getElementById('whatsapp-link');
-    if (!whatsappLink || !product) return;
-
-    const message = `¡Hola! Me interesa el ${product.name} en ${product.material}. 
-    
-¿Podrías darme más información sobre:
-- Disponibilidad
-- Precio: €${product.price || 'Consultar'}
-- Opciones de envío
-- Tiempo de entrega
-
-¡Gracias!`;
-
-    // You should replace this with your actual WhatsApp number
-    const phoneNumber = '34123456789'; // Replace with actual number
-    whatsappLink.href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-}
-
-// Enhanced product details loading with better error handling
-function loadProductDetails() {
-    const productId = getProductIdFromUrl();
-    const product = products.find(p => p.id === productId);
-
-    if (!product) {
-        showErrorMessage('Producto no encontrado. Redirigiendo...');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 2000);
-        return;
+function bindKeyboardNavigation() {
+    if (keydownHandler) {
+        document.removeEventListener('keydown', keydownHandler);
     }
 
-    try {
-        // Update page title and meta
-        document.title = `${product.name} - ${product.material} | Iuvene`;
-        updateMetaTags(product);
-
-        // Set up image slider
-        setupImageSlider(product);
-
-        // Update product information
-        updateProductInfo(product);
-
-        // Setup WhatsApp link
-        setupWhatsAppLink(product);
-
-        // Add structured data for SEO
-        addStructuredData(product);
-
-        // Setup Add to Cart
-        setupAddToCart(product);
-
-    } catch (error) {
-        console.error('Error loading product details:', error);
-        showErrorMessage('Error cargando los detalles del producto.');
-    }
-}
-
-// Update product information with enhanced formatting and custom details
-function updateProductInfo(product) {
-    const elements = {
-        material: document.getElementById('product-material'),
-        title: document.getElementById('product-title'),
-        description: document.getElementById('product-description'),
-        price: document.getElementById('product-price')
-    };
-
-    if (elements.material) {
-        elements.material.textContent = product.material;
-    }
-
-    if (elements.title) {
-        elements.title.textContent = product.name;
-    }
-
-    if (elements.description) {
-        elements.description.textContent = product.description || 'Hermosa pieza artesanal creada con técnicas tradicionales.';
-    }
-
-    if (elements.price) {
-        if (product.soldOut) {
-            elements.price.textContent = 'Agotado';
-            elements.price.className = 'product-price sold-out';
-        } else if (product.price) {
-            elements.price.textContent = `€${product.price}`;
-            elements.price.className = 'product-price';
-        } else {
-            elements.price.textContent = 'Precio bajo consulta';
-            elements.price.className = 'product-price';
-        }
-    }
-
-    // Add custom product details if available
-    addCustomProductDetails(product);
-}
-
-// Add custom product details section (DISABLED - user doesn't want details)
-function addCustomProductDetails(product) {
-    // Remove any existing details container
-    const existingContainer = document.querySelector('.product-custom-details');
-    if (existingContainer) {
-        existingContainer.remove();
-    }
-
-    // Don't add any product details section
-    return;
-}
-
-// Update meta tags for better SEO
-function updateMetaTags(product) {
-    // Update meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-        metaDescription.content = `${product.name} - ${product.material}. ${product.description || 'Joyería artesanal de alta calidad.'}`;
-    }
-
-    // Add Open Graph tags
-    addOpenGraphTags(product);
-}
-
-// Add Open Graph tags for social media sharing
-function addOpenGraphTags(product) {
-    const ogTags = [
-        { property: 'og:title', content: `${product.name} - Iuvene` },
-        { property: 'og:description', content: product.description || 'Joyería artesanal de alta calidad' },
-        { property: 'og:image', content: window.location.origin + '/' + product.image },
-        { property: 'og:url', content: window.location.href },
-        { property: 'og:type', content: 'product' }
-    ];
-
-    ogTags.forEach(tag => {
-        let meta = document.querySelector(`meta[property="${tag.property}"]`);
-        if (!meta) {
-            meta = document.createElement('meta');
-            meta.setAttribute('property', tag.property);
-            document.head.appendChild(meta);
-        }
-        meta.setAttribute('content', tag.content);
-    });
-}
-
-// Add structured data for SEO
-function addStructuredData(product) {
-    const structuredData = {
-        "@context": "https://schema.org/",
-        "@type": "Product",
-        "name": product.name,
-        "description": product.description || "Joyería artesanal de alta calidad",
-        "image": window.location.origin + '/' + product.image,
-        "brand": {
-            "@type": "Brand",
-            "name": "Iuvene"
-        },
-        "offers": {
-            "@type": "Offer",
-            "price": product.price || 0,
-            "priceCurrency": "EUR",
-            "availability": product.soldOut ? "https://schema.org/OutOfStock" : "https://schema.org/InStock"
-        }
-    };
-
-    let script = document.querySelector('script[type="application/ld+json"]');
-    if (!script) {
-        script = document.createElement('script');
-        script.type = 'application/ld+json';
-        document.head.appendChild(script);
-    }
-    script.textContent = JSON.stringify(structuredData);
-}
-
-// Enhanced navigation with better UX
-function setupEnhancedNavigation() {
-    // Add related products suggestion
-    addRelatedProducts();
-}
-
-function addBreadcrumbs() {
-    const productId = getProductIdFromUrl();
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    const breadcrumb = document.createElement('nav');
-    breadcrumb.className = 'breadcrumb';
-    breadcrumb.innerHTML = `
-        <a href="index.html">Inicio</a>
-        <span>›</span>
-        <a href="index.html#shop">Productos</a>
-        <span>›</span>
-        <span>${product.name}</span>
-    `;
-
-    const productDetail = document.querySelector('.product-detail');
-    if (productDetail) {
-        productDetail.insertBefore(breadcrumb, productDetail.firstChild);
-    }
-}
-
-function addRelatedProducts() {
-    const productId = getProductIdFromUrl();
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-
-    // Find related products (same collection or type)
-    const relatedProducts = products
-        .filter(p => p.id !== productId && (p.collection === product.collection || p.type === product.type))
-        .slice(0, 3);
-
-    if (relatedProducts.length === 0) return;
-
-    const relatedSection = document.createElement('section');
-    relatedSection.className = 'related-products';
-    relatedSection.innerHTML = `
-        <div class="container">
-            <h3>Productos relacionados</h3>
-            <div class="related-products-grid">
-                ${relatedProducts.map(p => `
-                    <div class="related-product-card" onclick="window.location.href='product-detail.html?id=${p.id}'">
-                        <img src="${p.image}" alt="${p.name}" loading="lazy">
-                        <div class="related-product-info">
-                            <div class="related-product-material">${p.material}</div>
-                            <div class="related-product-name">${p.name}</div>
-                            ${p.price ? `<div class="related-product-price">€${p.price}</div>` : ''}
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `;
-
-    const backToProducts = document.querySelector('.back-to-products');
-    if (backToProducts) {
-        backToProducts.parentNode.insertBefore(relatedSection, backToProducts);
-    }
-}
-
-// Initialize enhanced features
-document.addEventListener('DOMContentLoaded', function () {
-    loadProducts();
-
-    // Setup enhanced navigation after products load
-    setTimeout(() => {
-        setupEnhancedNavigation();
-    }, 1000);
-});
-
-// Add to Cart functionality
-function setupAddToCart(product) {
-    const addToCartBtn = document.getElementById('add-to-cart-btn');
-    if (!addToCartBtn) return;
-
-    // Check if product is sold out
-    if (product.soldOut === true) {
-        addToCartBtn.disabled = true;
-        addToCartBtn.textContent = 'Agotado';
-        addToCartBtn.style.opacity = '0.6';
-        addToCartBtn.style.cursor = 'not-allowed';
-        return; // Don't add event listener for sold out products
-    }
-
-    // Remove any existing listener to prevent duplicates
-    const newBtn = addToCartBtn.cloneNode(true);
-    addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
-
-    // Re-select the button
-    const btn = document.getElementById('add-to-cart-btn');
-
-    // Add to cart click
-    btn.addEventListener('click', () => {
-        // Double-check sold out status before adding
-        if (product.soldOut === true) {
-            console.warn('Attempted to add sold out product:', product.name);
-            if (window.cart) {
-                window.cart.showNotification('Este producto está agotado', 'error');
-            }
+    keydownHandler = (event) => {
+        if (event.key === 'ArrowLeft') {
+            if (currentImageIndex <= 0) return;
+            event.preventDefault();
+            setImageIndex(currentImageIndex - 1);
             return;
         }
 
-        const quantity = 1;
-
-        if (window.cart) {
-            console.log('🛒 Adding to cart:', product.name, 'Qty:', quantity);
-            window.cart.addItem(product, quantity);
-        } else {
-            console.error('Cart not initialized');
+        if (event.key === 'ArrowRight') {
+            if (currentImageIndex >= productImages.length - 1) return;
+            event.preventDefault();
+            setImageIndex(currentImageIndex + 1);
         }
+    };
+
+    document.addEventListener('keydown', keydownHandler);
+}
+
+function bindTouchNavigation() {
+    const mainImage = document.getElementById('product-main-image');
+    if (!mainImage) return;
+
+    if (touchStartHandler) {
+        mainImage.removeEventListener('touchstart', touchStartHandler);
+    }
+    if (touchEndHandler) {
+        mainImage.removeEventListener('touchend', touchEndHandler);
+    }
+
+    let startX = 0;
+    let startY = 0;
+
+    touchStartHandler = (event) => {
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+    };
+
+    touchEndHandler = (event) => {
+        const endX = event.changedTouches[0].clientX;
+        const endY = event.changedTouches[0].clientY;
+        const deltaX = endX - startX;
+        const deltaY = endY - startY;
+
+        if (Math.abs(deltaX) <= 45 || Math.abs(deltaX) <= Math.abs(deltaY)) return;
+
+        if (deltaX < 0) {
+            setImageIndex(currentImageIndex + 1);
+        } else {
+            setImageIndex(currentImageIndex - 1);
+        }
+    };
+
+    mainImage.addEventListener('touchstart', touchStartHandler, { passive: true });
+    mainImage.addEventListener('touchend', touchEndHandler, { passive: true });
+}
+
+function setupImageGallery(product) {
+    const imageCandidates = [];
+    if (Array.isArray(product.images)) imageCandidates.push(...product.images);
+    if (product.image) imageCandidates.unshift(product.image);
+
+    productImages = Array.from(new Set(imageCandidates.filter(Boolean)));
+    if (productImages.length === 0) {
+        productImages = ['images/hero-background.jpg'];
+    }
+
+    currentImageIndex = 0;
+
+    preloadImages(productImages);
+    renderThumbnails();
+    bindGalleryButtons();
+    bindKeyboardNavigation();
+    bindTouchNavigation();
+
+    updateMainImage();
+    updateNavigationButtons();
+}
+
+function updateMetaTags(product) {
+    const description = `${product.name} - ${product.material}. ${toText(product.description, 'Joyería artesanal diseñada en Madrid.')}`;
+
+    let metaDescription = document.querySelector('meta[name="description"]');
+    if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.name = 'description';
+        document.head.appendChild(metaDescription);
+    }
+    metaDescription.content = description;
+
+    const ogTags = [
+        ['og:title', `${product.name} - Iuvene`],
+        ['og:description', description],
+        ['og:image', new URL(product.image, window.location.href).href],
+        ['og:url', window.location.href],
+        ['og:type', 'product']
+    ];
+
+    ogTags.forEach(([property, content]) => {
+        let meta = document.querySelector(`meta[property="${property}"]`);
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('property', property);
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', content);
     });
 }
+
+function addStructuredData(product) {
+    const scriptId = 'product-structured-data';
+
+    let script = document.getElementById(scriptId);
+    if (!script) {
+        script = document.createElement('script');
+        script.type = 'application/ld+json';
+        script.id = scriptId;
+        document.head.appendChild(script);
+    }
+
+    const schema = {
+        '@context': 'https://schema.org/',
+        '@type': 'Product',
+        name: product.name,
+        description: toText(product.description, 'Joyería artesanal diseñada en Madrid.'),
+        image: new URL(product.image, window.location.href).href,
+        brand: {
+            '@type': 'Brand',
+            name: 'Iuvene'
+        },
+        offers: {
+            '@type': 'Offer',
+            priceCurrency: 'EUR',
+            price: product.price ?? 0,
+            availability: product.soldOut ? 'https://schema.org/OutOfStock' : 'https://schema.org/InStock'
+        }
+    };
+
+    script.textContent = JSON.stringify(schema);
+}
+
+function addBreadcrumb(product) {
+    const productDetailSection = document.querySelector('.product-detail .container');
+    if (!productDetailSection) return;
+
+    const existing = productDetailSection.querySelector('.breadcrumb');
+    if (existing) existing.remove();
+
+    const nav = document.createElement('nav');
+    nav.className = 'breadcrumb';
+
+    const home = document.createElement('a');
+    home.href = 'index.html';
+    home.textContent = 'Inicio';
+
+    const shop = document.createElement('a');
+    shop.href = 'index.html#shop';
+    shop.textContent = 'Productos';
+
+    const separator1 = document.createElement('span');
+    separator1.textContent = '›';
+
+    const separator2 = document.createElement('span');
+    separator2.textContent = '›';
+
+    const current = document.createElement('span');
+    current.textContent = product.name;
+
+    nav.appendChild(home);
+    nav.appendChild(separator1);
+    nav.appendChild(shop);
+    nav.appendChild(separator2);
+    nav.appendChild(current);
+
+    productDetailSection.insertBefore(nav, productDetailSection.firstChild);
+}
+
+function renderRelatedProducts(product) {
+    const existing = document.querySelector('.related-products');
+    if (existing) existing.remove();
+
+    const productId = String(product.id);
+    const related = products
+        .filter((candidate) => String(candidate.id) !== productId)
+        .filter((candidate) => candidate.collection === product.collection || candidate.type === product.type)
+        .slice(0, 3);
+
+    if (related.length === 0) return;
+
+    const section = document.createElement('section');
+    section.className = 'related-products';
+
+    const container = document.createElement('div');
+    container.className = 'container';
+
+    const title = document.createElement('h3');
+    title.textContent = 'Productos relacionados';
+
+    const grid = document.createElement('div');
+    grid.className = 'related-products-grid';
+
+    related.forEach((relatedProduct) => {
+        const card = document.createElement('article');
+        card.className = 'related-product-card';
+        card.tabIndex = 0;
+
+        const img = document.createElement('img');
+        img.src = relatedProduct.image;
+        img.alt = relatedProduct.name;
+        img.loading = 'lazy';
+
+        const info = document.createElement('div');
+        info.className = 'related-product-info';
+
+        const material = document.createElement('div');
+        material.className = 'related-product-material';
+        material.textContent = toText(relatedProduct.material, '');
+
+        const name = document.createElement('div');
+        name.className = 'related-product-name';
+        name.textContent = relatedProduct.name;
+
+        info.appendChild(material);
+        info.appendChild(name);
+
+        if (relatedProduct.price != null && !Number.isNaN(Number(relatedProduct.price))) {
+            const price = document.createElement('div');
+            price.className = 'related-product-price';
+            price.textContent = `€${Number(relatedProduct.price).toFixed(2).replace('.00', '')}`;
+            info.appendChild(price);
+        }
+
+        const navigate = () => {
+            window.location.href = `product-detail.html?id=${encodeURIComponent(relatedProduct.id)}`;
+        };
+
+        card.addEventListener('click', navigate);
+        card.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigate();
+            }
+        });
+
+        card.appendChild(img);
+        card.appendChild(info);
+        grid.appendChild(card);
+    });
+
+    container.appendChild(title);
+    container.appendChild(grid);
+    section.appendChild(container);
+
+    const backSection = document.querySelector('.back-to-products');
+    if (backSection && backSection.parentNode) {
+        backSection.parentNode.insertBefore(section, backSection);
+    }
+}
+
+function setupWhatsAppLink(product) {
+    const link = document.getElementById('whatsapp-link');
+    if (!link) return;
+
+    const phoneNumber = link.dataset.phone || '34123456789';
+    const message = [
+        `Hola, me interesa ${product.name}.`,
+        `Material: ${toText(product.material, 'Consultar')}`,
+        `Precio: ${formatPrice(product)}`,
+        '¿Podrías darme más información sobre disponibilidad y envío?'
+    ].join('\n');
+
+    link.href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+}
+
+function setupAddToCart(product) {
+    const button = document.getElementById('add-to-cart-btn');
+    if (!button) return;
+
+    const clone = button.cloneNode(true);
+    button.parentNode.replaceChild(clone, button);
+
+    const addToCartButton = document.getElementById('add-to-cart-btn');
+    if (!addToCartButton) return;
+
+    if (product.soldOut) {
+        addToCartButton.disabled = true;
+        addToCartButton.textContent = 'Agotado';
+        addToCartButton.style.opacity = '0.65';
+        addToCartButton.style.cursor = 'not-allowed';
+        return;
+    }
+
+    addToCartButton.disabled = false;
+    addToCartButton.textContent = 'Añadir al Carrito';
+    addToCartButton.style.opacity = '';
+    addToCartButton.style.cursor = '';
+
+    addToCartButton.addEventListener('click', () => {
+        if (!window.cart) {
+            showErrorMessage('El carrito no está disponible ahora mismo.');
+            return;
+        }
+
+        window.cart.addItem(product, 1);
+    });
+}
+
+function updateProductInfo(product) {
+    const material = document.getElementById('product-material');
+    const title = document.getElementById('product-title');
+    const description = document.getElementById('product-description');
+    const price = document.getElementById('product-price');
+
+    if (material) material.textContent = toText(product.material, 'Material no especificado');
+    if (title) title.textContent = product.name;
+    if (description) description.textContent = toText(product.description, 'Joyería artesanal diseñada en Madrid.');
+
+    if (price) {
+        price.textContent = formatPrice(product);
+        price.className = product.soldOut ? 'product-price sold-out' : 'product-price';
+    }
+}
+
+function renderProduct(product) {
+    currentProduct = product;
+    document.title = `${product.name} | Iuvene`;
+
+    updateProductInfo(product);
+    updateMetaTags(product);
+    addStructuredData(product);
+    setupImageGallery(product);
+    setupWhatsAppLink(product);
+    setupAddToCart(product);
+    addBreadcrumb(product);
+    renderRelatedProducts(product);
+}
+
+async function loadProducts() {
+    if (!window.productManager) {
+        throw new Error('ProductManager no está disponible');
+    }
+
+    await window.productManager.init();
+    products = window.productManager.getAllProducts();
+}
+
+async function initializeProductPage() {
+    try {
+        await loadProducts();
+
+        const productId = getProductIdFromUrl();
+        const product = findProductById(productId);
+
+        if (!product) {
+            showErrorMessage('Producto no encontrado. Redirigiendo...', true);
+            return;
+        }
+
+        renderProduct(product);
+    } catch (error) {
+        console.error('ProductDetail: failed to initialize', error);
+        showErrorMessage('Error cargando el producto. Inténtalo de nuevo.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', initializeProductPage);

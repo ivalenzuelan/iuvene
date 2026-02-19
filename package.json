@@ -4,7 +4,8 @@
   "description": "A beautiful, high-performance jewelry e-commerce website featuring modern design principles, advanced functionality, and comprehensive optimizations. Built with vanilla JavaScript, this website delivers exceptional user experience across all devices.",
   "main": "sw.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "check": "node scripts/quality-check.js",
+    "test": "node scripts/quality-check.js"
   },
   "repository": {
     "type": "git",

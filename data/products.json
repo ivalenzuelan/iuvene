@@ -4,24 +4,24 @@
       "id": "coleccion-galicia",
       "name": "Colección Galicia",
       "description": "Colección compuesta por piezas de Galicia",
-      "image": ""
+      "image": "images/ProductsCollections/ColeccionGalicia/background.jpg"
     }
   ],
   "products": [
     {
       "id": 1001,
-      "name": "Carmen",
+      "name": "Almu",
       "material": "Plata de Ley 925",
       "type": "rings",
       "category": "silver",
       "collection": "coleccion-galicia",
-      "price": 45,
+      "price": 42,
       "soldOut": false,
-      "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Carmen/main.jpg",
+      "image": "images/ProductsCollections/ColeccionGalicia/Almu/1.jpg",
       "images": [
-        "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Carmen/main.jpg"
+        "images/ProductsCollections/ColeccionGalicia/Almu/1.jpg"
       ],
-      "description": "Anillo de diseño orgánico inspirado en las formas de Galicia."
+      "description": "Diseño contemporáneo para el día a día."
     },
     {
       "id": 1002,
@@ -32,41 +32,13 @@
       "collection": "coleccion-galicia",
       "price": 38,
       "soldOut": false,
-      "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Bea/main.jpg",
+      "image": "images/ProductsCollections/ColeccionGalicia/Bea/1.jpeg",
       "images": [
-        "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Bea/main.jpg"
+        "images/ProductsCollections/ColeccionGalicia/Bea/1.jpeg",
+        "images/ProductsCollections/ColeccionGalicia/Bea/2.jpeg",
+        "images/ProductsCollections/ColeccionGalicia/Bea/3.jpg"
       ],
       "description": "Elegancia y sencillez en una pieza única."
-    },
-    {
-      "id": 1003,
-      "name": "Almu",
-      "material": "Plata de Ley 925",
-      "type": "rings",
-      "category": "silver",
-      "collection": "coleccion-galicia",
-      "price": 42,
-      "soldOut": false,
-      "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Almu/main.jpg",
-      "images": [
-        "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Almu/main.jpg"
-      ],
-      "description": "Diseño contemporáneo para el día a día."
-    },
-    {
-      "id": 1004,
-      "name": "Ale",
-      "material": "Plata de Ley 925",
-      "type": "rings",
-      "category": "silver",
-      "collection": "coleccion-galicia",
-      "price": 40,
-      "soldOut": false,
-      "image": "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Ale/main.jpg",
-      "images": [
-        "images/ProductsCollections/Colecci%C3%B3n%20Galicia/Ale/main.jpg"
-      ],
-      "description": "Detalles sutiles que marcan la diferencia."
     }
   ]
 }

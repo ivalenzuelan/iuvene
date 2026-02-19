@@ -1,929 +1,512 @@
-// Enhanced Product and collection data management
-let products = [];
-let collections = [];
-let currentCollection = null;
+let allProducts = [];
+let allCollections = [];
 let filteredProducts = [];
-let currentFilters = {
-    type: 'all',
-    category: 'all',
-    priceRange: 'all',
-    search: ''
-};
+let currentCollection = null;
+let currentSearch = '';
+let productsGrid = null;
+let searchInput = null;
+let searchCloseButton = null;
+let revealObserver = null;
 
-// Performance optimization: Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+function debounce(fn, wait = 250) {
+    let timeoutId;
+    return (...args) => {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn(...args), wait);
     };
 }
 
-// Load products from local @images/@ProductsCollections manifest or JSON file with error handling and caching
-// Load products using ProductManager
-async function loadProducts() {
-    try {
-        // Wait for ProductManager to be ready
-        await window.productManager.init();
-
-        products = window.productManager.getAllProducts();
-        collections = window.productManager.getAllCollections();
-
-        // Filter products for dashboard display (only show products with showOnDashboard: true)
-        const dashboardProducts = products.filter(product => product.showOnDashboard !== false);
-        filteredProducts = [...dashboardProducts];
-
-        console.log('📊 Dashboard products:', dashboardProducts.length, 'of', products.length, 'total products');
-        displayProducts(dashboardProducts);
-        setupCollectionNavigation();
-        setupSearch();
-
-    } catch (error) {
-        console.error('Error loading products:', error);
-        productsGrid.innerHTML = '<div class="error-message">Error cargando productos. Por favor recarga la página.</div>';
-    }
+function formatPrice(price) {
+    if (price == null || Number.isNaN(Number(price))) return '';
+    return `€${Number(price).toFixed(2).replace('.00', '')}`;
 }
 
-function buildFromCollectionsManifest(manifest) {
-    const root = (manifest.root || '').replace(/\/$/, '');
-    const collections = [];
-    const products = [];
-    Object.keys(manifest.collections || {}).forEach(collectionName => {
-        const collectionId = collectionName.toLowerCase().replace(/\s+/g, '-');
-        collections.push({ id: collectionId, name: collectionName, description: '', image: '' });
-        const productMap = manifest.collections[collectionName] || {};
-        Object.keys(productMap).forEach(productName => {
-            const imageFiles = productMap[productName] || [];
-            if (imageFiles.length === 0) return;
-            const imagePaths = imageFiles.map(fn => encodeURI(`${root}/${collectionName}/${productName}/${fn}`));
-            products.push({
-                id: Math.abs(hashString(`${collectionName}/${productName}`)),
-                name: productName,
-                material: '',
-                type: 'rings',
-                category: 'silver',
-                collection: collectionId,
-                image: imagePaths[0],
-                images: imagePaths
-            });
-        });
-    });
-    return { products, collections };
+function normalizeSearchText(value) {
+    return (value || '').toString().trim().toLowerCase();
 }
 
-function hashString(str) {
-    let h = 0;
-    for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i), h |= 0;
-    return h;
+function getDashboardProducts() {
+    return allProducts.filter((product) => product.showOnDashboard !== false);
 }
 
-function capitalizeWords(s) {
-    return s.replace(/\b\w/g, c => c.toUpperCase());
+function getActiveCollection() {
+    if (!currentCollection) return null;
+    return allCollections.find((collection) => collection.id === currentCollection) || null;
 }
 
-// DOM elements
-let productsGrid;
+function createTextElement(tag, className, text) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    element.textContent = text;
+    return element;
+}
 
-// Initialize the page
-document.addEventListener('DOMContentLoaded', function () {
-    // Get DOM elements after DOM is ready
-    productsGrid = document.getElementById('products-grid');
+function createProductCard(product) {
+    const card = document.createElement('article');
+    card.className = `product-card clickable${product.featured ? ' featured' : ''}`;
 
-    if (!productsGrid) {
-        console.error('Products grid element not found!');
-        return;
+    const imageWrapper = document.createElement('div');
+    imageWrapper.className = 'product-image';
+
+    const image = document.createElement('img');
+    image.src = product.image;
+    image.alt = product.name;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    image.fetchPriority = 'low';
+    imageWrapper.appendChild(image);
+
+    if (product.soldOut) {
+        imageWrapper.appendChild(createTextElement('div', 'sold-out-badge', 'Agotado'));
     }
 
-    console.log('Products grid found:', productsGrid);
-    loadProducts();
-    setupEventListeners();
-});
+    const info = document.createElement('div');
+    info.className = 'product-info';
 
-// Setup event listeners
-function setupEventListeners() {
-    // Newsletter form
-    const newsletterForm = document.querySelector('.newsletter-form');
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', handleNewsletterSubmit);
-    }
-}
+    info.appendChild(createTextElement('div', 'product-material', product.material || ''));
+    info.appendChild(createTextElement('div', 'product-name', product.name));
 
-// Enhanced display products with loading states and animations
-function displayProducts(productsToShow) {
-    console.log('displayProducts called with:', productsToShow.length, 'products');
-
-    if (!productsGrid) {
-        console.error('Products grid not found in displayProducts!');
-        return;
+    const price = formatPrice(product.price);
+    if (price) {
+        info.appendChild(createTextElement('div', 'product-price-preview', price));
     }
 
-    // Show loading state
-    productsGrid.innerHTML = '<div class="loading-spinner">Cargando productos...</div>';
+    const addToCartButton = document.createElement('button');
+    addToCartButton.className = 'add-to-cart-card-btn';
+    addToCartButton.type = 'button';
+    addToCartButton.disabled = product.soldOut === true;
+    addToCartButton.textContent = product.soldOut ? 'Agotado' : 'Añadir al Carrito';
+    info.appendChild(addToCartButton);
 
-    // Simulate loading for better UX
-    setTimeout(() => {
-        productsGrid.innerHTML = '';
+    card.appendChild(imageWrapper);
+    card.appendChild(info);
 
-        if (productsToShow.length === 0) {
-            console.log('No products to show');
-            productsGrid.innerHTML = `
-                <div class="no-products">
-                    <h3>No se encontraron productos</h3>
-                    <p>Intenta ajustar tus filtros o buscar algo diferente.</p>
-                    <button onclick="clearAllFilters()" class="clear-filters-btn">Limpiar filtros</button>
-                </div>
-            `;
+    const goToProduct = () => {
+        window.location.href = `product-detail.html?id=${encodeURIComponent(product.id)}`;
+    };
+
+    imageWrapper.addEventListener('click', goToProduct);
+    info.querySelector('.product-material')?.addEventListener('click', goToProduct);
+    info.querySelector('.product-name')?.addEventListener('click', goToProduct);
+    info.querySelector('.product-price-preview')?.addEventListener('click', goToProduct);
+
+    addToCartButton.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (product.soldOut) {
+            window.cart?.showNotification('Este producto está agotado', 'error');
             return;
         }
 
-        console.log('Creating product cards for', productsToShow.length, 'products');
-        productsToShow.forEach((product, index) => {
-            console.log('Creating card for product:', product.name);
-            const productCard = createProductCard(product);
-            productCard.style.animationDelay = `${index * 0.1}s`;
-            productCard.classList.add('fade-in');
-            productsGrid.appendChild(productCard);
-        });
+        if (!window.cart) {
+            showNotification('El carrito no está disponible', 'error');
+            return;
+        }
 
-        // Update product count
-        updateProductCount(productsToShow.length);
-        console.log('Products displayed successfully');
-    }, 300);
-}
-
-// Create product card with enhanced features
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = `product-card clickable ${product.featured ? 'featured' : ''}`;
-
-    // Add sold out badge if product is sold out
-    const soldOutBadge = product.soldOut ? '<div class="sold-out-badge">Agotado</div>' : '';
-
-    // Add price display
-    const priceDisplay = product.price ? `<div class="product-price-preview">€${product.price}</div>` : '';
-
-    card.innerHTML = `
-        <div class="product-image">
-            <img src="${product.image}" alt="${product.name}" loading="lazy" decoding="async" fetchpriority="low">
-            ${soldOutBadge}
-        </div>
-        <div class="product-info">
-            <div class="product-material">${product.material}</div>
-            <div class="product-name">${product.name}</div>
-            ${priceDisplay}
-            <button class="add-to-cart-card-btn" ${product.soldOut ? 'disabled' : ''}>
-                ${product.soldOut ? 'Agotado' : 'Añadir al Carrito'}
-            </button>
-        </div>
-    `;
-
-    // Make image and info clickable (navigate to detail), but not the button
-    const clickableElements = card.querySelectorAll('.product-image, .product-material, .product-name, .product-price-preview');
-    clickableElements.forEach(el => {
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            window.location.href = `product-detail.html?id=${product.id}`;
-        });
+        window.cart.addItem(product, 1);
     });
-
-    // Add to cart click handler
-    const addToCartBtn = card.querySelector('.add-to-cart-card-btn');
-    if (addToCartBtn) {
-        addToCartBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-
-            // Prevent adding sold out products
-            if (product.soldOut === true) {
-                console.warn('Attempted to add sold out product:', product.name);
-                if (window.cart) {
-                    window.cart.showNotification('Este producto está agotado', 'error');
-                }
-                return;
-            }
-
-            // Use global cart instance
-            if (window.cart) {
-                window.cart.addItem(product, 1);
-            } else {
-                console.error('Cart not initialized');
-                alert('Error: El carrito no está disponible.');
-            }
-        });
-    }
 
     return card;
 }
 
-// Handle newsletter form submission
-function handleNewsletterSubmit(e) {
-    e.preventDefault();
-    const email = e.target.querySelector('input[type="email"]').value;
+function renderEmptyState() {
+    if (!productsGrid) return;
 
-    // Show success message
-    const message = document.createElement('div');
-    message.textContent = '¡Gracias por suscribirte!';
-    message.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: #8b7355;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 4px;
-        z-index: 1002;
-        animation: slideIn 0.3s ease;
-    `;
+    const empty = document.createElement('div');
+    empty.className = 'no-products';
 
-    document.body.appendChild(message);
+    empty.appendChild(createTextElement('h3', '', 'No se encontraron productos'));
+    empty.appendChild(createTextElement('p', '', 'Prueba con otra búsqueda o limpia los filtros.'));
 
-    // Remove after 3 seconds
-    setTimeout(() => {
-        message.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => {
-            document.body.removeChild(message);
-        }, 300);
-    }, 3000);
+    const clearButton = document.createElement('button');
+    clearButton.className = 'clear-filters-btn';
+    clearButton.type = 'button';
+    clearButton.textContent = 'Limpiar filtros';
+    clearButton.addEventListener('click', clearAllFilters);
+    empty.appendChild(clearButton);
 
-    // Reset form
-    e.target.reset();
+    productsGrid.replaceChildren(empty);
 }
 
-// Add CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
+function renderProducts(products) {
+    if (!productsGrid) return;
+
+    if (!Array.isArray(products) || products.length === 0) {
+        renderEmptyState();
+        updateProductCount(0);
+        window.dispatchEvent(new CustomEvent('products:rendered', { detail: { count: 0 } }));
+        return;
     }
-    
-    @keyframes slideOut {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
 
-// Smooth scrolling for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
-});
-
-// Lazy loading for images
-if ('IntersectionObserver' in window) {
-    const imageObserver = new IntersectionObserver((entries, observer) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.classList.remove('lazy');
-                imageObserver.unobserve(img);
-            }
-        });
+    const fragment = document.createDocumentFragment();
+    products.forEach((product, index) => {
+        const card = createProductCard(product);
+        card.style.animationDelay = `${index * 0.06}s`;
+        card.classList.add('fade-in');
+        fragment.appendChild(card);
     });
 
-    document.querySelectorAll('img[data-src]').forEach(img => {
-        imageObserver.observe(img);
-    });
+    productsGrid.replaceChildren(fragment);
+    updateProductCount(products.length);
+
+    window.dispatchEvent(new CustomEvent('products:rendered', {
+        detail: { count: products.length }
+    }));
 }
 
-// Collection navigation functions
-function setupCollectionNavigation() {
-    // Create collection cards dynamically from scanned collections
-    createCollectionCards();
+function createCollectionCard(collection) {
+    const card = document.createElement('div');
+    card.className = 'collection-card';
+    card.dataset.collection = collection.id;
 
-    // Make collection cards clickable
-    const collectionCards = document.querySelectorAll('.collection-card');
-    collectionCards.forEach(card => {
-        card.addEventListener('click', () => {
-            const collectionId = card.dataset.collection;
-            filterByCollection(collectionId);
-        });
+    const imageWrapper = createTextElement('div', 'collection-image', '');
+    const image = document.createElement('img');
+    image.src = collection.image || 'images/hero-background.jpg';
+    image.alt = `Colección ${collection.name}`;
+    image.loading = 'lazy';
+    image.onerror = function onImageError() {
+        this.src = 'images/hero-background.jpg';
+    };
+    imageWrapper.appendChild(image);
+
+    const content = createTextElement('div', 'collection-content', '');
+    content.appendChild(createTextElement('h3', '', collection.name));
+    content.appendChild(createTextElement('p', '', collection.description || 'Colección única de joyería artesanal'));
+
+    card.appendChild(imageWrapper);
+    card.appendChild(content);
+
+    card.addEventListener('click', () => {
+        filterByCollection(collection.id);
     });
 
-    // Add "View All" button functionality
-    const viewAllBtn = document.querySelector('.view-all-btn');
-    if (viewAllBtn) {
-        viewAllBtn.addEventListener('click', () => {
-            viewAllProducts();
-        });
-    }
+    return card;
 }
 
-// Create collection cards dynamically
-function createCollectionCards() {
+function renderCollections() {
     const collectionsGrid = document.querySelector('.collections-grid');
-    if (!collectionsGrid || !collections || collections.length === 0) return;
+    if (!collectionsGrid || allCollections.length === 0) return;
 
-    console.log('🎨 Creating collection cards for', collections.length, 'collections');
-
-    // Clear existing cards
-    collectionsGrid.innerHTML = '';
-
-    collections.forEach(collection => {
-        const collectionCard = document.createElement('div');
-        collectionCard.className = 'collection-card';
-        collectionCard.dataset.collection = collection.id;
-
-        collectionCard.innerHTML = `
-            <div class="collection-image">
-                <img src="${collection.image}" alt="Colección ${collection.name}" loading="lazy" 
-                     onerror="this.src='images/hero-background.jpg'">
-            </div>
-            <div class="collection-content">
-                <h3>${collection.name}</h3>
-                <p>${collection.description}</p>
-            </div>
-        `;
-
-        collectionsGrid.appendChild(collectionCard);
-        console.log(`  ✨ Added collection card: ${collection.name}`);
+    const fragment = document.createDocumentFragment();
+    allCollections.forEach((collection) => {
+        fragment.appendChild(createCollectionCard(collection));
     });
+
+    collectionsGrid.replaceChildren(fragment);
+    updateCollectionActiveState();
 }
 
-function filterByCollection(collectionId) {
-    currentCollection = collectionId;
+function ensureCollectionDescriptionElement() {
+    const productsContainer = document.querySelector('.products .container');
+    if (!productsContainer) return null;
 
-    // Find the collection name for display
-    const collection = collections.find(c => c.id === collectionId);
-    const collectionName = collection ? collection.name : 'Collection';
-
-    // Filter products by collection
-    const filteredProducts = products.filter(product => product.collection === collectionId);
-
-    // Update page title and heading
-    document.title = `Colección ${collectionName} - Iuvene`;
-
-    // Update products section heading
-    const productsHeading = document.querySelector('.products h2');
-    if (productsHeading) {
-        productsHeading.textContent = `Colección ${collectionName}`;
+    let description = productsContainer.querySelector('.collection-description');
+    if (!description) {
+        description = document.createElement('p');
+        description.className = 'collection-description';
+        description.style.textAlign = 'center';
+        description.style.marginBottom = '1.5rem';
+        description.style.color = '#6b6b6b';
+        description.style.maxWidth = '700px';
+        description.style.marginLeft = 'auto';
+        description.style.marginRight = 'auto';
+        productsContainer.insertBefore(description, productsContainer.firstChild);
     }
 
-    // Add collection description
-    let collectionDescription = document.querySelector('.collection-description');
-    if (!collectionDescription) {
-        collectionDescription = document.createElement('p');
-        collectionDescription.className = 'collection-description';
-        collectionDescription.style.cssText = `
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #6b6b6b;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        `;
-
-        const productsSection = document.querySelector('.products .container');
-        productsSection.insertBefore(collectionDescription, productsSection.firstChild);
-    }
-
-    if (collection) {
-        collectionDescription.textContent = collection.description;
-    }
-
-    // Display filtered products
-    displayProducts(filteredProducts);
-
-    // Update collection cards to show active state
-    updateCollectionActiveState(collectionId);
-
-    // Show "View All" button
-    showViewAllButton();
-
-    // Scroll to products section
-    document.querySelector('.products').scrollIntoView({ behavior: 'smooth' });
+    return description;
 }
 
-function viewAllProducts() {
-    currentCollection = null;
+function updateCollectionDescription() {
+    const descriptionElement = ensureCollectionDescriptionElement();
+    if (!descriptionElement) return;
 
-    // Reset page title
-    document.title = 'Iuvene - Joyería y Accesorios Artesanales';
-
-    // Reset products section heading
-    const productsHeading = document.querySelector('.products h2');
-    if (productsHeading) {
-        productsHeading.textContent = 'Nuestra Colección';
+    const collection = getActiveCollection();
+    if (!collection) {
+        descriptionElement.textContent = '';
+        return;
     }
 
-    // Remove collection description
-    const collectionDescription = document.querySelector('.collection-description');
-    if (collectionDescription) {
-        collectionDescription.textContent = '';
-    }
-
-    // Apply filters (this will return to dashboard filtering)
-    applyFilters();
-
-    // Remove active state from all collection cards
-    updateCollectionActiveState(null);
-
-    // Hide "View All" button
-    hideViewAllButton();
+    descriptionElement.textContent = collection.description || '';
 }
 
-function updateCollectionActiveState(activeCollectionId) {
+function updateCollectionActiveState() {
     const collectionCards = document.querySelectorAll('.collection-card');
-    collectionCards.forEach(card => {
-        if (card.dataset.collection === activeCollectionId) {
-            card.classList.add('active');
-        } else {
-            card.classList.remove('active');
-        }
+    collectionCards.forEach((card) => {
+        card.classList.toggle('active', card.dataset.collection === currentCollection);
     });
+}
+
+function updatePageHeading() {
+    const title = getActiveCollection();
+    const heading = document.querySelector('.products h2');
+
+    if (!title) {
+        document.title = 'Iuvene - Joyería y Accesorios Artesanales';
+        if (heading) heading.textContent = 'Nuestra Colección';
+        return;
+    }
+
+    document.title = `Colección ${title.name} - Iuvene`;
+    if (heading) heading.textContent = `Colección ${title.name}`;
+}
+
+function updateProductCount(count) {
+    const productsContainer = document.querySelector('.products .container');
+    if (!productsContainer) return;
+
+    let countElement = document.getElementById('product-count');
+    if (!countElement) {
+        countElement = document.createElement('p');
+        countElement.id = 'product-count';
+        countElement.className = 'product-count-compact';
+
+        if (productsGrid) {
+            productsContainer.insertBefore(countElement, productsGrid);
+        } else {
+            productsContainer.appendChild(countElement);
+        }
+    }
+
+    countElement.textContent = `Mostrando ${count} producto${count === 1 ? '' : 's'}`;
 }
 
 function showViewAllButton() {
-    let viewAllBtn = document.querySelector('.view-all-btn');
-    if (!viewAllBtn) {
-        viewAllBtn = document.createElement('button');
-        viewAllBtn.className = 'view-all-btn';
-        viewAllBtn.textContent = '← Ver Todas las Colecciones';
-        viewAllBtn.style.cssText = `
-            background: #8b7355;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin: 2rem auto;
-            display: block;
-            transition: all 0.3s ease;
-        `;
+    const productsContainer = document.querySelector('.products .container');
+    if (!productsContainer) return;
 
-        viewAllBtn.addEventListener('mouseenter', () => {
-            viewAllBtn.style.background = '#6b5a3f';
-        });
-
-        viewAllBtn.addEventListener('mouseleave', () => {
-            viewAllBtn.style.background = '#8b7355';
-        });
-
-        const productsSection = document.querySelector('.products .container');
-        productsSection.appendChild(viewAllBtn);
-        viewAllBtn.addEventListener('click', viewAllProducts);
+    let button = document.querySelector('.view-all-btn');
+    if (!button) {
+        button = document.createElement('button');
+        button.className = 'view-all-btn';
+        button.type = 'button';
+        button.textContent = '← Ver todas las colecciones';
+        button.addEventListener('click', viewAllProducts);
+        productsContainer.appendChild(button);
     }
 }
 
 function hideViewAllButton() {
-    const viewAllBtn = document.querySelector('.view-all-btn');
-    if (viewAllBtn) {
-        viewAllBtn.remove();
-    }
+    const button = document.querySelector('.view-all-btn');
+    if (button) button.remove();
 }
 
-// Enhanced filtering system
-// function setupFilters() { // DISABLED
-//     createFilterUI();
-//     // Setup filter event listeners (disabled)
-// }
-// function createFilterUI() { /* disabled */ }
-
-function setupSearch() {
-    const searchBtn = document.querySelector('.search-btn');
-    if (!searchBtn) return;
-
-    // Create search input
-    const searchContainer = document.createElement('div');
-    searchContainer.className = 'search-container';
-    searchContainer.innerHTML = `
-        <input type="text" id="search-input" placeholder="Buscar productos..." style="display: none;">
-        <button class="search-close-btn" style="display: none;">×</button>
-    `;
-
-    searchBtn.parentNode.appendChild(searchContainer);
-
-    const searchInput = document.getElementById('search-input');
-    const searchCloseBtn = document.querySelector('.search-close-btn');
-
-    // Toggle search input
-    searchBtn.addEventListener('click', () => {
-        const isVisible = searchInput.style.display !== 'none';
-        searchInput.style.display = isVisible ? 'none' : 'block';
-        searchCloseBtn.style.display = isVisible ? 'none' : 'block';
-
-        if (!isVisible) {
-            searchInput.focus();
-        } else {
-            searchInput.value = '';
-            currentFilters.search = '';
-            applyFilters();
-        }
-    });
-
-    // Close search
-    searchCloseBtn.addEventListener('click', () => {
-        searchInput.style.display = 'none';
-        searchCloseBtn.style.display = 'none';
-        searchInput.value = '';
-        currentFilters.search = '';
-        applyFilters();
-    });
-
-    // Search functionality with debounce
-    const debouncedSearch = debounce((value) => {
-        currentFilters.search = value.toLowerCase();
-        applyFilters();
-    }, 300);
-
-    searchInput.addEventListener('input', (e) => {
-        debouncedSearch(e.target.value);
-    });
-}
-
-function applyFilters() {
-    let filtered = [...products];
-
-    // Apply collection filter
+function updateViewAllButton() {
     if (currentCollection) {
-        // When viewing a specific collection, show ALL products in that collection
-        filtered = filtered.filter(product => product.collection === currentCollection);
+        showViewAllButton();
     } else {
-        // When on main dashboard, only show products with showOnDashboard: true
-        filtered = filtered.filter(product => product.showOnDashboard !== false);
+        hideViewAllButton();
     }
+}
 
-    // Apply type filter
-    if (currentFilters.type !== 'all') {
-        filtered = filtered.filter(product => product.type === currentFilters.type);
-    }
+function applyFilters({ scrollToProducts = false } = {}) {
+    const searchValue = normalizeSearchText(currentSearch);
 
-    // Apply category filter
-    if (currentFilters.category !== 'all') {
-        filtered = filtered.filter(product => product.category === currentFilters.category);
-    }
+    let visible = currentCollection
+        ? allProducts.filter((product) => product.collection === currentCollection)
+        : getDashboardProducts();
 
-    // Apply price filter
-    if (currentFilters.priceRange !== 'all') {
-        filtered = filtered.filter(product => {
-            const price = product.price || 0;
-            switch (currentFilters.priceRange) {
-                case '0-100': return price <= 100;
-                case '100-200': return price > 100 && price <= 200;
-                case '200-300': return price > 200 && price <= 300;
-                case '300+': return price > 300;
-                default: return true;
-            }
+    if (searchValue) {
+        visible = visible.filter((product) => {
+            const name = normalizeSearchText(product.name);
+            const material = normalizeSearchText(product.material);
+            const description = normalizeSearchText(product.description);
+
+            return name.includes(searchValue) || material.includes(searchValue) || description.includes(searchValue);
         });
     }
 
-    // Apply search filter
-    if (currentFilters.search) {
-        filtered = filtered.filter(product =>
-            product.name.toLowerCase().includes(currentFilters.search) ||
-            product.material.toLowerCase().includes(currentFilters.search) ||
-            (product.description && product.description.toLowerCase().includes(currentFilters.search))
-        );
-    }
+    filteredProducts = visible;
 
-    filteredProducts = filtered;
-    displayProducts(filtered);
+    renderProducts(visible);
+    updatePageHeading();
+    updateCollectionDescription();
+    updateCollectionActiveState();
+    updateViewAllButton();
 
-    // Update filter container visual state
-    updateFilterState();
-}
-
-function clearAllFilters() {
-    currentFilters = {
-        type: 'all',
-        category: 'all',
-        priceRange: 'all',
-        search: ''
-    };
-
-    // Reset filter UI
-    const typeFilter = document.getElementById('type-filter');
-    const categoryFilter = document.getElementById('category-filter');
-    const priceFilter = document.getElementById('price-filter');
-    const searchInput = document.getElementById('search-input');
-
-    if (typeFilter) typeFilter.value = 'all';
-    if (categoryFilter) categoryFilter.value = 'all';
-    if (priceFilter) priceFilter.value = 'all';
-    if (searchInput) {
-        searchInput.value = '';
-        searchInput.style.display = 'none';
-        document.querySelector('.search-close-btn').style.display = 'none';
-    }
-
-    applyFilters();
-}
-
-function updateProductCount(count) {
-    const productCount = document.getElementById('product-count');
-    if (productCount) {
-        productCount.textContent = `Mostrando ${count} producto${count !== 1 ? 's' : ''}`;
+    if (scrollToProducts) {
+        document.querySelector('.products')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
 
-// Enhanced collection filtering
 function filterByCollection(collectionId) {
     currentCollection = collectionId;
+    applyFilters({ scrollToProducts: true });
+}
 
-    // Clear other filters when selecting collection
-    currentFilters = {
-        type: 'all',
-        category: 'all',
-        priceRange: 'all',
-        search: ''
-    };
+function viewAllProducts() {
+    currentCollection = null;
+    applyFilters({ scrollToProducts: false });
+}
 
-    // Reset filter UI
-    const typeFilter = document.getElementById('type-filter');
-    const categoryFilter = document.getElementById('category-filter');
-    const priceFilter = document.getElementById('price-filter');
+function clearAllFilters() {
+    currentCollection = null;
+    currentSearch = '';
 
-    if (typeFilter) typeFilter.value = 'all';
-    if (categoryFilter) categoryFilter.value = 'all';
-    if (priceFilter) priceFilter.value = 'all';
+    if (searchInput) searchInput.value = '';
+    if (searchInput) searchInput.style.display = 'none';
+    if (searchCloseButton) searchCloseButton.style.display = 'none';
 
-    // Find the collection name for display
-    const collection = collections.find(c => c.id === collectionId);
-    const collectionName = collection ? collection.name : 'Collection';
-
-    // Update page title and heading
-    document.title = `Colección ${collectionName} - Iuvene`;
-
-    // Update products section heading
-    const productsHeading = document.querySelector('.products h2');
-    if (productsHeading) {
-        productsHeading.textContent = `Colección ${collectionName}`;
-    }
-
-    // Add collection description
-    let collectionDescription = document.querySelector('.collection-description');
-    if (!collectionDescription) {
-        collectionDescription = document.createElement('p');
-        collectionDescription.className = 'collection-description';
-        collectionDescription.style.cssText = `
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #6b6b6b;
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        `;
-
-        const productsSection = document.querySelector('.products .container');
-        const filterContainer = document.querySelector('.filter-container');
-        if (filterContainer) {
-            productsSection.insertBefore(collectionDescription, filterContainer);
-        } else {
-            productsSection.insertBefore(collectionDescription, productsSection.firstChild);
-        }
-    }
-
-    if (collection) {
-        collectionDescription.textContent = collection.description;
-    }
-
-    // Apply filters
     applyFilters();
-
-    // Update collection cards to show active state
-    updateCollectionActiveState(collectionId);
-
-    // Show "View All" button
-    showViewAllButton();
-
-    // Scroll to products section
-    document.querySelector('.products').scrollIntoView({ behavior: 'smooth' });
 }
 
-// Performance optimization: Lazy loading for images
-function setupLazyLoading() {
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    if (img.dataset.src) {
-                        img.src = img.dataset.src;
-                        img.classList.remove('lazy');
-                        imageObserver.unobserve(img);
-                    }
-                }
-            });
-        });
+function setupSearch() {
+    const searchButton = document.querySelector('.search-btn');
+    if (!searchButton || !searchButton.parentNode) return;
 
-        // Observe all images with data-src
-        document.querySelectorAll('img[data-src]').forEach(img => {
-            imageObserver.observe(img);
-        });
-    }
+    const existingContainer = document.querySelector('.search-container');
+    if (existingContainer) existingContainer.remove();
+
+    const container = document.createElement('div');
+    container.className = 'search-container';
+
+    searchInput = document.createElement('input');
+    searchInput.type = 'text';
+    searchInput.id = 'search-input';
+    searchInput.placeholder = 'Buscar productos...';
+    searchInput.style.display = 'none';
+
+    searchCloseButton = document.createElement('button');
+    searchCloseButton.type = 'button';
+    searchCloseButton.className = 'search-close-btn';
+    searchCloseButton.textContent = '×';
+    searchCloseButton.style.display = 'none';
+
+    container.appendChild(searchInput);
+    container.appendChild(searchCloseButton);
+
+    searchButton.parentNode.appendChild(container);
+
+    const updateSearch = debounce((value) => {
+        currentSearch = value;
+        applyFilters();
+    }, 220);
+
+    searchButton.addEventListener('click', () => {
+        const visible = searchInput.style.display !== 'none';
+        searchInput.style.display = visible ? 'none' : 'block';
+        searchCloseButton.style.display = visible ? 'none' : 'block';
+
+        if (visible) {
+            searchInput.value = '';
+            currentSearch = '';
+            applyFilters();
+        } else {
+            searchInput.focus();
+        }
+    });
+
+    searchCloseButton.addEventListener('click', clearAllFilters);
+
+    searchInput.addEventListener('input', (event) => {
+        updateSearch(event.target.value || '');
+    });
+
+    searchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            clearAllFilters();
+        }
+    });
 }
 
-// Enhanced error handling and user feedback
+function setupSmoothAnchorNavigation() {
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+        anchor.addEventListener('click', (event) => {
+            const href = anchor.getAttribute('href');
+            if (!href || href.length < 2) return;
+
+            const target = document.querySelector(href);
+            if (!target) return;
+
+            event.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+}
+
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
+    notification.className = `notification ${type}`;
     notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: ${type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#8b7355'};
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        z-index: 1002;
-        animation: slideInRight 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    `;
-
     document.body.appendChild(notification);
 
-    // Remove after 4 seconds
-    setTimeout(() => {
-        notification.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => {
-            if (document.body.contains(notification)) {
-                document.body.removeChild(notification);
-            }
-        }, 300);
-    }, 4000);
-}
-
-// Toggle filters visibility
-function toggleFilters() {
-    const filterContainer = document.querySelector('.filter-container');
-    const chevronIcon = document.querySelector('.chevron-icon');
-    const filterText = document.querySelector('.filter-text');
-
-    if (!filterContainer) return;
-
-    const isCollapsed = filterContainer.classList.contains('collapsed');
-
-    if (isCollapsed) {
-        // Expand filters
-        filterContainer.classList.remove('collapsed');
-        filterContainer.classList.add('expanded');
-        filterText.textContent = 'Ocultar filtros';
-
-        // Rotate chevron up
-        if (chevronIcon) {
-            chevronIcon.style.transform = 'rotate(180deg)';
-        }
-
-        // Add smooth animation
-        const filterContent = filterContainer.querySelector('.filter-content');
-        if (filterContent) {
-            filterContent.style.maxHeight = filterContent.scrollHeight + 'px';
-        }
-    } else {
-        // Collapse filters
-        filterContainer.classList.remove('expanded');
-        filterContainer.classList.add('collapsed');
-        filterText.textContent = 'Filtrar productos';
-
-        // Rotate chevron down
-        if (chevronIcon) {
-            chevronIcon.style.transform = 'rotate(0deg)';
-        }
-
-        // Collapse with animation
-        const filterContent = filterContainer.querySelector('.filter-content');
-        if (filterContent) {
-            filterContent.style.maxHeight = '0px';
-        }
-    }
-}
-
-// Update the clearAllFilters function to work with the new structure
-function clearAllFilters() {
-    currentFilters = {
-        type: 'all',
-        category: 'all',
-        priceRange: 'all',
-        search: ''
-    };
-
-    // Reset filter UI
-    const typeFilter = document.getElementById('type-filter');
-    const categoryFilter = document.getElementById('category-filter');
-    const priceFilter = document.getElementById('price-filter');
-    const searchInput = document.getElementById('search-input');
-
-    if (typeFilter) typeFilter.value = 'all';
-    if (categoryFilter) categoryFilter.value = 'all';
-    if (priceFilter) priceFilter.value = 'all';
-    if (searchInput) {
-        searchInput.value = '';
-        searchInput.style.display = 'none';
-        const searchCloseBtn = document.querySelector('.search-close-btn');
-        if (searchCloseBtn) searchCloseBtn.style.display = 'none';
-    }
-
-    // Reset collection filter
-    currentCollection = null;
-    updateCollectionActiveState(null);
-    hideViewAllButton();
-
-    // Reset page title and description
-    document.title = 'Iuvene - Joyería y Accesorios Artesanales';
-    const productsHeading = document.querySelector('.products h2');
-    if (productsHeading) {
-        productsHeading.textContent = 'Nuestra Colección';
-    }
-
-    const collectionDescription = document.querySelector('.collection-description');
-    if (collectionDescription) {
-        collectionDescription.textContent = '';
-    }
-
-    applyFilters();
-}
-
-// Update filter container visual state
-function updateFilterState() {
-    const filterContainer = document.querySelector('.filter-container');
-    if (!filterContainer) return;
-
-    // Check if any filters are active
-    const hasActiveFilters =
-        currentFilters.type !== 'all' ||
-        currentFilters.category !== 'all' ||
-        currentFilters.priceRange !== 'all' ||
-        currentFilters.search !== '' ||
-        currentCollection !== null;
-
-    // Update visual state
-    if (hasActiveFilters) {
-        filterContainer.classList.add('has-active-filters');
-    } else {
-        filterContainer.classList.remove('has-active-filters');
-    }
-
-    // Update filter button text to show active state
-    const filterText = document.querySelector('.filter-text');
-    const isExpanded = filterContainer.classList.contains('expanded');
-
-    if (filterText) {
-        if (hasActiveFilters && !isExpanded) {
-            filterText.textContent = 'Filtros activos - Ver opciones';
-        } else if (isExpanded) {
-            filterText.textContent = 'Ocultar filtros';
-        } else {
-            filterText.textContent = 'Filtrar productos';
-        }
-    }
-}
-// Scroll Animation Observer (Premium Feel)
-document.addEventListener('DOMContentLoaded', () => {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: "0px 0px -50px 0px"
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-
-    const observeElements = () => {
-        document.querySelectorAll('.product-card, .collection-card, .section-title, .hero-content').forEach(el => {
-            el.classList.add('reveal');
-            observer.observe(el);
-        });
-    };
-
-    observeElements();
-
-    // Re-observe dynamic products when they load
-    window.addEventListener('products:ready', () => {
-        setTimeout(observeElements, 100);
+    requestAnimationFrame(() => {
+        notification.classList.add('show');
     });
-});
+
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 300);
+    }, 3500);
+}
+
+function observeRevealElements() {
+    if (!revealObserver) return;
+
+    const targets = document.querySelectorAll('.product-card, .collection-card, .section-title, .hero-content');
+    targets.forEach((target) => {
+        target.classList.add('reveal');
+        revealObserver.observe(target);
+    });
+}
+
+function setupRevealObserver() {
+    if (!('IntersectionObserver' in window)) return;
+
+    revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add('active');
+            observer.unobserve(entry.target);
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -40px 0px'
+    });
+
+    observeRevealElements();
+    window.addEventListener('products:rendered', () => setTimeout(observeRevealElements, 80));
+}
+
+async function loadProducts() {
+    try {
+        if (!window.productManager) {
+            throw new Error('ProductManager not initialized');
+        }
+
+        await window.productManager.init();
+
+        allProducts = window.productManager.getAllProducts();
+        allCollections = window.productManager.getAllCollections();
+
+        renderCollections();
+        applyFilters();
+    } catch (error) {
+        console.error('Error loading products:', error);
+        showNotification('Error cargando productos. Recarga la página.', 'error');
+
+        if (productsGrid) {
+            productsGrid.innerHTML = '<div class="error-message">Error cargando productos. Por favor recarga la página.</div>';
+        }
+    }
+}
+
+function initializePage() {
+    productsGrid = document.getElementById('products-grid');
+    if (!productsGrid) {
+        console.error('Products grid element not found');
+        return;
+    }
+
+    setupSearch();
+    setupSmoothAnchorNavigation();
+    setupRevealObserver();
+    loadProducts();
+}
+
+window.clearAllFilters = clearAllFilters;
+window.filterByCollection = filterByCollection;
+window.viewAllProducts = viewAllProducts;
+window.toggleFilters = () => {};
+
+document.addEventListener('DOMContentLoaded', initializePage);
