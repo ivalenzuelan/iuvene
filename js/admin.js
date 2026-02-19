@@ -20,7 +20,8 @@ const state = {
         status: 'all',
         collection: 'all',
         sort: 'newest'
-    }
+    },
+    currentImages: []
 };
 
 const elements = {};
@@ -313,8 +314,116 @@ function setModalOpen(isOpen) {
     }
 }
 
+// --- Image Manager Logic ---
+
+function renderImageManagerGrid() {
+    const container = elements.imageManagerGrid;
+    if (!container) return;
+
+    if (state.currentImages.length === 0) {
+        container.innerHTML = '<p class="empty" style="grid-column: 1/-1; padding: 1rem; font-size: 0.9rem;">No hay imágenes.</p>';
+        elements.productImage.value = '';
+        elements.productImages.value = '';
+        return;
+    }
+
+    container.innerHTML = state.currentImages.map((src, index) => {
+        const isCover = index === 0;
+        return `
+            <div class="img-thumbnail-card" draggable="true" data-index="${index}">
+                <img src="${escapeHtml(resolveImageSrc(src))}" loading="lazy">
+                <div class="cover-badge">PORTADA</div>
+                <div class="img-actions">
+                    ${!isCover ? `
+                    <button type="button" class="action-btn move-btn" title="Mover a portada" onclick="moveImage(${index}, 0)">
+                        ⬆
+                    </button>
+                    <button type="button" class="action-btn move-btn" title="Mover izquierda" onclick="moveImage(${index}, ${index - 1})">
+                        ⬅
+                    </button>
+                    ` : ''}
+                    <button type="button" class="action-btn" title="Eliminar" onclick="removeImage(${index})">
+                        🗑
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Sync to legacy hidden inputs for compatibility
+    elements.productImage.value = state.currentImages[0] || '';
+    elements.productImages.value = state.currentImages.join('\n');
+}
+
+async function uploadFileToSupabase(file) {
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+    const safeName = file.name
+        .replace(/\.[^.]+$/, '')
+        .replace(/[^a-zA-Z0-9-_]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase() || 'product';
+
+    const filePath = `products/${Date.now()}-${safeName}.${ext}`;
+
+    const { error } = await supabaseClient.storage
+        .from('product-images')
+        .upload(filePath, file, { cacheControl: '3600', upsert: false });
+
+    if (error) {
+        throw new Error(`Error subiendo ${file.name}: ${error.message}`);
+    }
+
+    const { data } = supabaseClient.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+    return data.publicUrl;
+}
+
+async function handleImageFiles(files) {
+    if (!files || files.length === 0) return;
+
+    const startCount = state.currentImages.length;
+    showToast(`Subiendo ${files.length} imágenes...`);
+
+    let uploadedCount = 0;
+    for (const file of files) {
+        try {
+            const url = await uploadFileToSupabase(file);
+            if (url) {
+                state.currentImages.push(url);
+                uploadedCount++;
+                renderImageManagerGrid();
+            }
+        } catch (error) {
+            console.error(error);
+            showToast(`Error con ${file.name}`, 'error');
+        }
+    }
+
+    if (uploadedCount > 0) {
+        showToast(`Subidas ${uploadedCount} imágenes exitosamente.`, 'success');
+    }
+}
+
+// Make globally accessible for inline onclick
+window.removeImage = function (index) {
+    if (confirm('¿Eliminar esta imagen de la lista?')) {
+        state.currentImages.splice(index, 1);
+        renderImageManagerGrid();
+    }
+};
+
+window.moveImage = function (fromIndex, toIndex) {
+    if (toIndex < 0 || toIndex >= state.currentImages.length) return;
+    const item = state.currentImages.splice(fromIndex, 1)[0];
+    state.currentImages.splice(toIndex, 0, item);
+    renderImageManagerGrid();
+};
+
 function resetProductForm() {
     state.editingId = null;
+    state.currentImages = [];
 
     elements.productForm.reset();
     elements.productId.value = '';
@@ -326,10 +435,7 @@ function resetProductForm() {
     const collectionId = state.collections[0]?.id || FALLBACK_COLLECTION.id;
     elements.productCollection.value = String(collectionId);
 
-    elements.productImage.value = '';
-    elements.productImages.value = '';
-
-    renderPreviewFromFields();
+    renderImageManagerGrid();
 }
 
 function openModal(product = null) {
@@ -345,19 +451,24 @@ function openModal(product = null) {
         elements.productType.value = product.type || 'chockers';
         elements.productMaterial.value = product.material || '';
         elements.productDescription.value = product.description || '';
-        elements.productImage.value = product.image || '';
-        elements.productImages.value = Array.isArray(product.images) ? product.images.join('\n') : '';
+
         elements.productSoldOut.checked = product.sold_out === true;
         elements.productStatus.value = product.status || '';
         elements.productDashboard.checked = product.show_on_dashboard !== false;
         elements.productFeatured.checked = product.featured === true;
+
+        // Initialize Image Manager
+        const mainImage = product.image ? [product.image] : [];
+        const gallery = Array.isArray(product.images) ? product.images : [];
+        // Config: use Set to avoid dupes, but keep order if possible
+        state.currentImages = Array.from(new Set([...mainImage, ...gallery].filter(Boolean)));
+
     } else {
         elements.modalTitle.textContent = 'Nuevo producto';
         resetProductForm();
     }
 
-    elements.productImageFile.value = '';
-    renderPreviewFromFields();
+    renderImageManagerGrid();
     setModalOpen(true);
 }
 
@@ -365,12 +476,10 @@ function closeModal() {
     setModalOpen(false);
 }
 
-function buildPayloadFromForm(imageUrl) {
-    const galleryFromText = parseImageList(elements.productImages.value);
-
-    const primaryImage = imageUrl || elements.productImage.value.trim() || galleryFromText[0] || 'images/hero-background.jpg';
-
-    const gallery = Array.from(new Set([primaryImage, ...galleryFromText].filter(Boolean)));
+function buildPayloadFromForm() {
+    const primaryImage = state.currentImages[0] || 'images/hero-background.jpg';
+    const gallery = [...state.currentImages];
+    if (gallery.length === 0) gallery.push(primaryImage);
 
     const payload = {
         name: elements.productName.value.trim(),
@@ -409,37 +518,6 @@ function validatePayload(payload) {
     }
 
     return true;
-}
-
-async function uploadImageIfNeeded() {
-    const file = elements.productImageFile.files?.[0];
-    if (!file) return null;
-
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-    const safeName = file.name
-        .replace(/\.[^.]+$/, '')
-        .replace(/[^a-zA-Z0-9-_]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .toLowerCase() || 'product';
-
-    const filePath = `products/${Date.now()}-${safeName}.${ext}`;
-
-    const upload = await supabaseClient.storage
-        .from('product-images')
-        .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-        });
-
-    if (upload.error) {
-        throw new Error(`Error subiendo imagen: ${upload.error.message}`);
-    }
-
-    const publicUrlResult = supabaseClient.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-    return publicUrlResult?.data?.publicUrl || null;
 }
 
 function createPayloadVariants(payload, includeId = false) {
@@ -517,12 +595,8 @@ async function handleSave(event) {
         state.saving = true;
         updateSaveButton(true);
 
-        const uploadedImageUrl = await uploadImageIfNeeded();
-        if (uploadedImageUrl) {
-            elements.productImage.value = uploadedImageUrl;
-        }
-
-        const payload = buildPayloadFromForm(uploadedImageUrl);
+        // Images are already uploaded and in state.currentImages
+        const payload = buildPayloadFromForm();
         if (!validatePayload(payload)) {
             return;
         }
@@ -533,6 +607,7 @@ async function handleSave(event) {
 
         closeModal();
         await loadProducts();
+        // Also update cache if needed, handled by loadProducts usually
     } catch (error) {
         console.error(error);
         showToast(error.message || 'Error guardando producto.', 'error');
@@ -817,8 +892,14 @@ function cacheElements() {
     elements.productImageFile = $('p-image-file');
     elements.productImage = $('p-image');
     elements.productImages = $('p-images');
-    elements.imagePreview = $('image-preview');
-    elements.imageGalleryPreview = $('image-gallery-preview');
+
+    // Image Manager Elements
+    elements.imageUploadInput = $('image-upload-input');
+    elements.imageDropZone = $('image-drop-zone');
+    elements.imageManagerGrid = $('image-manager-grid');
+    elements.triggerUploadBtn = $('triggerUploadBtn'); // Typo in ID in HTML? Let's check.
+    // In HTML I used id="trigger-upload-btn"
+    elements.triggerUploadBtn = $('trigger-upload-btn');
 
     elements.saveBtn = $('save-btn');
     elements.toastRoot = $('toast-root');
@@ -841,9 +922,72 @@ function bindModalEvents() {
         }
     });
 
-    elements.productImage.addEventListener('input', renderPreviewFromFields);
-    elements.productImages.addEventListener('input', renderPreviewFromFields);
-    elements.productImageFile.addEventListener('change', handleImageFilePreview);
+    // Image Manager Events
+    if (elements.triggerUploadBtn) {
+        elements.triggerUploadBtn.addEventListener('click', () => {
+            elements.imageUploadInput.click();
+        });
+    }
+
+    if (elements.imageUploadInput) {
+        elements.imageUploadInput.addEventListener('change', (e) => {
+            handleImageFiles(e.target.files);
+            e.target.value = ''; // Reset to allow same file selection again
+        });
+    }
+
+    if (elements.imageDropZone) {
+        elements.imageDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            elements.imageDropZone.classList.add('drag-over');
+        });
+
+        elements.imageDropZone.addEventListener('dragleave', () => {
+            elements.imageDropZone.classList.remove('drag-over');
+        });
+
+        elements.imageDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            elements.imageDropZone.classList.remove('drag-over');
+            handleImageFiles(e.dataTransfer.files);
+        });
+    }
+
+    // Drag and Drop Grid Reordering
+    if (elements.imageManagerGrid) {
+        let draggedIndex = null;
+
+        elements.imageManagerGrid.addEventListener('dragstart', (e) => {
+            const card = e.target.closest('.img-thumbnail-card');
+            if (card) {
+                draggedIndex = Number(card.dataset.index);
+                e.dataTransfer.effectAllowed = 'move';
+                card.style.opacity = '0.5';
+            }
+        });
+
+        elements.imageManagerGrid.addEventListener('dragend', (e) => {
+            const card = e.target.closest('.img-thumbnail-card');
+            if (card) card.style.opacity = '1';
+        });
+
+        elements.imageManagerGrid.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Necessary for drop
+            e.dataTransfer.dropEffect = 'move';
+        });
+
+        elements.imageManagerGrid.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const targetCard = e.target.closest('.img-thumbnail-card');
+            if (targetCard && draggedIndex !== null) {
+                const targetIndex = Number(targetCard.dataset.index);
+                if (targetIndex !== draggedIndex) {
+                    moveImage(draggedIndex, targetIndex);
+                }
+            }
+            draggedIndex = null;
+        });
+    }
 
     elements.productForm.addEventListener('submit', handleSave);
 }

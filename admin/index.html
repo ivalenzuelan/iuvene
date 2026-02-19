@@ -664,30 +664,154 @@
             background: #cce5ff;
             color: #004085;
         }
+
+        /* Image Manager Styles */
+        .image-drop-zone {
+            border: 2px dashed #d6d2cc;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: #fbf8f3;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+            color: var(--muted);
+        }
+
+        .image-drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(139, 115, 85, 0.05);
+        }
+
+        .image-manager-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .img-thumbnail-card {
+            position: relative;
+            background: #fff;
+            border: 1px solid #e7ddd0;
+            border-radius: 8px;
+            aspect-ratio: 1;
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .img-thumbnail-card:first-child {
+            border: 2px solid var(--primary);
+        }
+
+        .img-thumbnail-card:active {
+            cursor: grabbing;
+        }
+
+        .img-thumbnail-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .img-actions {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #444;
+        }
+
+        .action-btn:hover {
+            background: #fff;
+            color: var(--danger);
+        }
+
+        .move-btn {
+            cursor: grab;
+            color: var(--muted);
+        }
+
+        .move-btn:hover {
+            color: var(--primary);
+        }
+
+        .cover-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: var(--primary);
+            color: white;
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: none;
+            font-weight: 600;
+            pointer-events: none;
+        }
+
+        .img-thumbnail-card:first-child .cover-badge {
+            display: block;
+        }
+
+        .text-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 0;
+        }
+
+        .help-text {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 0.5rem;
+        }
+
+        /* Fix line-clamp compatibility */
+        .product-description {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
+
 </head>
 
 <body>
-
     <div id="login-view" class="login-screen">
         <div class="login-card">
             <h1>Iuvene Admin</h1>
-            <p>Gestiona catálogo, estados y visibilidad de productos.</p>
+            <p>Gestiona catálogo,
+                estados y visibilidad de productos.</p>
             <div id="login-error" class="login-error hidden"></div>
             <form id="login-form">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input class="field" type="email" id="email" required placeholder="admin@iuvene.com">
-                </div>
-                <div class="form-group">
-                    <label for="password">Contraseña</label>
-                    <input class="field" type="password" id="password" required placeholder="••••••••">
-                </div>
-                <button class="btn btn-primary" id="login-btn" type="submit">Entrar</button>
+                <div class="form-group"><label for="email">Email</label><input class="field" type="email" id="email"
+                        required placeholder="admin@iuvene.com"></div>
+                <div class="form-group"><label for="password">Contraseña</label><input class="field" type="password"
+                        id="password" required placeholder="••••••••"></div><button class="btn btn-primary"
+                    id="login-btn" type="submit">Entrar</button>
             </form>
         </div>
     </div>
-
     <div id="dashboard-view" class="hidden">
         <header class="topbar">
             <div class="container topbar-inner">
@@ -695,239 +819,184 @@
                     <h1>Iuvene Admin Panel</h1>
                     <p>Control completo de catálogo y publicación.</p>
                 </div>
-                <div class="top-actions">
-                    <button class="btn btn-ghost" id="refresh-btn" type="button">Actualizar</button>
-                    <button class="btn btn-ghost" id="export-btn" type="button">Exportar JSON</button>
-                    <button class="btn btn-ghost" id="clear-cache-btn" type="button">Limpiar caché web</button>
-                    <button class="btn btn-primary" id="logout-btn" type="button">Salir</button>
-                </div>
+                <div class="top-actions"><button class="btn btn-ghost" id="refresh-btn"
+                        type="button">Actualizar</button><button class="btn btn-ghost" id="export-btn"
+                        type="button">Exportar JSON</button><button class="btn btn-ghost" id="clear-cache-btn"
+                        type="button">Limpiar caché web</button><button class="btn btn-primary" id="logout-btn"
+                        type="button">Salir</button></div>
             </div>
         </header>
-
         <nav class="container" style="margin-bottom: 2rem;">
-            <div style="display: flex; gap: 1rem; border-bottom: 1px solid #e7dfd1; padding-bottom: 0px;">
-                <button class="tab-btn active" data-tab="products-view">Productos</button>
-                <button class="tab-btn" data-tab="orders-view">Pedidos</button>
-                <button class="tab-btn" data-tab="atelier-view">Atelier</button>
-            </div>
+            <div style="display: flex; gap: 1rem; border-bottom: 1px solid #e7dfd1; padding-bottom: 0px;"><button
+                    class="tab-btn active" data-tab="products-view">Productos</button><button class="tab-btn"
+                    data-tab="orders-view">Pedidos</button><button class="tab-btn"
+                    data-tab="atelier-view">Atelier</button></div>
         </nav>
-
         <main class="container dashboard-main">
-            <!-- Products View -->
-            <div id="products-view" class="tab-content active">
-                <section class="stats-grid">
-                    <article class="stat-card">
-                        <h3>Total productos</h3>
-                        <div class="value" id="stat-total">0</div>
-                    </article>
-                    <article class="stat-card">
-                        <h3>Publicados</h3>
-                        <div class="value" id="stat-visible">0</div>
-                    </article>
-                    <article class="stat-card">
-                        <h3>Agotados</h3>
-                        <div class="value" id="stat-sold">0</div>
-                    </article>
-                    <article class="stat-card">
-                        <h3>Promociones</h3>
-                        <div class="value" id="stat-promo">0</div>
-                    </article>
-                </section>
-
-                <section class="panel">
-                    <div class="filters-grid">
-                        <div class="form-group" style="margin:0;">
-                            <label for="search-input">Buscar</label>
-                            <input class="field" id="search-input" type="text"
-                                placeholder="Nombre, descripción, tipo o estado">
+            < !-- Products View -->
+                <div id="products-view" class="tab-content active">
+                    <section class="stats-grid">
+                        <article class="stat-card">
+                            <h3>Total productos</h3>
+                            <div class="value" id="stat-total">0</div>
+                        </article>
+                        <article class="stat-card">
+                            <h3>Publicados</h3>
+                            <div class="value" id="stat-visible">0</div>
+                        </article>
+                        <article class="stat-card">
+                            <h3>Agotados</h3>
+                            <div class="value" id="stat-sold">0</div>
+                        </article>
+                        <article class="stat-card">
+                            <h3>Promociones</h3>
+                            <div class="value" id="stat-promo">0</div>
+                        </article>
+                    </section>
+                    <section class="panel">
+                        <div class="filters-grid">
+                            <div class="form-group" style="margin:0;"><label for="search-input">Buscar</label><input
+                                    class="field" id="search-input" type="text"
+                                    placeholder="Nombre, descripción, tipo o estado"></div>
+                            <div class="form-group" style="margin:0;"><label for="filter-type">Tipo</label><select
+                                    class="field-select" id="filter-type">
+                                    <option value="all">Todos</option>
+                                    <option value="chockers">Chockers</option>
+                                    <option value="collares">Collares</option>
+                                </select></div>
+                            <div class="form-group" style="margin:0;"><label for="filter-status">Estado</label><select
+                                    class="field-select" id="filter-status">
+                                    <option value="all">Todos</option>
+                                    <option value="new">Nuevo</option>
+                                    <option value="promo">Promoción</option>
+                                    <option value="sold">Agotado</option>
+                                    <option value="visible">Publicado</option>
+                                    <option value="hidden">Oculto</option>
+                                </select></div>
+                            <div class="form-group" style="margin:0;"><label
+                                    for="filter-collection">Colección</label><select class="field-select"
+                                    id="filter-collection">
+                                    <option value="all">Todas</option>
+                                </select></div>
+                            <div class="form-group" style="margin:0;"><label for="filter-sort">Ordenar</label><select
+                                    class="field-select" id="filter-sort">
+                                    <option value="newest">Más recientes</option>
+                                    <option value="oldest">Más antiguos</option>
+                                    <option value="price-asc">Precio ↑</option>
+                                    <option value="price-desc">Precio ↓</option>
+                                    <option value="name-asc">Nombre A-Z</option>
+                                </select></div><button class="btn btn-ghost" id="clear-filters-btn"
+                                type="button">Limpiar</button>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label for="filter-type">Tipo</label>
-                            <select class="field-select" id="filter-type">
-                                <option value="all">Todos</option>
-                                <option value="chockers">Chockers</option>
-                                <option value="collares">Collares</option>
-                            </select>
+                    </section>
+                    <section class="panel">
+                        <div class="products-header">
+                            <h2 style="font-family: 'Montserrat', sans-serif; font-size: 1.05rem;">Productos</h2>
+                            <p id="products-summary">0 productos</p>
                         </div>
-                        <div class="form-group" style="margin:0;">
-                            <label for="filter-status">Estado</label>
-                            <select class="field-select" id="filter-status">
-                                <option value="all">Todos</option>
-                                <option value="new">Nuevo</option>
-                                <option value="promo">Promoción</option>
-                                <option value="sold">Agotado</option>
-                                <option value="visible">Publicado</option>
-                                <option value="hidden">Oculto</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label for="filter-collection">Colección</label>
-                            <select class="field-select" id="filter-collection">
-                                <option value="all">Todas</option>
-                            </select>
-                        </div>
-                        <div class="form-group" style="margin:0;">
-                            <label for="filter-sort">Ordenar</label>
-                            <select class="field-select" id="filter-sort">
-                                <option value="newest">Más recientes</option>
-                                <option value="oldest">Más antiguos</option>
-                                <option value="price-asc">Precio ↑</option>
-                                <option value="price-desc">Precio ↓</option>
-                                <option value="name-asc">Nombre A-Z</option>
-                            </select>
-                        </div>
-                        <button class="btn btn-ghost" id="clear-filters-btn" type="button">Limpiar</button>
-                    </div>
-                </section>
-
-                <section class="panel">
-                    <div class="products-header">
-                        <h2 style="font-family: 'Montserrat', sans-serif; font-size: 1.05rem;">Productos</h2>
-                        <p id="products-summary">0 productos</p>
-                    </div>
-                    <div class="products-grid" id="products-list"></div>
-                </section>
-                </section>
-            </div> <!-- End Products View -->
-
-            <!-- Orders View -->
-            <div id="orders-view" class="tab-content">
-                <h2 style="margin-bottom: 1rem;">Pedidos Recientes</h2>
-                <div id="orders-list">
-                    <p>Cargando pedidos...</p>
+                        <div class="products-grid" id="products-list"></div>
+                    </section>
+                    </section>
                 </div>
-            </div>
-
-            <!-- Atelier View -->
-            <div id="atelier-view" class="tab-content">
-                <h2 style="margin-bottom: 1rem;">Solicitudes de Atelier</h2>
-                <div id="atelier-list">
-                    <p>Cargando solicitudes...</p>
-                </div>
-            </div>
-        </main>
-
-        <button class="add-btn" id="add-product-btn" type="button" aria-label="Añadir producto">+</button>
+                < !-- End Products View -->
+                    < !-- Orders View -->
+                        <div id="orders-view" class="tab-content">
+                            <h2 style="margin-bottom: 1rem;">Pedidos Recientes</h2>
+                            <div id="orders-list">
+                                <p>Cargando pedidos...</p>
+                            </div>
+                        </div>
+                        < !-- Atelier View -->
+                            <div id="atelier-view" class="tab-content">
+                                <h2 style="margin-bottom: 1rem;">Solicitudes de Atelier</h2>
+                                <div id="atelier-list">
+                                    <p>Cargando solicitudes...</p>
+                                </div>
+                            </div>
+        </main><button class="add-btn" id="add-product-btn" type="button" aria-label="Añadir producto">+</button>
     </div>
-
     <div class="modal" id="product-modal" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-title">Nuevo Producto</h2>
-                <button class="close-modal" id="close-modal" type="button" aria-label="Cerrar">×</button>
+                <h2 id="modal-title">Nuevo Producto</h2><button class="close-modal" id="close-modal" type="button"
+                    aria-label="Cerrar">×</button>
             </div>
-
-            <form id="product-form">
-                <input type="hidden" id="p-id">
-
+            <form id="product-form"><input type="hidden" id="p-id">
                 <div class="form-grid">
                     <div>
-                        <div class="form-group">
-                            <label for="p-name">Nombre</label>
-                            <input class="field" type="text" id="p-name" required>
-                        </div>
-
+                        <div class="form-group"><label for="p-name">Nombre</label><input class="field" type="text"
+                                id="p-name" required></div>
                         <div class="grid-2">
-                            <div class="form-group">
-                                <label for="p-price">Precio (€)</label>
-                                <input class="field" type="number" id="p-price" min="0" step="0.01" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="p-collection">Colección</label>
-                                <select class="field-select" id="p-collection" required></select>
-                            </div>
+                            <div class="form-group"><label for="p-price">Precio (€)</label><input class="field"
+                                    type="number" id="p-price" min="0" step="0.01" required></div>
+                            <div class="form-group"><label for="p-collection">Colección</label><select
+                                    class="field-select" id="p-collection" required></select></div>
                         </div>
-
                         <div class="grid-2">
-                            <div class="form-group">
-                                <label for="p-type">Tipo</label>
-                                <select class="field-select" id="p-type">
+                            <div class="form-group"><label for="p-type">Tipo</label><select class="field-select"
+                                    id="p-type">
                                     <option value="chockers">Chockers</option>
                                     <option value="collares">Collares</option>
                                     <option value="rings">Rings</option>
                                     <option value="earrings">Earrings</option>
                                     <option value="necklaces">Necklaces</option>
                                     <option value="bangles">Bangles</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="p-category">Categoría</label>
-                                <select class="field-select" id="p-category">
+                                </select></div>
+                            <div class="form-group"><label for="p-category">Categoría</label><select
+                                    class="field-select" id="p-category">
                                     <option value="chockers">Chockers</option>
                                     <option value="collares">Collares</option>
                                     <option value="silver">Silver</option>
                                     <option value="gold">Gold</option>
                                     <option value="other">Other</option>
-                                </select>
-                            </div>
+                                </select></div>
                         </div>
-
                         <div class="grid-2">
-                            <div class="form-group">
-                                <label for="p-status">Estado comercial</label>
-                                <select class="field-select" id="p-status">
+                            <div class="form-group"><label for="p-status">Estado comercial</label><select
+                                    class="field-select" id="p-status">
                                     <option value="">Normal</option>
                                     <option value="NUEVO">NUEVO</option>
                                     <option value="PROMOCIÓN">PROMOCIÓN</option>
                                     <option value="AGOTADO">AGOTADO</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="p-material">Material (opcional)</label>
-                                <input class="field" type="text" id="p-material"
-                                    placeholder="Vacío para ocultar en web">
+                                </select></div>
+                            <div class="form-group"><label for="p-material">Material (opcional)</label><input
+                                    class="field" type="text" id="p-material" placeholder="Vacío para ocultar en web">
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <label for="p-description">Descripción</label>
-                            <textarea class="field-area" id="p-description"></textarea>
-                        </div>
-
-                        <div class="checks-row">
-                            <label class="check-card"><input type="checkbox" id="p-soldout"> Agotado</label>
-                            <label class="check-card"><input type="checkbox" id="p-dashboard" checked> Visible en
-                                web</label>
-                            <label class="check-card"><input type="checkbox" id="p-featured"> Destacado</label>
-                        </div>
+                        <div class="form-group"><label for="p-description">Descripción</label><textarea
+                                class="field-area" id="p-description"></textarea></div>
+                        <div class="checks-row"><label class="check-card"><input type="checkbox"
+                                    id="p-soldout">Agotado</label><label class="check-card"><input type="checkbox"
+                                    id="p-dashboard" checked>Visible en web</label><label class="check-card"><input
+                                    type="checkbox" id="p-featured">Destacado</label></div>
                     </div>
-
                     <div>
-                        <div class="form-group">
-                            <label for="p-image-file">Subir imagen principal</label>
-                            <input class="field" type="file" id="p-image-file" accept="image/*">
+                        <div class="form-group"><label>Imágenes del Producto</label>
+                            < !-- Hidden input for file selection --><input type="file" id="image-upload-input" multiple
+                                    accept="image/*" class="hidden">
+                                < !-- Drag & Drop Zone -->
+                                    <div id="image-drop-zone" class="image-drop-zone">
+                                        <p>Arrastra imágenes aquí o <button type="button" id="trigger-upload-btn"
+                                                class="text-btn">selecciona archivos</button></p>
+                                    </div>
+                                    < !-- Image Grid -->
+                                        <div id="image-manager-grid" class="image-manager-grid">
+                                            < !-- Thumbnails will be injected here via JS -->
+                                        </div>
+                                        <p class="help-text">Arrastra para reordenar. La primera imagen será la portada.
+                                        </p>
                         </div>
-
-                        <div class="form-group">
-                            <label for="p-image">URL imagen principal</label>
-                            <input class="field" type="text" id="p-image" placeholder="https://... o images/...">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="p-images">Galería (una URL por línea)</label>
-                            <textarea class="field-area" id="p-images"
-                                placeholder="https://...\nhttps://...\nimages/..." style="min-height: 96px;"></textarea>
-                        </div>
-
-                        <div class="preview-panel">
-                            <h4>Vista previa</h4>
-                            <img id="image-preview" class="main-preview" src="../images/hero-background.jpg"
-                                alt="preview">
-                            <div id="image-gallery-preview" class="gallery-preview"></div>
-                        </div>
+                        < !-- Hidden inputs to maintain compatibility with existing JS until fully refactored --><input
+                                type="hidden" id="p-image"><textarea id="p-images" class="hidden"></textarea>
                     </div>
                 </div>
-
-                <div class="modal-footer">
-                    <button class="btn btn-ghost" id="cancel-btn" type="button">Cancelar</button>
-                    <button class="btn btn-primary" id="save-btn" type="submit">Guardar producto</button>
-                </div>
+                <div class="modal-footer"><button class="btn btn-ghost" id="cancel-btn"
+                        type="button">Cancelar</button><button class="btn btn-primary" id="save-btn"
+                        type="submit">Guardar producto</button></div>
             </form>
         </div>
     </div>
-
     <div id="toast-root" class="toast-root"></div>
-
     <script src="../js/admin.js?v=30"></script>
 </body>
 
