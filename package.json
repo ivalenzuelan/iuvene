@@ -1,0 +1,24 @@
+{
+  "name": "iuvene",
+  "version": "1.0.0",
+  "description": "A beautiful, high-performance jewelry e-commerce website featuring modern design principles, advanced functionality, and comprehensive optimizations. Built with vanilla JavaScript, this website delivers exceptional user experience across all devices.",
+  "main": "sw.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivalenzuelan/iuvene.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ivalenzuelan/iuvene/issues"
+  },
+  "homepage": "https://github.com/ivalenzuelan/iuvene#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.97.0",
+    "dotenv": "^17.3.1"
+  }
+}
