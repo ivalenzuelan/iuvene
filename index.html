@@ -106,15 +106,27 @@
                 </div>
                 <form class="atelier-form">
                     <label for="atelier-name">Nombre y apellidos</label>
-                    <input id="atelier-name" name="nombre_apellidos" type="text" required>
+                    <input id="atelier-name" name="nombre_apellidos" type="text" required
+                        placeholder="Tu nombre completo">
 
-                    <label for="atelier-contact">¿Cómo prefieres que contactemos contigo?</label>
-                    <input id="atelier-contact" name="telefono_o_email" type="text"
-                        placeholder="Teléfono o correo electrónico" required>
+                    <label for="atelier-email">Correo electrónico</label>
+                    <input id="atelier-email" name="email" type="email" required placeholder="tu@email.com">
+
+                    <label for="atelier-phone">Teléfono / WhatsApp</label>
+                    <input id="atelier-phone" name="phone" type="tel" required placeholder="+34 600 000 000">
 
                     <label for="atelier-event">¿Cuándo es tu evento u ocasión especial?</label>
-                    <input id="atelier-event" name="fecha_evento" type="text" placeholder="Fecha aproximada y detalles"
-                        required>
+                    <input id="atelier-event" name="fecha_evento" type="date" required>
+
+                    <label for="atelier-product">¿Te gusta algún producto similar?</label>
+                    <select id="atelier-product" name="related_product">
+                        <option value="">-- Selecciona un producto (Opcional) --</option>
+                        <!-- Options populated via JS -->
+                    </select>
+
+                    <label for="atelier-details">Cuéntanos tu idea o detalles</label>
+                    <textarea id="atelier-details" name="details" rows="4"
+                        placeholder="Describe lo que tienes en mente..."></textarea>
 
                     <button type="submit" class="atelier-submit">Quiero diseñar mi pieza</button>
                 </form>

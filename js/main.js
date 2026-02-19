@@ -420,6 +420,27 @@ function setupAtelierForm() {
     const form = document.querySelector('.atelier-form');
     if (!form) return;
 
+    // Populate Product Select
+    const productSelect = document.getElementById('atelier-product');
+    if (productSelect && window.productManager) {
+        // Wait for products to load if needed
+        const populate = () => {
+            const products = window.productManager.getAllProducts();
+            products.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.name; // Storing name is easier for now, or ID
+                option.textContent = p.name;
+                productSelect.appendChild(option);
+            });
+        };
+
+        if (window.productManager.isLoaded) {
+            populate();
+        } else {
+            window.addEventListener('products:ready', populate);
+        }
+    }
+
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitBtn = form.querySelector('button[type="submit"]');
@@ -430,9 +451,12 @@ function setupAtelierForm() {
         const formData = new FormData(form);
         const data = {
             name: formData.get('nombre_apellidos'),
-            contact: formData.get('telefono_o_email'),
+            contact: `${formData.get('email')} | ${formData.get('phone')}`, // Legacy support
+            email: formData.get('email'),
+            phone: formData.get('phone'),
             event_date: formData.get('fecha_evento'),
-            details: 'Solicitud desde web',
+            related_product: formData.get('related_product'),
+            details: formData.get('details'),
             status: 'new'
         };
 
@@ -444,7 +468,6 @@ function setupAtelierForm() {
                 showNotification('¡Solicitud enviada! Te contactaremos pronto.', 'success');
                 form.reset();
             } else {
-                // Fallback if Supabase not ready (shouldn't happen)
                 console.error('Supabase client not ready');
                 showNotification('Error de conexión. Inténtalo más tarde.', 'error');
             }

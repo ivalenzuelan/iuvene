@@ -1165,12 +1165,14 @@ async function loadAtelier() {
                 </div>
 
                 <div style="display:grid; gap:0.5rem; font-size:0.95rem; margin-bottom:1rem;">
-                    <div><strong>Contacto:</strong> ${escapeHtml(req.contact)}</div>
+                    <div><strong>Email:</strong> ${escapeHtml(req.email || '-')}</div>
+                    <div><strong>Teléfono:</strong> ${escapeHtml(req.phone || '-')}</div>
                     <div><strong>Fecha Evento:</strong> ${escapeHtml(req.event_date || 'No especificada')}</div>
+                    ${req.related_product ? `<div><strong>Interesado en:</strong> ${escapeHtml(req.related_product)}</div>` : ''}
                 </div>
 
                 <div style="background:#faf7f2; padding:1rem; border-radius:8px;">
-                    <strong style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Detalles:</strong>
+                    <strong style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Detalles / Idea:</strong>
                     <p style="white-space:pre-wrap; color:#444;">${escapeHtml(req.details || 'Sin detalles')}</p>
                 </div>
             </div>
