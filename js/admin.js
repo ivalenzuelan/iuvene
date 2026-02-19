@@ -1049,4 +1049,140 @@ document.addEventListener('keydown', (event) => {
     openModal(null);
 });
 
-document.addEventListener('DOMContentLoaded', init);
+// --- Supercharge Features ---
+
+function setupTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    if (!tabs.length) return;
+
+    tabs.forEach(btn => {
+        btn.addEventListener('click', () => {
+            // Deactivate all
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            // Activate clicked
+            btn.classList.add('active');
+            const targetId = btn.dataset.tab;
+            const target = document.getElementById(targetId);
+            if (target) target.classList.add('active');
+
+            // Fetch data
+            if (targetId === 'orders-view') loadOrders();
+            if (targetId === 'atelier-view') loadAtelier();
+        });
+    });
+}
+
+function formatDate(isoString) {
+    if (!isoString) return '';
+    return new Date(isoString).toLocaleString('es-ES', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+}
+
+async function loadOrders() {
+    const container = document.getElementById('orders-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="color:var(--muted);">Cargando pedidos...</p>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="empty">No hay pedidos registrados aún.</div>';
+            return;
+        }
+
+        container.innerHTML = data.map(order => `
+            <div class="order-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
+                    <div>
+                        <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(order.customer_name)}</h3>
+                        <p style="color:var(--muted); font-size:0.9rem;">${escapeHtml(order.customer_contact)}</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="status-badge status-${normalizeText(order.status)}">${escapeHtml(order.status)}</span>
+                        <div style="font-size:0.85rem; color:var(--muted); margin-top:0.3rem;">${formatDate(order.created_at)}</div>
+                    </div>
+                </div>
+                
+                <div style="background:#faf7f2; padding:0.8rem; border-radius:8px; margin-bottom:0.8rem; font-size:0.95rem;">
+                    ${order.items.map(item => `
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.2rem;">
+                            <span>${item.quantity}x ${escapeHtml(item.name)}</span>
+                            <span>${formatPrice(item.price * item.quantity)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div style="display:flex; justify-content:flex-end; align-items:center; gap:1rem;">
+                    <div style="font-size:1.2rem; font-weight:700;">Total: ${formatPrice(order.total)}</div>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        console.error('Error loading orders:', err);
+        container.innerHTML = '<div class="login-error">Error al cargar pedidos.</div>';
+    }
+}
+
+async function loadAtelier() {
+    const container = document.getElementById('atelier-list');
+    if (!container) return;
+
+    container.innerHTML = '<p style="color:var(--muted);">Cargando solicitudes...</p>';
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('atelier_requests')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div class="empty">No hay solicitudes de Atelier aún.</div>';
+            return;
+        }
+
+        container.innerHTML = data.map(req => `
+            <div class="atelier-card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
+                    <div>
+                        <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(req.name)}</h3>
+                        <div style="font-size:0.85rem; color:var(--muted);">${formatDate(req.created_at)}</div>
+                    </div>
+                    <span class="status-badge status-${normalizeText(req.status)}">${escapeHtml(req.status)}</span>
+                </div>
+
+                <div style="display:grid; gap:0.5rem; font-size:0.95rem; margin-bottom:1rem;">
+                    <div><strong>Contacto:</strong> ${escapeHtml(req.contact)}</div>
+                    <div><strong>Fecha Evento:</strong> ${escapeHtml(req.event_date || 'No especificada')}</div>
+                </div>
+
+                <div style="background:#faf7f2; padding:1rem; border-radius:8px;">
+                    <strong style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Detalles:</strong>
+                    <p style="white-space:pre-wrap; color:#444;">${escapeHtml(req.details || 'Sin detalles')}</p>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        console.error('Error loading atelier:', err);
+        container.innerHTML = '<div class="login-error">Error al cargar solicitudes.</div>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    init(); // Run original init
+    setupTabs(); // Setup new tabs
+});

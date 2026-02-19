@@ -412,7 +412,50 @@ function initializePage() {
     setupSearch();
     setupSmoothAnchorNavigation();
     setupRevealObserver();
+    setupAtelierForm();
     loadProducts();
+}
+
+function setupAtelierForm() {
+    const form = document.querySelector('.atelier-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Enviando...';
+
+        const formData = new FormData(form);
+        const data = {
+            name: formData.get('nombre_apellidos'),
+            contact: formData.get('telefono_o_email'),
+            event_date: formData.get('fecha_evento'),
+            details: 'Solicitud desde web',
+            status: 'new'
+        };
+
+        try {
+            if (window.productManager && window.supabaseClient) {
+                const { error } = await window.supabaseClient.from('atelier_requests').insert(data);
+                if (error) throw error;
+
+                showNotification('¡Solicitud enviada! Te contactaremos pronto.', 'success');
+                form.reset();
+            } else {
+                // Fallback if Supabase not ready (shouldn't happen)
+                console.error('Supabase client not ready');
+                showNotification('Error de conexión. Inténtalo más tarde.', 'error');
+            }
+        } catch (error) {
+            console.error('Atelier error:', error);
+            showNotification('Error al enviar la solicitud. Inténtalo de nuevo.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    });
 }
 
 window.clearAllFilters = clearAllFilters;

@@ -140,6 +140,16 @@ class ShoppingCart {
         }
     }
 
+    bindCheckoutButton() {
+        const btn = document.getElementById('checkout-btn');
+        if (btn) {
+            // Remove old listeners to prevent duplicates if re-rendered
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', () => this.showCheckoutForm());
+        }
+    }
+
     buildCartItemElement(item) {
         const row = document.createElement('div');
         row.className = 'cart-item';
@@ -231,6 +241,8 @@ class ShoppingCart {
         if (totalElement) {
             totalElement.textContent = `€${this.total.toFixed(2)}`;
         }
+
+        this.bindCheckoutButton();
     }
 
     toggleCart() {
@@ -246,12 +258,115 @@ class ShoppingCart {
         if (isOpen) {
             modal.classList.remove('open');
             document.body.style.overflow = '';
+            // Reset to cart view if it was in checkout
+            const cartContent = modal.querySelector('.cart-content');
+            const checkoutForm = modal.querySelector('.checkout-form');
+            if (cartContent && checkoutForm) {
+                cartContent.style.display = 'block';
+                checkoutForm.style.display = 'none';
+            }
             return;
         }
 
         this.renderCartContent();
         modal.classList.add('open');
         document.body.style.overflow = 'hidden';
+    }
+
+    showCheckoutForm() {
+        const modal = document.getElementById('cart-modal');
+        if (!modal) return;
+
+        // Hide cart content
+        const cartContent = modal.querySelector('.cart-content');
+        if (cartContent) cartContent.style.display = 'none';
+
+        // Check if form already exists
+        let formContainer = modal.querySelector('.checkout-form');
+        if (!formContainer) {
+            formContainer = document.createElement('div');
+            formContainer.className = 'checkout-form';
+            formContainer.innerHTML = `
+                <div class="cart-header">
+                    <h3>Finalizar Pedido</h3>
+                    <button class="close-checkout" aria-label="Volver">←</button>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <p style="margin-bottom: 1rem; color: #666; font-size: 0.95rem;">
+                        Déjanos tus datos para preparar tu pedido Iuvene. Te redirigiremos a WhatsApp para confirmar el pago.
+                    </p>
+                    <form id="order-form">
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Nombre Completo</label>
+                            <input type="text" id="cust-name" required style="width:100%; padding:0.8rem; border:1px solid #ddd; border-radius:8px;">
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Teléfono / WhatsApp</label>
+                            <input type="tel" id="cust-phone" required style="width:100%; padding:0.8rem; border:1px solid #ddd; border-radius:8px;">
+                        </div>
+                        <button type="submit" class="checkout-btn" style="width:100%;">Confirmar Pedido</button>
+                    </form>
+                </div>
+            `;
+            modal.appendChild(formContainer);
+
+            // Bind events
+            formContainer.querySelector('.close-checkout').addEventListener('click', () => {
+                formContainer.style.display = 'none';
+                cartContent.style.display = 'block';
+            });
+
+            formContainer.querySelector('#order-form').addEventListener('submit', (e) => this.processOrder(e));
+        } else {
+            formContainer.style.display = 'block';
+        }
+    }
+
+    async processOrder(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button');
+        const originalText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Procesando...';
+
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+
+        try {
+            // 1. Save to Supabase
+            if (window.supabaseClient) {
+                const { error } = await window.supabaseClient.from('orders').insert({
+                    customer_name: name,
+                    customer_contact: phone,
+                    items: this.items,
+                    total: this.total,
+                    status: 'pending'
+                });
+
+                if (error) throw error;
+            } else {
+                console.warn('Supabase not available, skipping database save');
+            }
+
+            // 2. Construct WhatsApp Message
+            const itemsList = this.items.map(i => `- ${i.name} (x${i.quantity})`).join('%0A');
+            const text = `Hola! 👋%0AQuiero confirmar mi pedido Iuvene:%0A%0A*Cliente:* ${name}%0A*Contacto:* ${phone}%0A%0A*Pedido:*%0A${itemsList}%0A%0A*Total:* €${this.total.toFixed(2)}`;
+            const waLink = `https://wa.me/34633479785?text=${text}`;
+
+            // 3. Clear Cart and Redirect
+            localStorage.removeItem(this.storageKey);
+            this.items = [];
+            this.calculateTotals();
+            this.updateUI();
+
+            window.location.href = waLink;
+
+        } catch (err) {
+            console.error('Order error:', err);
+            this.showNotification('Error al procesar el pedido. Inténtalo de nuevo.', 'error');
+            btn.disabled = false;
+            btn.textContent = originalText;
+        }
     }
 
     addItem(product, quantity = 1) {
