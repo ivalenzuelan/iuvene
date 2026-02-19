@@ -86,50 +86,75 @@
 
 
 
-    <!-- Products Grid -->
+    <!-- Collection: Chokers & Collares -->
     <section class="products" id="shop">
         <div class="container">
-            <div class="products-grid" id="products-grid">
-                <!-- Products will be dynamically loaded here -->
+            <h2 class="section-title">Colección</h2>
+
+            <div class="category-block">
+                <h3 class="category-title">Chokers</h3>
+                <div class="products-grid" id="chokers-grid">
+                    <!-- Loaded dynamically -->
+                </div>
+            </div>
+
+            <div class="category-block">
+                <h3 class="category-title">Collares</h3>
+                <div class="products-grid" id="collares-grid">
+                    <!-- Loaded dynamically -->
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Collections Section -->
-    <section class="collections" id="collections">
+    <!-- Atelier Section -->
+    <section class="atelier" id="atelier">
         <div class="container">
-            <h2 class="section-title">Colecciones</h2>
-            <div class="collections-grid">
-                <div class="collection-card" data-collection="galicia">
-                    <div class="collection-image">
-                        <img src="images/ProductsCollections/ColeccionGalicia/background.jpg" alt="Colección Galicia"
-                            loading="lazy">
-                    </div>
-                    <div class="collection-content">
-                        <h3>Galicia</h3>
-                        <p>Inspirada en la belleza natural y tradiciones de Galicia</p>
-                    </div>
+            <h2 class="section-title">Atelier: Accesorios a tu medida</h2>
+            <div class="atelier-content">
+                <div class="atelier-text">
+                    <p>Sabemos que muchas veces buscamos piezas diferentes para ocasiones más especiales.</p>
+                    <p>Desde la sección de atelier-iuvene puedes diseñar tu propio choker o collar totalmente a medida
+                        que combine con el outfit que llevas pensando tanto tiempo, ¡los accesorios no se merecen menos!
+                    </p>
+                    <p>¡Podemos partir de ideas que traigas, de algún choker de colecciones antiguas que ya esté agotado
+                        o jugar con colores y formas desde cero para co-crear algo totalmente nuevo!</p>
                 </div>
-                <div class="collection-card" data-collection="gus">
-                    <div class="collection-image">
-                        <img src="images/ProductsCollections/ColeccionGus/background.jpg" alt="Colección Gus"
-                            loading="lazy">
+
+                <form class="atelier-form" action="https://formspree.io/f/manlbpge" method="POST">
+                    <h3>¡Cuéntanos tu idea!</h3>
+                    <div class="form-group">
+                        <label for="name">Nombre y apellidos</label>
+                        <input type="text" id="name" name="name" required>
                     </div>
-                    <div class="collection-content">
-                        <h3>Gus</h3>
-                        <p>Colección contemporánea con diseños únicos y modernos</p>
+
+                    <div class="form-group">
+                        <label for="contact-method">¿Por dónde prefieres que nos pongamos en contacto contigo? Déjanos
+                            tu número o tu correo electrónico!</label>
+                        <input type="text" id="contact-method" name="contact" required>
                     </div>
-                </div>
-                <div class="collection-card" data-collection="primas">
-                    <div class="collection-image">
-                        <img src="images/ProductsCollections/ColeccionPrimas/background.jpg" alt="Colección Primas"
-                            loading="lazy">
+
+                    <div class="form-group">
+                        <label for="event-date">¿Cuándo es tu evento u ocasión especial? Así podremos ajustarnos a tus
+                            tiempos para que esté todo listo!</label>
+                        <input type="text" id="event-date" name="date" required>
                     </div>
-                    <div class="collection-content">
-                        <h3>Primas</h3>
-                        <p>Piezas elegantes dedicadas a la familia y vínculos especiales</p>
-                    </div>
-                </div>
+
+                    <button type="submit" class="cta-button">Enviar</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-info" id="contact-info">
+        <div class="container">
+            <h2 class="section-title">Contacto</h2>
+            <p>Si tienes cualquier duda o quieres saber más sobre iuvene, no dudes en ponerte en contacto con nosotros:
+            </p>
+            <div class="contact-details">
+                <a href="mailto:info.iuvene@gmail.com" class="contact-link">info.iuvene@gmail.com</a>
+                <a href="tel:+34633479785" class="contact-link">+633 479 785</a>
             </div>
         </div>
     </section>

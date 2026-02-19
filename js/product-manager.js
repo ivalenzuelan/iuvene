@@ -9,6 +9,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const CACHE_KEY = 'iuvene-products-cache-v2';
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const LOCAL_DATA_SOURCES = [
+    'data/products-feb-2026.json',
     'data/products-custom.json',
     'data/products.json'
 ];

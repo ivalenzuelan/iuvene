@@ -1,0 +1,212 @@
+[
+    {
+        "id": "chocker-ana",
+        "name": "Chocker Ana",
+        "description": "Chocker cosido a mano. Marrón chocolate con doble gargatilla de encaje sobre raso y adornado con 3 flores del mismo material. Cierre con argollas ajustable.",
+        "price": 14,
+        "category": "chocker",
+        "image": "images/products/chocker-ana.jpg",
+        "soldOut": false,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-paula",
+        "name": "Chocker Paula",
+        "description": "Chocker hecho a partir de un textil de algodón granate con ribete en color magenta. Adornado con un medallón de latón con una piedra roja. Esta pieza es original de Turquía. El cierre propuesto para este chocker es un lazo simple.",
+        "price": 13,
+        "category": "chocker",
+        "image": "images/products/chocker-paula.jpg",
+        "soldOut": false,
+        "status": "new"
+    },
+    {
+        "id": "chocker-claudia",
+        "name": "Chocker Claudia",
+        "description": "Chocker multiposición compuesto por una cadena 50 cm de cristales marrón con un colgante de un sol en material de latón chapado en oro viejo. Cierre con argollas",
+        "price": 15,
+        "category": "chocker",
+        "image": "",
+        "soldOut": false,
+        "status": "new"
+    },
+    {
+        "id": "chocker-meri",
+        "name": "Chocker Meri",
+        "description": "Chocher cosido a mano de una composición de flores en retal con detalles de cuentas e hilos dorados sobre un lazo de raso dorado. El cierre propuesto de este chocker es un lazo simple",
+        "price": 15,
+        "category": "chocker",
+        "image": "",
+        "soldOut": false,
+        "status": "new"
+    },
+    {
+        "id": "chocker-marta",
+        "name": "Chocker Marta",
+        "description": "Chocker cosido a mano compuesto por un lazo de raso marrón chocolate con 3 flores de parche en detalles verdes y dorados conectadas por una cadena en color oro viejo. Cierre de argollas ajustable.",
+        "price": 14,
+        "category": "chocker",
+        "image": "images/products/chocker-marta.jpg",
+        "soldOut": false,
+        "status": "new"
+    },
+    {
+        "id": "chocker-leticia",
+        "name": "Chocker Leticia",
+        "description": "Chocker cosido a mano a partir de un retal de un antiguo sari indio con detalles en cuentas y lentejuelas doradas y naranjas",
+        "price": 15,
+        "category": "chocker",
+        "image": "images/products/chocker-leticia.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-arizpe",
+        "name": "Chocker Arizpe",
+        "description": "Chocker cosido a mano de raso negro y flor rosa",
+        "price": 5,
+        "category": "chocker",
+        "image": "images/products/chocker-arizpe.jpg",
+        "soldOut": false,
+        "status": "promotion"
+    },
+    {
+        "id": "chocker-lucia",
+        "name": "Chocker Lucía",
+        "description": "Chocker de gasa verde con botón de hebilla en flor",
+        "price": 8,
+        "category": "chocker",
+        "image": "images/products/chocker-lucia.jpg",
+        "soldOut": false,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-moni",
+        "name": "Chocker Moni",
+        "description": "Chocker de cristales en forma de flor y cierre ajustable",
+        "price": 15,
+        "category": "chocker",
+        "image": "images/products/chocker-moni.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-nuri",
+        "name": "Chocker Nuri",
+        "description": "Chocker doble de tiras doradas en anudadas en cordón con perlas en forma de trébol",
+        "price": 5,
+        "category": "chocker",
+        "image": "images/products/chocker-nuri.jpg",
+        "soldOut": false,
+        "status": "promotion"
+    },
+    {
+        "id": "chocker-espe",
+        "name": "Chocker Espe",
+        "description": "Chocker de doble gasa dorada con abalorio grande de estrella de mar. Cierre de argollas ajustable",
+        "price": 5,
+        "category": "chocker",
+        "image": "images/products/chocker-espe.jpg",
+        "soldOut": false,
+        "status": "promotion"
+    },
+    {
+        "id": "chocker-isa",
+        "name": "Chocker Isa",
+        "description": "Chocker de gasa granate con abalorio cristales",
+        "price": 12,
+        "category": "chocker",
+        "image": "images/products/chocker-isa.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-blanca",
+        "name": "Chocker Blanca",
+        "description": "Chocker de gasa cobre con abalorio cristales",
+        "price": 12,
+        "category": "chocker",
+        "image": "images/products/chocker-blanca.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-cris",
+        "name": "Chocker Cris",
+        "description": "Chocker doble de espejos en forma de rombo",
+        "price": 15,
+        "category": "chocker",
+        "image": "images/products/chocker-cris.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-maria",
+        "name": "Chocker María",
+        "description": "Chocker de gasa naranja con flor de cuentas",
+        "price": 13,
+        "category": "chocker",
+        "image": "images/products/chocker-maria.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-luna",
+        "name": "Chocker Luna",
+        "description": "Chocker de gasa amarillo claro con 2 flores doradas. Cierre de argollas ajustable.",
+        "price": 12,
+        "category": "chocker",
+        "image": "images/products/chocker-luna.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "chocker-carlota",
+        "name": "Chocker Carlota",
+        "description": "Chocker de gasa rosa con flor grande tejida",
+        "price": 13,
+        "category": "chocker",
+        "image": "images/products/chocker-carlota.jpg",
+        "soldOut": true,
+        "status": "normal"
+    },
+    {
+        "id": "collar-bea",
+        "name": "Collar Bea",
+        "description": "Collar hecho a mano. Formado por perlas en dos tamaños con una tira colgante. Cierre con argollas ajustable",
+        "price": 13,
+        "category": "collar",
+        "image": "images/products/collar-bea.jpg",
+        "soldOut": false,
+        "status": "normal"
+    },
+    {
+        "id": "collar-susana",
+        "name": "Collar Susana",
+        "description": "Collar hecho a mano con una cadena gruesa de latón chapada en color oro gastado con una tira de piedras naturales naranjas en forma de cuadrado. Cierre con argollas",
+        "price": 13,
+        "category": "collar",
+        "image": "",
+        "soldOut": false,
+        "status": "new"
+    },
+    {
+        "id": "collar-ale",
+        "name": "Collar Ale",
+        "description": "Collar de piedras cristalinas en color rosa empolvado con nudo en la parte inferior",
+        "price": 10,
+        "category": "collar",
+        "image": "images/products/collar-ale.jpg",
+        "soldOut": false,
+        "status": "normal"
+    },
+    {
+        "id": "collar-garnica",
+        "name": "Collar Garnica",
+        "description": "Collar hecho a mano de cadena de color oro viejo con flores marrones de crochet",
+        "price": 15,
+        "category": "collar",
+        "image": "images/products/collar-garnica.jpg",
+        "soldOut": true,
+        "status": "normal"
+    }
+]
