@@ -1,12 +1,15 @@
 let allProducts = [];
-let allCollections = [];
 let filteredProducts = [];
-let currentCollection = null;
 let currentSearch = '';
-let productsGrid = null;
+let productsRoot = null;
 let searchInput = null;
 let searchCloseButton = null;
 let revealObserver = null;
+
+const PRODUCT_GROUPS = [
+    { id: 'chockers', title: 'Chockers' },
+    { id: 'collares', title: 'Collares' }
+];
 
 function debounce(fn, wait = 250) {
     let timeoutId;
@@ -16,22 +19,44 @@ function debounce(fn, wait = 250) {
     };
 }
 
+function normalizeText(value) {
+    return (value || '').toString().trim().toLowerCase();
+}
+
 function formatPrice(price) {
     if (price == null || Number.isNaN(Number(price))) return '';
     return `€${Number(price).toFixed(2).replace('.00', '')}`;
 }
 
-function normalizeSearchText(value) {
-    return (value || '').toString().trim().toLowerCase();
+function normalizeStatus(status, soldOut = false) {
+    if (soldOut) return 'agotado';
+
+    const normalized = normalizeText(status);
+    if (normalized.includes('nuevo')) return 'nuevo';
+    if (normalized.includes('promo')) return 'promocion';
+    if (normalized.includes('agotado')) return 'agotado';
+    return '';
 }
 
-function getDashboardProducts() {
-    return allProducts.filter((product) => product.showOnDashboard !== false);
+function normalizeProductType(product) {
+    const type = normalizeText(product.type);
+    const name = normalizeText(product.name);
+
+    if (type.includes('chocker') || name.startsWith('chocker')) return 'chockers';
+    if (type.includes('collar') || type.includes('necklace') || name.startsWith('collar')) return 'collares';
+
+    return 'chockers';
 }
 
-function getActiveCollection() {
-    if (!currentCollection) return null;
-    return allCollections.find((collection) => collection.id === currentCollection) || null;
+function prepareProducts(rawProducts) {
+    return rawProducts
+        .filter((product) => product.showOnDashboard !== false)
+        .map((product) => ({
+            ...product,
+            typeGroup: normalizeProductType(product),
+            statusNormalized: normalizeStatus(product.status, product.soldOut)
+        }))
+        .filter((product) => PRODUCT_GROUPS.some((group) => group.id === product.typeGroup));
 }
 
 function createTextElement(tag, className, text) {
@@ -39,6 +64,22 @@ function createTextElement(tag, className, text) {
     if (className) element.className = className;
     element.textContent = text;
     return element;
+}
+
+function createStatusBadge(product) {
+    if (product.soldOut) {
+        return createTextElement('div', 'sold-out-badge', 'Agotado');
+    }
+
+    if (!product.statusNormalized) return null;
+
+    const labelMap = {
+        nuevo: 'Nuevo',
+        promocion: 'Promoción'
+    };
+
+    const badge = createTextElement('div', `product-status-badge status-${product.statusNormalized}`, labelMap[product.statusNormalized] || '');
+    return badge;
 }
 
 function createProductCard(product) {
@@ -49,21 +90,25 @@ function createProductCard(product) {
     imageWrapper.className = 'product-image';
 
     const image = document.createElement('img');
-    image.src = product.image;
+    image.src = product.image || 'images/hero-background.jpg';
     image.alt = product.name;
     image.loading = 'lazy';
     image.decoding = 'async';
     image.fetchPriority = 'low';
+    image.onerror = function onImageError() {
+        this.src = 'images/hero-background.jpg';
+    };
+
     imageWrapper.appendChild(image);
 
-    if (product.soldOut) {
-        imageWrapper.appendChild(createTextElement('div', 'sold-out-badge', 'Agotado'));
+    const badge = createStatusBadge(product);
+    if (badge) {
+        imageWrapper.appendChild(badge);
     }
 
     const info = document.createElement('div');
     info.className = 'product-info';
 
-    info.appendChild(createTextElement('div', 'product-material', product.material || ''));
     info.appendChild(createTextElement('div', 'product-name', product.name));
 
     const price = formatPrice(product.price);
@@ -75,7 +120,7 @@ function createProductCard(product) {
     addToCartButton.className = 'add-to-cart-card-btn';
     addToCartButton.type = 'button';
     addToCartButton.disabled = product.soldOut === true;
-    addToCartButton.textContent = product.soldOut ? 'Agotado' : 'Añadir al Carrito';
+    addToCartButton.textContent = product.soldOut ? 'Agotado' : 'Añadir al carrito';
     info.appendChild(addToCartButton);
 
     card.appendChild(imageWrapper);
@@ -86,7 +131,6 @@ function createProductCard(product) {
     };
 
     imageWrapper.addEventListener('click', goToProduct);
-    info.querySelector('.product-material')?.addEventListener('click', goToProduct);
     info.querySelector('.product-name')?.addEventListener('click', goToProduct);
     info.querySelector('.product-price-preview')?.addEventListener('click', goToProduct);
 
@@ -110,8 +154,15 @@ function createProductCard(product) {
     return card;
 }
 
+function updateProductCount(count) {
+    const countElement = document.getElementById('product-count');
+    if (!countElement) return;
+
+    countElement.textContent = `Mostrando ${count} producto${count === 1 ? '' : 's'}`;
+}
+
 function renderEmptyState() {
-    if (!productsGrid) return;
+    if (!productsRoot) return;
 
     const empty = document.createElement('div');
     empty.className = 'no-products';
@@ -122,15 +173,15 @@ function renderEmptyState() {
     const clearButton = document.createElement('button');
     clearButton.className = 'clear-filters-btn';
     clearButton.type = 'button';
-    clearButton.textContent = 'Limpiar filtros';
+    clearButton.textContent = 'Limpiar búsqueda';
     clearButton.addEventListener('click', clearAllFilters);
-    empty.appendChild(clearButton);
 
-    productsGrid.replaceChildren(empty);
+    empty.appendChild(clearButton);
+    productsRoot.replaceChildren(empty);
 }
 
-function renderProducts(products) {
-    if (!productsGrid) return;
+function renderGroupedProducts(products) {
+    if (!productsRoot) return;
 
     if (!Array.isArray(products) || products.length === 0) {
         renderEmptyState();
@@ -140,14 +191,31 @@ function renderProducts(products) {
     }
 
     const fragment = document.createDocumentFragment();
-    products.forEach((product, index) => {
-        const card = createProductCard(product);
-        card.style.animationDelay = `${index * 0.06}s`;
-        card.classList.add('fade-in');
-        fragment.appendChild(card);
+
+    PRODUCT_GROUPS.forEach((group) => {
+        const groupProducts = products.filter((product) => product.typeGroup === group.id);
+        if (groupProducts.length === 0) return;
+
+        const groupBlock = document.createElement('section');
+        groupBlock.className = 'product-group';
+
+        const title = createTextElement('h3', 'product-group-title', group.title);
+        const grid = document.createElement('div');
+        grid.className = 'products-grid';
+
+        groupProducts.forEach((product, index) => {
+            const card = createProductCard(product);
+            card.style.animationDelay = `${index * 0.05}s`;
+            card.classList.add('fade-in');
+            grid.appendChild(card);
+        });
+
+        groupBlock.appendChild(title);
+        groupBlock.appendChild(grid);
+        fragment.appendChild(groupBlock);
     });
 
-    productsGrid.replaceChildren(fragment);
+    productsRoot.replaceChildren(fragment);
     updateProductCount(products.length);
 
     window.dispatchEvent(new CustomEvent('products:rendered', {
@@ -155,197 +223,41 @@ function renderProducts(products) {
     }));
 }
 
-function createCollectionCard(collection) {
-    const card = document.createElement('div');
-    card.className = 'collection-card';
-    card.dataset.collection = collection.id;
+function applyFilters() {
+    const searchValue = normalizeText(currentSearch);
 
-    const imageWrapper = createTextElement('div', 'collection-image', '');
-    const image = document.createElement('img');
-    image.src = collection.image || 'images/hero-background.jpg';
-    image.alt = `Colección ${collection.name}`;
-    image.loading = 'lazy';
-    image.onerror = function onImageError() {
-        this.src = 'images/hero-background.jpg';
-    };
-    imageWrapper.appendChild(image);
-
-    const content = createTextElement('div', 'collection-content', '');
-    content.appendChild(createTextElement('h3', '', collection.name));
-    content.appendChild(createTextElement('p', '', collection.description || 'Colección única de joyería artesanal'));
-
-    card.appendChild(imageWrapper);
-    card.appendChild(content);
-
-    card.addEventListener('click', () => {
-        filterByCollection(collection.id);
-    });
-
-    return card;
-}
-
-function renderCollections() {
-    const collectionsGrid = document.querySelector('.collections-grid');
-    if (!collectionsGrid || allCollections.length === 0) return;
-
-    const fragment = document.createDocumentFragment();
-    allCollections.forEach((collection) => {
-        fragment.appendChild(createCollectionCard(collection));
-    });
-
-    collectionsGrid.replaceChildren(fragment);
-    updateCollectionActiveState();
-}
-
-function ensureCollectionDescriptionElement() {
-    const productsContainer = document.querySelector('.products .container');
-    if (!productsContainer) return null;
-
-    let description = productsContainer.querySelector('.collection-description');
-    if (!description) {
-        description = document.createElement('p');
-        description.className = 'collection-description';
-        description.style.textAlign = 'center';
-        description.style.marginBottom = '1.5rem';
-        description.style.color = '#6b6b6b';
-        description.style.maxWidth = '700px';
-        description.style.marginLeft = 'auto';
-        description.style.marginRight = 'auto';
-        productsContainer.insertBefore(description, productsContainer.firstChild);
-    }
-
-    return description;
-}
-
-function updateCollectionDescription() {
-    const descriptionElement = ensureCollectionDescriptionElement();
-    if (!descriptionElement) return;
-
-    const collection = getActiveCollection();
-    if (!collection) {
-        descriptionElement.textContent = '';
+    if (!searchValue) {
+        filteredProducts = [...allProducts];
+        renderGroupedProducts(filteredProducts);
         return;
     }
 
-    descriptionElement.textContent = collection.description || '';
-}
+    filteredProducts = allProducts.filter((product) => {
+        const haystack = [
+            product.name,
+            product.description,
+            product.type,
+            product.status,
+            product.tags && Array.isArray(product.tags) ? product.tags.join(' ') : ''
+        ].map(normalizeText).join(' ');
 
-function updateCollectionActiveState() {
-    const collectionCards = document.querySelectorAll('.collection-card');
-    collectionCards.forEach((card) => {
-        card.classList.toggle('active', card.dataset.collection === currentCollection);
+        return haystack.includes(searchValue);
     });
-}
 
-function updatePageHeading() {
-    const title = getActiveCollection();
-    const heading = document.querySelector('.products h2');
-
-    if (!title) {
-        document.title = 'Iuvene - Joyería y Accesorios Artesanales';
-        if (heading) heading.textContent = 'Nuestra Colección';
-        return;
-    }
-
-    document.title = `Colección ${title.name} - Iuvene`;
-    if (heading) heading.textContent = `Colección ${title.name}`;
-}
-
-function updateProductCount(count) {
-    const productsContainer = document.querySelector('.products .container');
-    if (!productsContainer) return;
-
-    let countElement = document.getElementById('product-count');
-    if (!countElement) {
-        countElement = document.createElement('p');
-        countElement.id = 'product-count';
-        countElement.className = 'product-count-compact';
-
-        if (productsGrid) {
-            productsContainer.insertBefore(countElement, productsGrid);
-        } else {
-            productsContainer.appendChild(countElement);
-        }
-    }
-
-    countElement.textContent = `Mostrando ${count} producto${count === 1 ? '' : 's'}`;
-}
-
-function showViewAllButton() {
-    const productsContainer = document.querySelector('.products .container');
-    if (!productsContainer) return;
-
-    let button = document.querySelector('.view-all-btn');
-    if (!button) {
-        button = document.createElement('button');
-        button.className = 'view-all-btn';
-        button.type = 'button';
-        button.textContent = '← Ver todas las colecciones';
-        button.addEventListener('click', viewAllProducts);
-        productsContainer.appendChild(button);
-    }
-}
-
-function hideViewAllButton() {
-    const button = document.querySelector('.view-all-btn');
-    if (button) button.remove();
-}
-
-function updateViewAllButton() {
-    if (currentCollection) {
-        showViewAllButton();
-    } else {
-        hideViewAllButton();
-    }
-}
-
-function applyFilters({ scrollToProducts = false } = {}) {
-    const searchValue = normalizeSearchText(currentSearch);
-
-    let visible = currentCollection
-        ? allProducts.filter((product) => product.collection === currentCollection)
-        : getDashboardProducts();
-
-    if (searchValue) {
-        visible = visible.filter((product) => {
-            const name = normalizeSearchText(product.name);
-            const material = normalizeSearchText(product.material);
-            const description = normalizeSearchText(product.description);
-
-            return name.includes(searchValue) || material.includes(searchValue) || description.includes(searchValue);
-        });
-    }
-
-    filteredProducts = visible;
-
-    renderProducts(visible);
-    updatePageHeading();
-    updateCollectionDescription();
-    updateCollectionActiveState();
-    updateViewAllButton();
-
-    if (scrollToProducts) {
-        document.querySelector('.products')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-function filterByCollection(collectionId) {
-    currentCollection = collectionId;
-    applyFilters({ scrollToProducts: true });
-}
-
-function viewAllProducts() {
-    currentCollection = null;
-    applyFilters({ scrollToProducts: false });
+    renderGroupedProducts(filteredProducts);
 }
 
 function clearAllFilters() {
-    currentCollection = null;
     currentSearch = '';
 
-    if (searchInput) searchInput.value = '';
-    if (searchInput) searchInput.style.display = 'none';
-    if (searchCloseButton) searchCloseButton.style.display = 'none';
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.style.display = 'none';
+    }
+
+    if (searchCloseButton) {
+        searchCloseButton.style.display = 'none';
+    }
 
     applyFilters();
 }
@@ -363,7 +275,7 @@ function setupSearch() {
     searchInput = document.createElement('input');
     searchInput.type = 'text';
     searchInput.id = 'search-input';
-    searchInput.placeholder = 'Buscar productos...';
+    searchInput.placeholder = 'Buscar chockers o collares...';
     searchInput.style.display = 'none';
 
     searchCloseButton = document.createElement('button');
@@ -380,7 +292,7 @@ function setupSearch() {
     const updateSearch = debounce((value) => {
         currentSearch = value;
         applyFilters();
-    }, 220);
+    }, 200);
 
     searchButton.addEventListener('click', () => {
         const visible = searchInput.style.display !== 'none';
@@ -443,7 +355,7 @@ function showNotification(message, type = 'info') {
 function observeRevealElements() {
     if (!revealObserver) return;
 
-    const targets = document.querySelectorAll('.product-card, .collection-card, .section-title, .hero-content');
+    const targets = document.querySelectorAll('.product-card, .product-group, .section-title, .hero-content, .atelier-content, .contact-section .container');
     targets.forEach((target) => {
         target.classList.add('reveal');
         revealObserver.observe(target);
@@ -476,25 +388,24 @@ async function loadProducts() {
 
         await window.productManager.init();
 
-        allProducts = window.productManager.getAllProducts();
-        allCollections = window.productManager.getAllCollections();
+        const rawProducts = window.productManager.getAllProducts();
+        allProducts = prepareProducts(rawProducts);
 
-        renderCollections();
         applyFilters();
     } catch (error) {
         console.error('Error loading products:', error);
         showNotification('Error cargando productos. Recarga la página.', 'error');
 
-        if (productsGrid) {
-            productsGrid.innerHTML = '<div class="error-message">Error cargando productos. Por favor recarga la página.</div>';
+        if (productsRoot) {
+            productsRoot.innerHTML = '<div class="error-message">Error cargando productos. Por favor recarga la página.</div>';
         }
     }
 }
 
 function initializePage() {
-    productsGrid = document.getElementById('products-grid');
-    if (!productsGrid) {
-        console.error('Products grid element not found');
+    productsRoot = document.getElementById('products-grid');
+    if (!productsRoot) {
+        console.error('Products container not found');
         return;
     }
 
@@ -505,8 +416,5 @@ function initializePage() {
 }
 
 window.clearAllFilters = clearAllFilters;
-window.filterByCollection = filterByCollection;
-window.viewAllProducts = viewAllProducts;
-window.toggleFilters = () => { };
 
 document.addEventListener('DOMContentLoaded', initializePage);

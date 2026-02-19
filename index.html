@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iuvene - Joyería y Accesorios Artesanales</title>
+    <title>Iuvene - Chockers y Collares Artesanales</title>
     <meta name="description"
-        content="Descubre nuestra colección de joyería ética, elaborada con métodos artesanales tradicionales en nuestro taller de Madrid.">
+        content="Descubre la colección Iuvene de chockers y collares artesanales, y diseña tu pieza a medida en nuestro atelier.">
 
-    <!-- Favicon and App Icons -->
     <link rel="icon" type="image/x-icon" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
     <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
@@ -16,11 +15,10 @@
     <link rel="icon" type="image/png" sizes="512x512" href="favicon/android-chrome-512x512.png">
     <link rel="manifest" href="favicon/site.webmanifest">
 
-    <!-- Theme Colors -->
     <meta name="theme-color" content="#ffffff">
     <meta name="msapplication-TileColor" content="#ffffff">
 
-    <link rel="stylesheet" href="css/style.css?v=18">
+    <link rel="stylesheet" href="css/style.css?v=19">
     <link rel="stylesheet" href="css/cart.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +29,6 @@
 </head>
 
 <body>
-    <!-- Header -->
     <header class="header">
         <nav class="nav">
             <div class="nav-container">
@@ -41,10 +38,9 @@
                     </a>
                 </div>
                 <div class="nav-links">
-                    <a href="#collections">Colecciones</a>
-                    <a href="#shop">Tienda</a>
-                    <a href="#about">Nosotros</a>
-                    <a href="#contact">Contacto</a>
+                    <a href="#coleccion">Colección</a>
+                    <a href="#atelier">Atelier</a>
+                    <a href="#contacto">Contacto</a>
                     <a href="https://instagram.com/iuvene" target="_blank" class="instagram-nav-btn"
                         aria-label="Síguenos en Instagram">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -76,116 +72,76 @@
         </nav>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-
-            <a href="#shop" class="cta-button">Explorar Catálogo</a>
+            <h1 class="hero-title">IUVENE</h1>
+            <p class="hero-subtitle">Chockers y collares artesanales</p>
+            <a href="#coleccion" class="cta-button">Ver colección</a>
         </div>
     </section>
 
-
-
-    <!-- Products Grid -->
-    <section class="products" id="shop">
+    <section class="products" id="coleccion">
         <div class="container">
-            <div class="products-grid" id="products-grid">
-                <!-- Products will be dynamically loaded here -->
+            <div class="section-header">
+                <h2 class="section-title">Colección</h2>
+                <p>Descubre nuestros chockers y collares en edición limitada.</p>
+                <p class="product-count-compact" id="product-count"></p>
+            </div>
+            <div class="product-groups" id="products-grid">
+                <!-- Productos cargados dinámicamente -->
             </div>
         </div>
     </section>
 
-    <!-- Collections Section -->
-    <section class="collections" id="collections">
+    <section class="atelier-section" id="atelier">
         <div class="container">
-            <h2 class="section-title">Colecciones</h2>
-            <div class="collections-grid">
-                <div class="collection-card" data-collection="galicia">
-                    <div class="collection-image">
-                        <img src="images/ProductsCollections/ColeccionGalicia/background.jpg" alt="Colección Galicia"
-                            loading="lazy">
-                    </div>
-                    <div class="collection-content">
-                        <h3>Galicia</h3>
-                        <p>Inspirada en la belleza natural y tradiciones de Galicia</p>
-                    </div>
+            <h2 class="section-title">Atelier: Accesorios a tu medida</h2>
+            <div class="atelier-content reveal">
+                <div class="atelier-copy">
+                    <p>Sabemos que muchas veces buscamos piezas diferentes para ocasiones más especiales.</p>
+                    <p>Desde la sección de atelier-iuvene puedes diseñar tu propio chocker o collar totalmente a
+                        medida que combine con el outfit que llevas pensando tanto tiempo, los accesorios no se merecen
+                        menos.</p>
+                    <p>Podemos partir de ideas que traigas, de algún chocker de colecciones antiguas que ya esté
+                        agotado o jugar con colores y formas desde cero para co-crear algo totalmente nuevo.</p>
+                    <p>Para más información, déjanos tus datos y nos pondremos en contacto contigo.</p>
                 </div>
-                <div class="collection-card" data-collection="gus">
-                    <div class="collection-image">
-                        <img src="images/ProductsCollections/ColeccionGus/background.jpg" alt="Colección Gus"
-                            loading="lazy">
-                    </div>
-                    <div class="collection-content">
-                        <h3>Gus</h3>
-                        <p>Colección contemporánea con diseños únicos y modernos</p>
-                    </div>
-                </div>
-                <div class="collection-card" data-collection="primas">
-                    <div class="collection-image">
-                        <img src="images/ProductsCollections/ColeccionPrimas/background.jpg" alt="Colección Primas"
-                            loading="lazy">
-                    </div>
-                    <div class="collection-content">
-                        <h3>Primas</h3>
-                        <p>Piezas elegantes dedicadas a la familia y vínculos especiales</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                <form action="https://formspree.io/f/manlbpge" method="POST" class="atelier-form">
+                    <label for="atelier-name">Nombre y apellidos</label>
+                    <input id="atelier-name" name="nombre_apellidos" type="text" required>
 
-    <!-- About Section -->
-    <section class="about" id="about">
-        <div class="container">
-            <div class="about-content">
-                <div class="about-text">
-                    <h2>Nuestra Historia</h2>
-                    <p>Fundada en Madrid, Iuvene te trae joyería artesanal que celebra la rica tradición española y la
-                        belleza de nuestro patrimonio cultural. Cada pieza está cuidadosamente diseñada y
-                        meticulosamente elaborada usando técnicas tradicionales transmitidas de generación en
-                        generación.</p>
-                    <p>Creemos en crear joyería que no solo adorna, sino que cuenta una historia: de artesanía,
-                        sostenibilidad y el carácter único de nuestra herencia española.</p>
-                </div>
-                <div class="about-image">
-                    <img src="images/aboutus/6773A021-5D04-482B-BADD-578875E3B782_1_201_a.jpeg" alt="Our Workshop"
-                        loading="lazy">
-                </div>
-            </div>
-        </div>
-    </section>
+                    <label for="atelier-contact">¿Cómo prefieres que contactemos contigo?</label>
+                    <input id="atelier-contact" name="telefono_o_email" type="text"
+                        placeholder="Teléfono o correo electrónico" required>
 
-    <!-- Newsletter Section -->
-    <section class="newsletter">
-        <div class="container">
-            <div class="newsletter-content">
-                <h2 class="newsletter-title">Dejanos tu mail!</h2>
-                <p class="newsletter-desc">
-                    Únete para descubrir antes que nadie nuestras nuevas colecciones, ofertas exclusivas y mucho más.
-                </p>
-                <form action="https://formspree.io/f/manlbpge" method="POST" class="newsletter-form-ui">
-                    <input type="email" name="email" class="newsletter-input" placeholder="Tu correo electrónico"
-                        required />
-                    <button type="submit" class="newsletter-btn">
-                        Unirme
-                    </button>
+                    <label for="atelier-event">¿Cuándo es tu evento u ocasión especial?</label>
+                    <input id="atelier-event" name="fecha_evento" type="text"
+                        placeholder="Fecha aproximada y detalles" required>
+
+                    <button type="submit" class="atelier-submit">Quiero diseñar mi pieza</button>
                 </form>
-                <small class="newsletter-note"></small>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="footer" id="contact">
+    <section class="contact-section" id="contacto">
+        <div class="container reveal">
+            <h2 class="section-title">Contacto</h2>
+            <p>Si tienes cualquier duda o quieres saber más sobre Iuvene, no dudes en ponerte en contacto con
+                nosotros:</p>
+            <ul class="contact-list">
+                <li><a href="mailto:info.iuvene@gmail.com">info.iuvene@gmail.com</a></li>
+                <li><a href="tel:+34633479785">+633 479 785</a></li>
+            </ul>
+        </div>
+    </section>
+
+    <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-section">
-                    <h3>Contacto</h3>
-                    <ul>
-                        <li><a href="mailto:iuvene.info@gmail.com">Consultas generales</a></li>
-                        <li><a href="mailto:iuvene.info@gmail.com">Consultas de pedidos</a></li>
-                        <li><a href="mailto:iuvene.info@gmail.com">Consultas de prensa</a></li>
-                    </ul>
+                <div>
+                    <h3>Iuvene</h3>
+                    <p class="copyright">© Iuvene • Madrid, España</p>
                 </div>
                 <div class="social-links">
                     <a href="https://instagram.com/iuvene" target="_blank" aria-label="Instagram"
@@ -197,20 +153,15 @@
                         Síguenos en Instagram
                     </a>
                 </div>
-                <p class="copyright">© Iuvene • Madrid, España</p>
             </div>
         </div>
     </footer>
 
-
-
     <script src="js/performance.js"></script>
     <script src="js/collection-scanner.js"></script>
-    <script src="js/product-manager.js?v=20"></script>
+    <script src="js/product-manager.js?v=21"></script>
     <script src="js/background-slideshow.js"></script>
-    <script src="js/main.js?v=20"></script>
-    <script src="js/newsletter-config.js"></script>
-    <script src="js/newsletter.js"></script>
+    <script src="js/main.js?v=21"></script>
     <script src="js/cart.js"></script>
 </body>
 

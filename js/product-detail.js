@@ -267,7 +267,10 @@ function setupImageGallery(product) {
 }
 
 function updateMetaTags(product) {
-    const description = `${product.name} - ${product.material}. ${toText(product.description, 'Joyería artesanal diseñada en Madrid.')}`;
+    const materialText = toText(product.material, '');
+    const description = materialText
+        ? `${product.name} - ${materialText}. ${toText(product.description, 'Joyería artesanal diseñada en Madrid.')}`
+        : `${product.name}. ${toText(product.description, 'Joyería artesanal diseñada en Madrid.')}`;
 
     let metaDescription = document.querySelector('meta[name="description"]');
     if (!metaDescription) {
@@ -343,7 +346,7 @@ function addBreadcrumb(product) {
     home.textContent = 'Inicio';
 
     const shop = document.createElement('a');
-    shop.href = 'index.html#shop';
+    shop.href = 'index.html#coleccion';
     shop.textContent = 'Productos';
 
     const separator1 = document.createElement('span');
@@ -401,15 +404,18 @@ function renderRelatedProducts(product) {
         const info = document.createElement('div');
         info.className = 'related-product-info';
 
-        const material = document.createElement('div');
-        material.className = 'related-product-material';
-        material.textContent = toText(relatedProduct.material, '');
-
         const name = document.createElement('div');
         name.className = 'related-product-name';
         name.textContent = relatedProduct.name;
 
-        info.appendChild(material);
+        const relatedMaterial = toText(relatedProduct.material, '');
+        if (relatedMaterial) {
+            const material = document.createElement('div');
+            material.className = 'related-product-material';
+            material.textContent = relatedMaterial;
+            info.appendChild(material);
+        }
+
         info.appendChild(name);
 
         if (relatedProduct.price != null && !Number.isNaN(Number(relatedProduct.price))) {
@@ -450,13 +456,16 @@ function setupWhatsAppLink(product) {
     const link = document.getElementById('whatsapp-link');
     if (!link) return;
 
-    const phoneNumber = link.dataset.phone || '34123456789';
-    const message = [
-        `Hola, me interesa ${product.name}.`,
-        `Material: ${toText(product.material, 'Consultar')}`,
-        `Precio: ${formatPrice(product)}`,
-        '¿Podrías darme más información sobre disponibilidad y envío?'
-    ].join('\n');
+    const phoneNumber = link.dataset.phone || '34633479785';
+    const messageParts = [`Hola, me interesa ${product.name}.`];
+    const materialText = toText(product.material, '');
+    if (materialText) {
+        messageParts.push(`Material: ${materialText}`);
+    }
+    messageParts.push(`Precio: ${formatPrice(product)}`);
+    messageParts.push('¿Podrías darme más información sobre disponibilidad y envío?');
+
+    const message = messageParts.join('\n');
 
     link.href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 }
@@ -500,7 +509,11 @@ function updateProductInfo(product) {
     const description = document.getElementById('product-description');
     const price = document.getElementById('product-price');
 
-    if (material) material.textContent = toText(product.material, 'Material no especificado');
+    if (material) {
+        const materialText = toText(product.material, '');
+        material.textContent = materialText;
+        material.style.display = materialText ? '' : 'none';
+    }
     if (title) title.textContent = product.name;
     if (description) description.textContent = toText(product.description, 'Joyería artesanal diseñada en Madrid.');
 

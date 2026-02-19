@@ -2564,3 +2564,152 @@ h6 {
 body {
     color: #4a4a4a;
 }
+/* February 2026 structure overrides */
+.section-header {
+    text-align: center;
+    max-width: 760px;
+    margin: 0 auto 2rem;
+}
+
+.product-count-compact {
+    color: #8b7355;
+    font-weight: 600;
+    margin-top: 0.5rem;
+}
+
+.product-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+}
+
+.product-group-title {
+    font-size: 1.6rem;
+    margin-bottom: 1.25rem;
+    color: #2c2c2c;
+}
+
+.product-status-badge {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 0.45rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    z-index: 2;
+}
+
+.status-nuevo {
+    background: #1f7a4d;
+    color: #ffffff;
+}
+
+.status-promocion {
+    background: #c57b20;
+    color: #ffffff;
+}
+
+.product-material {
+    display: none !important;
+}
+
+.atelier-section {
+    padding: 4.5rem 0;
+    background: #f8f6f2;
+}
+
+.atelier-content {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+.atelier-copy p {
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+}
+
+.atelier-form {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.atelier-form label {
+    font-weight: 600;
+    color: #2c2c2c;
+    font-size: 0.95rem;
+}
+
+.atelier-form input {
+    border: 1px solid #d8d8d8;
+    border-radius: 8px;
+    padding: 0.8rem 0.95rem;
+    font-size: 1rem;
+}
+
+.atelier-form input:focus {
+    border-color: #8b7355;
+    outline: none;
+}
+
+.atelier-submit {
+    margin-top: 0.4rem;
+    border: none;
+    border-radius: 8px;
+    padding: 0.9rem 1.1rem;
+    background: #8b7355;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.atelier-submit:hover {
+    background: #715d43;
+}
+
+.contact-section {
+    padding: 4rem 0;
+}
+
+.contact-list {
+    list-style: none;
+    margin-top: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    padding: 0;
+}
+
+.contact-list a {
+    color: #2c2c2c;
+    font-weight: 500;
+}
+
+.contact-list a:hover {
+    color: #8b7355;
+}
+
+@media (max-width: 900px) {
+    .atelier-content {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .product-group-title {
+        font-size: 1.35rem;
+    }
+
+    .section-header {
+        margin-bottom: 1.5rem;
+    }
+}

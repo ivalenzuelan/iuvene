@@ -1,9 +1,9 @@
 // Service Worker for Iuvene Jewelry Website
 // Provides offline functionality and performance improvements
 
-const CACHE_NAME = 'iuvene-v1.2.0';
-const STATIC_CACHE = 'iuvene-static-v1.2.0';
-const DYNAMIC_CACHE = 'iuvene-dynamic-v1.2.0';
+const CACHE_NAME = 'iuvene-v1.3.0';
+const STATIC_CACHE = 'iuvene-static-v1.3.0';
+const DYNAMIC_CACHE = 'iuvene-dynamic-v1.3.0';
 
 // Files to cache immediately
 const STATIC_FILES = [
@@ -13,14 +13,16 @@ const STATIC_FILES = [
     '/css/style.css',
     '/js/main.js',
     '/js/product-detail.js',
-    '/js/newsletter.js',
-    '/js/newsletter-config.js',
     '/js/performance.js',
+    '/js/cart.js',
+    '/js/product-manager.js',
     '/data/products.json',
+    '/data/products-custom.json',
+    '/data/products-collections.json',
     '/images/hero-background.jpg',
-    '/images/ProductsCollections/Colección Galicia/background.jpg',
-    '/images/ProductsCollections/Colección Gus/background.jpg',
-    '/images/ProductsCollections/Colección Primas/background.jpg',
+    '/images/ProductsCollections/ColeccionGalicia/background.jpg',
+    '/images/ProductsCollections/ColeccionGus/background.jpg',
+    '/images/ProductsCollections/ColeccionPrimas/background.jpg',
     '/favicon/favicon-32x32.png',
     '/favicon/apple-touch-icon.png',
     'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap'

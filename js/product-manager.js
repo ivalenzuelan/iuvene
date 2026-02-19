@@ -285,18 +285,17 @@ class ProductManager {
     }
 
     async loadProducts() {
+        // Prioritize local catalog so site edits are reflected immediately.
+        const localData = await this.fetchFromLocalSources();
+        if (localData) {
+            this.applyData(localData, 'local');
+            this.writeCache(this.products, this.collections);
+            return;
+        }
+
         const freshCache = this.readCache();
         if (freshCache) {
             this.applyData(freshCache, 'cache');
-            // Refresh in background when possible.
-            this.fetchFromSupabase()
-                .then((supabaseData) => {
-                    this.applyData(supabaseData, 'supabase');
-                    this.writeCache(this.products, this.collections);
-                })
-                .catch(() => {
-                    // Keep cached data silently.
-                });
             return;
         }
 
@@ -307,13 +306,6 @@ class ProductManager {
             return;
         } catch (supabaseError) {
             console.warn('ProductManager: Supabase load failed, trying local fallback', supabaseError);
-        }
-
-        const localData = await this.fetchFromLocalSources();
-        if (localData) {
-            this.applyData(localData, 'local');
-            this.writeCache(this.products, this.collections);
-            return;
         }
 
         const staleCache = this.readCache({ allowExpired: true });
