@@ -426,9 +426,33 @@
             margin-bottom: 1rem;
         }
 
+        .modal-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
         .modal-header h2 {
             font-family: 'Montserrat', sans-serif;
             font-size: 1.2rem;
+        }
+
+        .dirty-indicator {
+            background: #fef4d6;
+            color: #7f5c04;
+            border: 1px solid #f2d99b;
+            border-radius: 999px;
+            padding: 0.2rem 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .modal-subtitle {
+            margin: -0.25rem 0 0.9rem;
+            color: var(--muted);
+            font-size: 0.88rem;
         }
 
         .close-modal {
@@ -446,6 +470,25 @@
             display: grid;
             grid-template-columns: 1.2fr 1fr;
             gap: 1rem;
+        }
+
+        .form-section {
+            border: 1px solid #e8dece;
+            border-radius: 12px;
+            padding: 0.75rem;
+            background: #fcfaf7;
+        }
+
+        .form-section+.form-section {
+            margin-top: 0.7rem;
+        }
+
+        .form-section h3 {
+            font-size: 0.86rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.7rem;
         }
 
         .grid-2 {
@@ -524,6 +567,22 @@
             gap: 0.55rem;
         }
 
+        .inline-actions {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            align-items: end;
+            margin-bottom: 0.7rem;
+        }
+
+        .preview-meta {
+            margin-top: 0.5rem;
+            display: grid;
+            gap: 0.22rem;
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+
         .toast-root {
             position: fixed;
             right: 18px;
@@ -600,6 +659,10 @@
 
             .gallery-preview {
                 grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .inline-actions {
+                grid-template-columns: 1fr;
             }
         }
 
@@ -833,171 +896,197 @@
                     data-tab="atelier-view">Atelier</button></div>
         </nav>
         <main class="container dashboard-main">
-            < !-- Products View -->
-                <div id="products-view" class="tab-content active">
-                    <section class="stats-grid">
-                        <article class="stat-card">
-                            <h3>Total productos</h3>
-                            <div class="value" id="stat-total">0</div>
-                        </article>
-                        <article class="stat-card">
-                            <h3>Publicados</h3>
-                            <div class="value" id="stat-visible">0</div>
-                        </article>
-                        <article class="stat-card">
-                            <h3>Agotados</h3>
-                            <div class="value" id="stat-sold">0</div>
-                        </article>
-                        <article class="stat-card">
-                            <h3>Promociones</h3>
-                            <div class="value" id="stat-promo">0</div>
-                        </article>
-                    </section>
-                    <section class="panel">
-                        <div class="filters-grid">
-                            <div class="form-group" style="margin:0;"><label for="search-input">Buscar</label><input
-                                    class="field" id="search-input" type="text"
-                                    placeholder="Nombre, descripción, tipo o estado"></div>
-                            <div class="form-group" style="margin:0;"><label for="filter-type">Tipo</label><select
-                                    class="field-select" id="filter-type">
-                                    <option value="all">Todos</option>
-                                    <option value="chockers">Chockers</option>
-                                    <option value="collares">Collares</option>
-                                </select></div>
-                            <div class="form-group" style="margin:0;"><label for="filter-status">Estado</label><select
-                                    class="field-select" id="filter-status">
-                                    <option value="all">Todos</option>
-                                    <option value="new">Nuevo</option>
-                                    <option value="promo">Promoción</option>
-                                    <option value="sold">Agotado</option>
-                                    <option value="visible">Publicado</option>
-                                    <option value="hidden">Oculto</option>
-                                </select></div>
-                            <div class="form-group" style="margin:0;"><label
-                                    for="filter-collection">Colección</label><select class="field-select"
-                                    id="filter-collection">
-                                    <option value="all">Todas</option>
-                                </select></div>
-                            <div class="form-group" style="margin:0;"><label for="filter-sort">Ordenar</label><select
-                                    class="field-select" id="filter-sort">
-                                    <option value="newest">Más recientes</option>
-                                    <option value="oldest">Más antiguos</option>
-                                    <option value="price-asc">Precio ↑</option>
-                                    <option value="price-desc">Precio ↓</option>
-                                    <option value="name-asc">Nombre A-Z</option>
-                                </select></div><button class="btn btn-ghost" id="clear-filters-btn"
-                                type="button">Limpiar</button>
-                        </div>
-                    </section>
-                    <section class="panel">
-                        <div class="products-header">
-                            <h2 style="font-family: 'Montserrat', sans-serif; font-size: 1.05rem;">Productos</h2>
-                            <p id="products-summary">0 productos</p>
-                        </div>
-                        <div class="products-grid" id="products-list"></div>
-                    </section>
-                    </section>
+            <!-- Products View -->
+            <div id="products-view" class="tab-content active">
+                <section class="stats-grid">
+                    <article class="stat-card">
+                        <h3>Total productos</h3>
+                        <div class="value" id="stat-total">0</div>
+                    </article>
+                    <article class="stat-card">
+                        <h3>Publicados</h3>
+                        <div class="value" id="stat-visible">0</div>
+                    </article>
+                    <article class="stat-card">
+                        <h3>Agotados</h3>
+                        <div class="value" id="stat-sold">0</div>
+                    </article>
+                    <article class="stat-card">
+                        <h3>Promociones</h3>
+                        <div class="value" id="stat-promo">0</div>
+                    </article>
+                </section>
+                <section class="panel">
+                    <div class="filters-grid">
+                        <div class="form-group" style="margin:0;"><label for="search-input">Buscar</label><input
+                                class="field" id="search-input" type="text"
+                                placeholder="Nombre, descripción, tipo o estado"></div>
+                        <div class="form-group" style="margin:0;"><label for="filter-type">Tipo</label><select
+                                class="field-select" id="filter-type">
+                                <option value="all">Todos</option>
+                                <option value="chockers">Chockers</option>
+                                <option value="collares">Collares</option>
+                            </select></div>
+                        <div class="form-group" style="margin:0;"><label for="filter-status">Estado</label><select
+                                class="field-select" id="filter-status">
+                                <option value="all">Todos</option>
+                                <option value="new">Nuevo</option>
+                                <option value="promo">Promoción</option>
+                                <option value="sold">Agotado</option>
+                                <option value="visible">Publicado</option>
+                                <option value="hidden">Oculto</option>
+                            </select></div>
+                        <div class="form-group" style="margin:0;"><label for="filter-collection">Colección</label><select
+                                class="field-select" id="filter-collection">
+                                <option value="all">Todas</option>
+                            </select></div>
+                        <div class="form-group" style="margin:0;"><label for="filter-sort">Ordenar</label><select
+                                class="field-select" id="filter-sort">
+                                <option value="newest">Más recientes</option>
+                                <option value="oldest">Más antiguos</option>
+                                <option value="price-asc">Precio ↑</option>
+                                <option value="price-desc">Precio ↓</option>
+                                <option value="name-asc">Nombre A-Z</option>
+                            </select></div><button class="btn btn-ghost" id="clear-filters-btn"
+                            type="button">Limpiar</button>
+                    </div>
+                </section>
+                <section class="panel">
+                    <div class="products-header">
+                        <h2 style="font-family: 'Montserrat', sans-serif; font-size: 1.05rem;">Productos</h2>
+                        <p id="products-summary">0 productos</p>
+                    </div>
+                    <div class="products-grid" id="products-list"></div>
+                </section>
+            </div>
+            <!-- End Products View -->
+
+            <!-- Orders View -->
+            <div id="orders-view" class="tab-content">
+                <h2 style="margin-bottom: 1rem;">Pedidos Recientes</h2>
+                <div id="orders-list">
+                    <p>Cargando pedidos...</p>
                 </div>
-                < !-- End Products View -->
-                    < !-- Orders View -->
-                        <div id="orders-view" class="tab-content">
-                            <h2 style="margin-bottom: 1rem;">Pedidos Recientes</h2>
-                            <div id="orders-list">
-                                <p>Cargando pedidos...</p>
-                            </div>
-                        </div>
-                        < !-- Atelier View -->
-                            <div id="atelier-view" class="tab-content">
-                                <h2 style="margin-bottom: 1rem;">Solicitudes de Atelier</h2>
-                                <div id="atelier-list">
-                                    <p>Cargando solicitudes...</p>
-                                </div>
-                            </div>
+            </div>
+
+            <!-- Atelier View -->
+            <div id="atelier-view" class="tab-content">
+                <h2 style="margin-bottom: 1rem;">Solicitudes de Atelier</h2>
+                <div id="atelier-list">
+                    <p>Cargando solicitudes...</p>
+                </div>
+            </div>
         </main><button class="add-btn" id="add-product-btn" type="button" aria-label="Añadir producto">+</button>
     </div>
     <div class="modal" id="product-modal" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-title">Nuevo Producto</h2><button class="close-modal" id="close-modal" type="button"
-                    aria-label="Cerrar">×</button>
+                <div class="modal-title-wrap">
+                    <h2 id="modal-title">Nuevo Producto</h2>
+                    <span id="modal-dirty-indicator" class="dirty-indicator hidden">Cambios sin guardar</span>
+                </div><button class="close-modal" id="close-modal" type="button" aria-label="Cerrar">×</button>
             </div>
+            <p id="modal-subtitle" class="modal-subtitle">Actualiza datos, imágenes y visibilidad del producto.</p>
             <form id="product-form"><input type="hidden" id="p-id">
                 <div class="form-grid">
                     <div>
-                        <div class="form-group"><label for="p-name">Nombre</label><input class="field" type="text"
-                                id="p-name" required></div>
-                        <div class="grid-2">
-                            <div class="form-group"><label for="p-price">Precio (€)</label><input class="field"
-                                    type="number" id="p-price" min="0" step="0.01" required></div>
-                            <div class="form-group"><label for="p-collection">Colección</label><select
-                                    class="field-select" id="p-collection" required></select></div>
-                        </div>
-                        <div class="grid-2">
-                            <div class="form-group"><label for="p-type">Tipo</label><select class="field-select"
-                                    id="p-type">
-                                    <option value="chockers">Chockers</option>
-                                    <option value="collares">Collares</option>
-                                    <option value="rings">Rings</option>
-                                    <option value="earrings">Earrings</option>
-                                    <option value="necklaces">Necklaces</option>
-                                    <option value="bangles">Bangles</option>
-                                </select></div>
-                            <div class="form-group"><label for="p-category">Categoría</label><select
-                                    class="field-select" id="p-category">
-                                    <option value="chockers">Chockers</option>
-                                    <option value="collares">Collares</option>
-                                    <option value="silver">Silver</option>
-                                    <option value="gold">Gold</option>
-                                    <option value="other">Other</option>
-                                </select></div>
-                        </div>
-                        <div class="grid-2">
-                            <div class="form-group"><label for="p-status">Estado comercial</label><select
-                                    class="field-select" id="p-status">
-                                    <option value="">Normal</option>
-                                    <option value="NUEVO">NUEVO</option>
-                                    <option value="PROMOCIÓN">PROMOCIÓN</option>
-                                    <option value="AGOTADO">AGOTADO</option>
-                                </select></div>
-                            <div class="form-group"><label for="p-material">Material (opcional)</label><input
-                                    class="field" type="text" id="p-material" placeholder="Vacío para ocultar en web">
+                        <div class="form-section">
+                            <h3>Ficha principal</h3>
+                            <div class="form-group"><label for="p-name">Nombre</label><input class="field" type="text"
+                                    id="p-name" required></div>
+                            <div class="grid-2">
+                                <div class="form-group"><label for="p-price">Precio (€)</label><input class="field"
+                                        type="number" id="p-price" min="0" step="0.01" required></div>
+                                <div class="form-group"><label for="p-collection">Colección</label><select
+                                        class="field-select" id="p-collection" required></select></div>
                             </div>
                         </div>
-                        <div class="form-group"><label for="p-description">Descripción</label><textarea
-                                class="field-area" id="p-description"></textarea></div>
-                        <div class="checks-row"><label class="check-card"><input type="checkbox"
-                                    id="p-soldout">Agotado</label><label class="check-card"><input type="checkbox"
-                                    id="p-dashboard" checked>Visible en web</label><label class="check-card"><input
-                                    type="checkbox" id="p-featured">Destacado</label></div>
+                        <div class="form-section">
+                            <h3>Clasificación</h3>
+                            <div class="grid-2">
+                                <div class="form-group"><label for="p-type">Tipo</label><select class="field-select"
+                                        id="p-type">
+                                        <option value="chockers">Chockers</option>
+                                        <option value="collares">Collares</option>
+                                        <option value="rings">Rings</option>
+                                        <option value="earrings">Earrings</option>
+                                        <option value="necklaces">Necklaces</option>
+                                        <option value="bangles">Bangles</option>
+                                    </select></div>
+                                <div class="form-group"><label for="p-category">Categoría</label><select
+                                        class="field-select" id="p-category">
+                                        <option value="chockers">Chockers</option>
+                                        <option value="collares">Collares</option>
+                                        <option value="silver">Silver</option>
+                                        <option value="gold">Gold</option>
+                                        <option value="other">Other</option>
+                                    </select></div>
+                            </div>
+                            <div class="grid-2">
+                                <div class="form-group"><label for="p-status">Estado comercial</label><select
+                                        class="field-select" id="p-status">
+                                        <option value="">Normal</option>
+                                        <option value="NUEVO">NUEVO</option>
+                                        <option value="PROMOCIÓN">PROMOCIÓN</option>
+                                        <option value="AGOTADO">AGOTADO</option>
+                                    </select></div>
+                                <div class="form-group"><label for="p-material">Material (opcional)</label><input
+                                        class="field" type="text" id="p-material"
+                                        placeholder="Vacío para ocultar en web"></div>
+                            </div>
+                        </div>
+                        <div class="form-section">
+                            <h3>Descripción y visibilidad</h3>
+                            <div class="form-group"><label for="p-description">Descripción</label><textarea
+                                    class="field-area" id="p-description"></textarea></div>
+                            <div class="checks-row"><label class="check-card"><input type="checkbox"
+                                        id="p-soldout">Agotado</label><label class="check-card"><input type="checkbox"
+                                        id="p-dashboard" checked>Visible en web</label><label class="check-card"><input
+                                        type="checkbox" id="p-featured">Destacado</label></div>
+                        </div>
                     </div>
                     <div>
-                        <div class="form-group"><label>Imágenes del Producto</label>
-                            < !-- Hidden input for file selection --><input type="file" id="image-upload-input" multiple
-                                    accept="image/*" class="hidden">
-                                < !-- Drag & Drop Zone -->
-                                    <div id="image-drop-zone" class="image-drop-zone">
-                                        <p>Arrastra imágenes aquí o <button type="button" id="trigger-upload-btn"
-                                                class="text-btn">selecciona archivos</button></p>
-                                    </div>
-                                    < !-- Image Grid -->
-                                        <div id="image-manager-grid" class="image-manager-grid">
-                                            < !-- Thumbnails will be injected here via JS -->
-                                        </div>
-                                        <p class="help-text">Arrastra para reordenar. La primera imagen será la portada.
-                                        </p>
+                        <div class="form-group">
+                            <label>Imágenes del Producto</label>
+                            <!-- Hidden input for file selection -->
+                            <input type="file" id="image-upload-input" multiple accept="image/*" class="hidden">
+                            <!-- Drag & Drop Zone -->
+                            <div id="image-drop-zone" class="image-drop-zone">
+                                <p>Arrastra imágenes aquí o <button type="button" id="trigger-upload-btn"
+                                        class="text-btn">selecciona archivos</button></p>
+                            </div>
+                            <div class="inline-actions">
+                                <div class="form-group" style="margin:0;">
+                                    <label for="image-url-input">Añadir URL de imagen (opcional)</label>
+                                    <input class="field" type="url" id="image-url-input" placeholder="https://...">
+                                </div>
+                                <button type="button" id="add-image-url-btn" class="btn btn-ghost">Añadir URL</button>
+                            </div>
+                            <!-- Image Grid -->
+                            <div id="image-manager-grid" class="image-manager-grid">
+                                <!-- Thumbnails will be injected here via JS -->
+                            </div>
+                            <p class="help-text">Arrastra para reordenar. La primera imagen será la portada.</p>
                         </div>
-                        < !-- Hidden inputs to maintain compatibility with existing JS until fully refactored --><input
-                                type="hidden" id="p-image"><textarea id="p-images" class="hidden"></textarea>
+                        <div class="preview-panel">
+                            <h4>Previsualización rápida</h4>
+                            <img id="preview-main-image" class="main-preview" src="../images/hero-background.jpg"
+                                alt="Vista previa de producto">
+                            <div id="preview-gallery" class="gallery-preview"></div>
+                            <div id="preview-meta" class="preview-meta"></div>
+                        </div>
+                        <!-- Hidden inputs to maintain compatibility with existing JS until fully refactored -->
+                        <input type="hidden" id="p-image"><textarea id="p-images" class="hidden"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer"><button class="btn btn-ghost" id="cancel-btn"
                         type="button">Cancelar</button><button class="btn btn-primary" id="save-btn"
-                        type="submit">Guardar producto</button></div>
+                        type="submit">Guardar</button></div>
             </form>
         </div>
     </div>
     <div id="toast-root" class="toast-root"></div>
-    <script src="../js/admin.js?v=30"></script>
+    <script src="../js/admin.js?v=31"></script>
 </body>
 
 </html>

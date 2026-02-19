@@ -14,6 +14,9 @@ const state = {
     collections: [],
     editingId: null,
     saving: false,
+    uploadingImages: false,
+    modalBaseline: '',
+    modalDirty: false,
     filters: {
         query: '',
         type: 'all',
@@ -138,8 +141,141 @@ function parseImageList(value) {
         .filter(Boolean);
 }
 
+function normalizeStatusClass(value) {
+    const cleaned = normalizeText(value).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    return cleaned || 'new';
+}
+
+function normalizeImageArray(images) {
+    const list = Array.isArray(images) ? images : [];
+    return Array.from(new Set(list.map((img) => String(img || '').trim()).filter(Boolean)));
+}
+
+function setFieldSelectValue(selectElement, value, fallback = '') {
+    if (!selectElement) return;
+
+    const normalized = String(value ?? '').trim();
+    if (normalized && Array.from(selectElement.options).some((opt) => opt.value === normalized)) {
+        selectElement.value = normalized;
+        return;
+    }
+
+    if (fallback && Array.from(selectElement.options).some((opt) => opt.value === fallback)) {
+        selectElement.value = fallback;
+        return;
+    }
+
+    selectElement.value = selectElement.options[0]?.value ?? '';
+}
+
+function ensureSelectOption(selectElement, value, label = value) {
+    if (!selectElement) return;
+    const normalized = String(value ?? '').trim();
+    if (!normalized) return;
+
+    const exists = Array.from(selectElement.options).some((opt) => opt.value === normalized);
+    if (exists) return;
+
+    const option = document.createElement('option');
+    option.value = normalized;
+    option.textContent = String(label || normalized);
+    option.dataset.dynamic = 'true';
+    selectElement.appendChild(option);
+}
+
+function syncCollectionValue(collectionId) {
+    const current = String(collectionId || '').trim();
+    if (!current) return;
+
+    const hasOption = Array.from(elements.productCollection.options).some((opt) => opt.value === current);
+    if (hasOption) return;
+
+    const option = document.createElement('option');
+    option.value = current;
+    option.textContent = `${current} (actual)`;
+    option.dataset.dynamic = 'true';
+    elements.productCollection.appendChild(option);
+}
+
+function clearDynamicSelectOptions() {
+    const selects = [elements.productCollection, elements.productCategory, elements.productType, elements.productStatus];
+    selects.filter(Boolean).forEach((select) => {
+        Array.from(select.querySelectorAll('option[data-dynamic="true"]')).forEach((option) => option.remove());
+    });
+}
+
+function getModalSnapshot() {
+    const payload = buildPayloadFromForm();
+    return JSON.stringify(payload);
+}
+
+function setModalDirty(isDirty) {
+    state.modalDirty = Boolean(isDirty);
+    if (!elements.modalDirtyIndicator) return;
+    elements.modalDirtyIndicator.classList.toggle('hidden', !state.modalDirty);
+}
+
+function updateModalPreview() {
+    if (!elements.previewMainImage || !elements.previewGallery || !elements.previewMeta) return;
+
+    const main = state.currentImages[0] || 'images/hero-background.jpg';
+    elements.previewMainImage.src = resolveImageSrc(main);
+    elements.previewMainImage.onerror = () => {
+        elements.previewMainImage.src = '../images/hero-background.jpg';
+    };
+
+    const gallery = state.currentImages.slice(0, 4);
+    elements.previewGallery.innerHTML = gallery.map((src) => (
+        `<img src="${escapeHtml(resolveImageSrc(src))}" alt="Vista previa imagen">`
+    )).join('');
+
+    const name = elements.productName.value.trim() || 'Sin nombre';
+    const price = Number(elements.productPrice.value);
+    const type = elements.productType.value || '-';
+    const status = elements.productSoldOut.checked
+        ? 'AGOTADO'
+        : (elements.productStatus.value || 'ACTIVO');
+
+    elements.previewMeta.innerHTML = [
+        `<div><strong>${escapeHtml(name)}</strong></div>`,
+        `<div>${escapeHtml(Number.isFinite(price) ? formatPrice(price) : '€0')}</div>`,
+        `<div>${escapeHtml(type)} · ${escapeHtml(status)}</div>`,
+        `<div>${state.currentImages.length} imagen${state.currentImages.length === 1 ? '' : 'es'}</div>`
+    ].join('');
+}
+
+function refreshModalUiState() {
+    if (!elements.saveBtn) return;
+
+    const baseLabel = state.editingId != null ? 'Guardar cambios' : 'Guardar producto';
+    elements.saveBtn.textContent = state.saving
+        ? 'Guardando...'
+        : state.uploadingImages
+            ? 'Subiendo imágenes...'
+            : baseLabel;
+
+    const hasName = elements.productName.value.trim().length > 0;
+    const price = Number(elements.productPrice.value);
+    const hasValidPrice = Number.isFinite(price) && price >= 0;
+    elements.saveBtn.disabled = state.saving || state.uploadingImages || !hasName || !hasValidPrice;
+}
+
+function markModalAsDirtyIfNeeded() {
+    if (!isModalOpen()) return;
+    const snapshot = getModalSnapshot();
+    setModalDirty(snapshot !== state.modalBaseline);
+    updateModalPreview();
+    refreshModalUiState();
+}
+
+function isModalOpen() {
+    return elements.modal?.classList.contains('active') === true;
+}
+
 function renderCollectionOptions() {
     const list = state.collections.length > 0 ? state.collections : [FALLBACK_COLLECTION];
+    const currentProductCollection = elements.productCollection?.value || '';
+    const currentFilterCollection = elements.filterCollection?.value || 'all';
 
     const optionsHtml = list
         .map((collection) => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.name)}</option>`)
@@ -150,6 +286,15 @@ function renderCollectionOptions() {
     elements.filterCollection.innerHTML =
         '<option value="all">Todas</option>' +
         list.map((collection) => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.name)}</option>`).join('');
+
+    if (currentProductCollection) {
+        syncCollectionValue(currentProductCollection);
+        setFieldSelectValue(elements.productCollection, currentProductCollection, String(list[0]?.id || FALLBACK_COLLECTION.id));
+    } else {
+        setFieldSelectValue(elements.productCollection, String(list[0]?.id || FALLBACK_COLLECTION.id));
+    }
+
+    setFieldSelectValue(elements.filterCollection, currentFilterCollection, 'all');
 }
 
 function renderTypeFilterOptions() {
@@ -309,6 +454,8 @@ function setModalOpen(isOpen) {
 
     if (isOpen) {
         document.body.style.overflow = 'hidden';
+        refreshModalUiState();
+        updateModalPreview();
     } else {
         document.body.style.overflow = '';
     }
@@ -319,11 +466,13 @@ function setModalOpen(isOpen) {
 function renderImageManagerGrid() {
     const container = elements.imageManagerGrid;
     if (!container) return;
+    state.currentImages = normalizeImageArray(state.currentImages);
 
     if (state.currentImages.length === 0) {
         container.innerHTML = '<p class="empty" style="grid-column: 1/-1; padding: 1rem; font-size: 0.9rem;">No hay imágenes.</p>';
         elements.productImage.value = '';
         elements.productImages.value = '';
+        updateModalPreview();
         return;
     }
 
@@ -335,14 +484,14 @@ function renderImageManagerGrid() {
                 <div class="cover-badge">PORTADA</div>
                 <div class="img-actions">
                     ${!isCover ? `
-                    <button type="button" class="action-btn move-btn" title="Mover a portada" onclick="moveImage(${index}, 0)">
+                    <button type="button" class="action-btn move-btn" title="Mover a portada" data-image-action="move-cover" data-index="${index}">
                         ⬆
                     </button>
-                    <button type="button" class="action-btn move-btn" title="Mover izquierda" onclick="moveImage(${index}, ${index - 1})">
+                    <button type="button" class="action-btn move-btn" title="Mover izquierda" data-image-action="move-left" data-index="${index}">
                         ⬅
                     </button>
                     ` : ''}
-                    <button type="button" class="action-btn" title="Eliminar" onclick="removeImage(${index})">
+                    <button type="button" class="action-btn" title="Eliminar" data-image-action="remove" data-index="${index}">
                         🗑
                     </button>
                 </div>
@@ -353,6 +502,7 @@ function renderImageManagerGrid() {
     // Sync to legacy hidden inputs for compatibility
     elements.productImage.value = state.currentImages[0] || '';
     elements.productImages.value = state.currentImages.join('\n');
+    updateModalPreview();
 }
 
 async function uploadFileToSupabase(file) {
@@ -380,52 +530,86 @@ async function uploadFileToSupabase(file) {
     return data.publicUrl;
 }
 
-async function handleImageFiles(files) {
-    if (!files || files.length === 0) return;
-
-    const startCount = state.currentImages.length;
-    showToast(`Subiendo ${files.length} imágenes...`);
-
-    let uploadedCount = 0;
-    for (const file of files) {
-        try {
-            const url = await uploadFileToSupabase(file);
-            if (url) {
-                state.currentImages.push(url);
-                uploadedCount++;
-                renderImageManagerGrid();
-            }
-        } catch (error) {
-            console.error(error);
-            showToast(`Error con ${file.name}`, 'error');
-        }
-    }
-
-    if (uploadedCount > 0) {
-        showToast(`Subidas ${uploadedCount} imágenes exitosamente.`, 'success');
-    }
-}
-
-// Make globally accessible for inline onclick
-window.removeImage = function (index) {
-    if (confirm('¿Eliminar esta imagen de la lista?')) {
-        state.currentImages.splice(index, 1);
-        renderImageManagerGrid();
-    }
-};
-
-window.moveImage = function (fromIndex, toIndex) {
+function moveImagePosition(fromIndex, toIndex) {
+    if (fromIndex < 0 || fromIndex >= state.currentImages.length) return;
     if (toIndex < 0 || toIndex >= state.currentImages.length) return;
+    if (fromIndex === toIndex) return;
+
     const item = state.currentImages.splice(fromIndex, 1)[0];
     state.currentImages.splice(toIndex, 0, item);
     renderImageManagerGrid();
-};
+    markModalAsDirtyIfNeeded();
+}
+
+function removeImageAt(index) {
+    if (index < 0 || index >= state.currentImages.length) return;
+    const confirmed = window.confirm('¿Eliminar esta imagen de la lista?');
+    if (!confirmed) return;
+
+    state.currentImages.splice(index, 1);
+    renderImageManagerGrid();
+    markModalAsDirtyIfNeeded();
+}
+
+function addImageByUrl(rawUrl) {
+    const url = String(rawUrl || '').trim();
+    if (!url) return false;
+
+    const isValid = /^(https?:\/\/|\/|images\/|\.\.\/)/i.test(url);
+    if (!isValid) {
+        showToast('URL inválida. Usa https:// o una ruta local válida.', 'error');
+        return false;
+    }
+
+    state.currentImages.push(url);
+    state.currentImages = normalizeImageArray(state.currentImages);
+    renderImageManagerGrid();
+    markModalAsDirtyIfNeeded();
+    return true;
+}
+
+async function handleImageFiles(files) {
+    if (!files || files.length === 0) return;
+
+    state.uploadingImages = true;
+    refreshModalUiState();
+    showToast(`Subiendo ${files.length} imágenes...`);
+
+    let uploadedCount = 0;
+    try {
+        for (const file of files) {
+            try {
+                const url = await uploadFileToSupabase(file);
+                if (url) {
+                    state.currentImages.push(url);
+                    uploadedCount++;
+                    renderImageManagerGrid();
+                }
+            } catch (error) {
+                console.error(error);
+                showToast(`Error con ${file.name}`, 'error');
+            }
+        }
+
+        if (uploadedCount > 0) {
+            showToast(`Subidas ${uploadedCount} imágenes exitosamente.`, 'success');
+            markModalAsDirtyIfNeeded();
+        }
+    } finally {
+        state.uploadingImages = false;
+        refreshModalUiState();
+    }
+}
 
 function resetProductForm() {
     state.editingId = null;
     state.currentImages = [];
+    state.modalBaseline = '';
+    state.modalDirty = false;
+    state.uploadingImages = false;
 
     elements.productForm.reset();
+    clearDynamicSelectOptions();
     elements.productId.value = '';
     elements.productStatus.value = '';
     elements.productDashboard.checked = true;
@@ -433,47 +617,79 @@ function resetProductForm() {
     elements.productSoldOut.checked = false;
 
     const collectionId = state.collections[0]?.id || FALLBACK_COLLECTION.id;
-    elements.productCollection.value = String(collectionId);
+    syncCollectionValue(collectionId);
+    setFieldSelectValue(elements.productCollection, String(collectionId), String(collectionId));
+    setFieldSelectValue(elements.productType, 'chockers', 'chockers');
+    setFieldSelectValue(elements.productCategory, 'other', 'other');
+    setFieldSelectValue(elements.productStatus, '', '');
+    if (elements.imageUrlInput) {
+        elements.imageUrlInput.value = '';
+    }
 
     renderImageManagerGrid();
+    setModalDirty(false);
+    refreshModalUiState();
 }
 
 function openModal(product = null) {
+    resetProductForm();
+
     if (product) {
         state.editingId = product.id;
 
         elements.modalTitle.textContent = 'Editar producto';
+        elements.modalSubtitle.textContent = 'Ajusta los campos del producto y guarda cuando termines.';
         elements.productId.value = product.id;
         elements.productName.value = product.name || '';
-        elements.productPrice.value = Number(product.price || 0);
-        elements.productCollection.value = product.collection_id || (state.collections[0]?.id || FALLBACK_COLLECTION.id);
-        elements.productCategory.value = product.category || 'other';
-        elements.productType.value = product.type || 'chockers';
+        elements.productPrice.value = Number.isFinite(Number(product.price)) ? Number(product.price) : '';
+
+        const collectionId = product.collection_id || product.collection || (state.collections[0]?.id || FALLBACK_COLLECTION.id);
+        syncCollectionValue(collectionId);
+        setFieldSelectValue(elements.productCollection, collectionId, String(state.collections[0]?.id || FALLBACK_COLLECTION.id));
+        ensureSelectOption(elements.productCategory, product.category || 'other');
+        ensureSelectOption(elements.productType, product.type || 'chockers');
+        ensureSelectOption(elements.productStatus, product.status || '');
+        setFieldSelectValue(elements.productCategory, product.category || 'other', 'other');
+        setFieldSelectValue(elements.productType, product.type || 'chockers', 'chockers');
         elements.productMaterial.value = product.material || '';
         elements.productDescription.value = product.description || '';
 
         elements.productSoldOut.checked = product.sold_out === true;
-        elements.productStatus.value = product.status || '';
+        setFieldSelectValue(elements.productStatus, product.status || '', '');
         elements.productDashboard.checked = product.show_on_dashboard !== false;
         elements.productFeatured.checked = product.featured === true;
 
-        // Initialize Image Manager
+        // Initialize image manager with cover first and deduplicated gallery
         const mainImage = product.image ? [product.image] : [];
         const gallery = Array.isArray(product.images) ? product.images : [];
-        // Config: use Set to avoid dupes, but keep order if possible
-        state.currentImages = Array.from(new Set([...mainImage, ...gallery].filter(Boolean)));
+        state.currentImages = normalizeImageArray([...mainImage, ...gallery]);
 
     } else {
         elements.modalTitle.textContent = 'Nuevo producto';
-        resetProductForm();
+        elements.modalSubtitle.textContent = 'Crea un producto completo con portada, galería y estado comercial.';
     }
 
     renderImageManagerGrid();
+    state.modalBaseline = getModalSnapshot();
+    setModalDirty(false);
+    refreshModalUiState();
     setModalOpen(true);
 }
 
-function closeModal() {
+function closeModal({ force = false } = {}) {
+    if (!force && state.uploadingImages) {
+        showToast('Espera a que termine la subida de imágenes.', 'info');
+        return false;
+    }
+
+    if (!force && state.modalDirty) {
+        const confirmed = window.confirm('Hay cambios sin guardar. ¿Cerrar igualmente?');
+        if (!confirmed) return false;
+    }
+
     setModalOpen(false);
+    resetProductForm();
+    return true;
 }
 
 function buildPayloadFromForm() {
@@ -485,6 +701,7 @@ function buildPayloadFromForm() {
         name: elements.productName.value.trim(),
         price: Number(elements.productPrice.value),
         collection_id: elements.productCollection.value,
+        collection: elements.productCollection.value,
         category: elements.productCategory.value,
         type: elements.productType.value,
         material: elements.productMaterial.value.trim(),
@@ -504,16 +721,19 @@ function buildPayloadFromForm() {
 function validatePayload(payload) {
     if (!payload.name) {
         showToast('El nombre es obligatorio.', 'error');
+        elements.productName.focus();
         return false;
     }
 
     if (!Number.isFinite(payload.price) || payload.price < 0) {
         showToast('El precio debe ser un número válido mayor o igual a 0.', 'error');
+        elements.productPrice.focus();
         return false;
     }
 
     if (!payload.collection_id) {
         showToast('Selecciona una colección.', 'error');
+        elements.productCollection.focus();
         return false;
     }
 
@@ -522,54 +742,100 @@ function validatePayload(payload) {
 
 function createPayloadVariants(payload, includeId = false) {
     const full = { ...payload };
-    const reducedOptional = { ...payload };
+
+    const withoutLegacyCollection = { ...payload };
+    delete withoutLegacyCollection.collection;
+
+    const withoutModernCollection = { ...payload };
+    delete withoutModernCollection.collection_id;
+
+    const reducedOptional = { ...withoutLegacyCollection };
     delete reducedOptional.status;
     delete reducedOptional.show_on_dashboard;
     delete reducedOptional.featured;
 
-    const minimal = { ...reducedOptional };
-    delete minimal.images;
-    delete minimal.tags;
+    const minimal = {
+        name: payload.name,
+        price: payload.price,
+        collection_id: payload.collection_id,
+        category: payload.category,
+        type: payload.type,
+        description: payload.description,
+        image: payload.image,
+        sold_out: payload.sold_out
+    };
 
-    if (includeId) {
-        return [full, reducedOptional, minimal].map((variant) => ({
-            ...variant,
-            id: includeId
-        }));
+    const variants = [full, withoutLegacyCollection, withoutModernCollection, reducedOptional, minimal]
+        .map((variant) => {
+            if (!includeId) return variant;
+            return { ...variant, id: includeId };
+        });
+
+    const unique = [];
+    const seen = new Set();
+    for (const variant of variants) {
+        const key = JSON.stringify(variant);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        unique.push(variant);
     }
 
-    return [full, reducedOptional, minimal];
+    return unique;
+}
+
+function getMissingColumnFromError(error) {
+    const message = String(error?.message || '');
+    const patterns = [
+        /Could not find the '([^']+)' column/i,
+        /column "([^"]+)" .* does not exist/i,
+        /column ([a-zA-Z0-9_]+) does not exist/i
+    ];
+
+    for (const pattern of patterns) {
+        const match = message.match(pattern);
+        if (match?.[1]) return match[1];
+    }
+
+    return null;
+}
+
+async function runWriteWithColumnFallback(initialPayload, writeFn) {
+    const payload = { ...initialPayload };
+    const removedColumns = new Set();
+    let result = await writeFn(payload);
+
+    while (result.error) {
+        const missingColumn = getMissingColumnFromError(result.error);
+        if (!missingColumn || removedColumns.has(missingColumn) || !(missingColumn in payload)) {
+            return result;
+        }
+
+        delete payload[missingColumn];
+        removedColumns.add(missingColumn);
+        result = await writeFn(payload);
+    }
+
+    return result;
 }
 
 async function saveProductToSupabase(payload) {
-    if (state.editingId != null) {
-        const variants = createPayloadVariants(payload, false);
+    const isEditing = state.editingId != null;
+    const variants = createPayloadVariants(payload, isEditing ? false : Date.now());
+    let lastError;
 
-        let lastError;
-        for (const variant of variants) {
-            const result = await supabaseClient
-                .from('products')
-                .update(variant)
-                .eq('id', state.editingId);
-
-            if (!result.error) {
-                return;
+    for (const variant of variants) {
+        const result = await runWriteWithColumnFallback(variant, (candidate) => {
+            if (isEditing) {
+                return supabaseClient
+                    .from('products')
+                    .update(candidate)
+                    .eq('id', state.editingId);
             }
 
-            lastError = result.error;
-        }
-
-        throw new Error(lastError?.message || 'No se pudo actualizar el producto.');
-    }
-
-    const newId = Date.now();
-    const variants = createPayloadVariants(payload, newId);
-
-    let lastError;
-    for (const variant of variants) {
-        const result = await supabaseClient
-            .from('products')
-            .insert(variant);
+            return supabaseClient
+                .from('products')
+                .insert(candidate);
+        });
 
         if (!result.error) {
             return;
@@ -578,22 +844,18 @@ async function saveProductToSupabase(payload) {
         lastError = result.error;
     }
 
-    throw new Error(lastError?.message || 'No se pudo crear el producto.');
-}
-
-function updateSaveButton(loading) {
-    elements.saveBtn.disabled = loading;
-    elements.saveBtn.textContent = loading ? 'Guardando...' : 'Guardar producto';
+    throw new Error(lastError?.message || (isEditing ? 'No se pudo actualizar el producto.' : 'No se pudo crear el producto.'));
 }
 
 async function handleSave(event) {
     event.preventDefault();
 
-    if (state.saving) return;
+    if (state.saving || state.uploadingImages) return;
+    const isEditing = state.editingId != null;
 
     try {
         state.saving = true;
-        updateSaveButton(true);
+        refreshModalUiState();
 
         // Images are already uploaded and in state.currentImages
         const payload = buildPayloadFromForm();
@@ -602,18 +864,17 @@ async function handleSave(event) {
         }
 
         await saveProductToSupabase(payload);
-
-        showToast(state.editingId != null ? 'Producto actualizado.' : 'Producto creado.', 'success');
-
-        closeModal();
+        showToast(isEditing ? 'Producto actualizado.' : 'Producto creado.', 'success');
+        state.modalBaseline = getModalSnapshot();
+        setModalDirty(false);
+        closeModal({ force: true });
         await loadProducts();
-        // Also update cache if needed, handled by loadProducts usually
     } catch (error) {
         console.error(error);
         showToast(error.message || 'Error guardando producto.', 'error');
     } finally {
         state.saving = false;
-        updateSaveButton(false);
+        refreshModalUiState();
     }
 }
 
@@ -649,13 +910,14 @@ async function handleDuplicate(id) {
     const payload = {
         name: `${product.name} (Copia)`,
         price: Number(product.price || 0),
-        collection_id: product.collection_id || (state.collections[0]?.id || FALLBACK_COLLECTION.id),
+        collection_id: product.collection_id || product.collection || (state.collections[0]?.id || FALLBACK_COLLECTION.id),
+        collection: product.collection_id || product.collection || (state.collections[0]?.id || FALLBACK_COLLECTION.id),
         category: product.category || 'other',
         type: product.type || 'chockers',
         material: product.material || '',
         description: product.description || '',
         image: product.image || 'images/hero-background.jpg',
-        images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image || 'images/hero-background.jpg'],
+        images: normalizeImageArray(Array.isArray(product.images) && product.images.length > 0 ? product.images : [product.image || 'images/hero-background.jpg']),
         sold_out: false,
         status: product.status || '',
         show_on_dashboard: product.show_on_dashboard !== false,
@@ -852,6 +1114,8 @@ function cacheElements() {
     elements.cancelBtn = $('cancel-btn');
 
     elements.modalTitle = $('modal-title');
+    elements.modalSubtitle = $('modal-subtitle');
+    elements.modalDirtyIndicator = $('modal-dirty-indicator');
     elements.productForm = $('product-form');
     elements.productId = $('p-id');
     elements.productName = $('p-name');
@@ -874,18 +1138,47 @@ function cacheElements() {
     elements.imageUploadInput = $('image-upload-input');
     elements.imageDropZone = $('image-drop-zone');
     elements.imageManagerGrid = $('image-manager-grid');
-    elements.triggerUploadBtn = $('triggerUploadBtn'); // Typo in ID in HTML? Let's check.
-    // In HTML I used id="trigger-upload-btn"
     elements.triggerUploadBtn = $('trigger-upload-btn');
+    elements.imageUrlInput = $('image-url-input');
+    elements.addImageUrlBtn = $('add-image-url-btn');
+
+    elements.previewMainImage = $('preview-main-image');
+    elements.previewGallery = $('preview-gallery');
+    elements.previewMeta = $('preview-meta');
 
     elements.saveBtn = $('save-btn');
     elements.toastRoot = $('toast-root');
 }
 
+function ensureRequiredElements() {
+    const requiredIds = [
+        'login-view',
+        'dashboard-view',
+        'login-form',
+        'login-btn',
+        'logout-btn',
+        'products-list',
+        'products-summary',
+        'add-product-btn',
+        'product-modal',
+        'product-form',
+        'p-name',
+        'p-price',
+        'p-collection',
+        'save-btn',
+        'toast-root'
+    ];
+
+    const missing = requiredIds.filter((id) => !$(id));
+    if (missing.length > 0) {
+        throw new Error(`Faltan elementos del panel: ${missing.join(', ')}`);
+    }
+}
+
 function bindModalEvents() {
     elements.addBtn.addEventListener('click', () => openModal(null));
-    elements.closeModalBtn.addEventListener('click', closeModal);
-    elements.cancelBtn.addEventListener('click', closeModal);
+    elements.closeModalBtn.addEventListener('click', () => closeModal());
+    elements.cancelBtn.addEventListener('click', () => closeModal());
 
     elements.modal.addEventListener('click', (event) => {
         if (event.target === elements.modal) {
@@ -907,8 +1200,8 @@ function bindModalEvents() {
     }
 
     if (elements.imageUploadInput) {
-        elements.imageUploadInput.addEventListener('change', (e) => {
-            handleImageFiles(e.target.files);
+        elements.imageUploadInput.addEventListener('change', async (e) => {
+            await handleImageFiles(e.target.files);
             e.target.value = ''; // Reset to allow same file selection again
         });
     }
@@ -923,10 +1216,10 @@ function bindModalEvents() {
             elements.imageDropZone.classList.remove('drag-over');
         });
 
-        elements.imageDropZone.addEventListener('drop', (e) => {
+        elements.imageDropZone.addEventListener('drop', async (e) => {
             e.preventDefault();
             elements.imageDropZone.classList.remove('drag-over');
-            handleImageFiles(e.dataTransfer.files);
+            await handleImageFiles(e.dataTransfer.files);
         });
     }
 
@@ -959,12 +1252,73 @@ function bindModalEvents() {
             if (targetCard && draggedIndex !== null) {
                 const targetIndex = Number(targetCard.dataset.index);
                 if (targetIndex !== draggedIndex) {
-                    moveImage(draggedIndex, targetIndex);
+                    moveImagePosition(draggedIndex, targetIndex);
                 }
             }
             draggedIndex = null;
         });
+
+        elements.imageManagerGrid.addEventListener('click', (event) => {
+            const actionBtn = event.target.closest('button[data-image-action]');
+            if (!actionBtn) return;
+
+            const index = Number(actionBtn.dataset.index);
+            if (!Number.isFinite(index)) return;
+
+            const action = actionBtn.dataset.imageAction;
+            if (action === 'remove') {
+                removeImageAt(index);
+                return;
+            }
+
+            if (action === 'move-cover') {
+                moveImagePosition(index, 0);
+                return;
+            }
+
+            if (action === 'move-left') {
+                moveImagePosition(index, index - 1);
+            }
+        });
     }
+
+    if (elements.addImageUrlBtn && elements.imageUrlInput) {
+        elements.addImageUrlBtn.addEventListener('click', () => {
+            const added = addImageByUrl(elements.imageUrlInput.value);
+            if (added) {
+                elements.imageUrlInput.value = '';
+                showToast('Imagen añadida desde URL.', 'success');
+            }
+        });
+
+        elements.imageUrlInput.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            elements.addImageUrlBtn.click();
+        });
+    }
+
+    const watchFields = [
+        elements.productName,
+        elements.productPrice,
+        elements.productCollection,
+        elements.productCategory,
+        elements.productType,
+        elements.productMaterial,
+        elements.productDescription,
+        elements.productStatus,
+        elements.productSoldOut,
+        elements.productDashboard,
+        elements.productFeatured
+    ];
+
+    watchFields.filter(Boolean).forEach((field) => {
+        const eventName = field.type === 'checkbox' || field.tagName === 'SELECT' ? 'change' : 'input';
+        field.addEventListener(eventName, markModalAsDirtyIfNeeded);
+        if (eventName !== 'change') {
+            field.addEventListener('change', markModalAsDirtyIfNeeded);
+        }
+    });
 
     elements.productForm.addEventListener('submit', handleSave);
 }
@@ -1106,6 +1460,16 @@ function initSupabase() {
 
 function init() {
     cacheElements();
+    try {
+        ensureRequiredElements();
+    } catch (error) {
+        console.error(error);
+        if (elements.loginView && elements.dashboardView) {
+            showLogin();
+        }
+        showLoginError(error.message || 'Error cargando el panel de administración.');
+        return;
+    }
 
     supabaseClient = initSupabase();
 
@@ -1130,6 +1494,7 @@ function init() {
     });
 
     bindDashboardEvents();
+    resetProductForm();
 
     checkSession().catch((error) => {
         console.error(error);
@@ -1222,33 +1587,40 @@ async function loadOrders() {
             return;
         }
 
-        container.innerHTML = data.map(order => `
-            <div class="order-card">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
-                    <div>
-                        <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(order.customer_name)}</h3>
-                        <p style="color:var(--muted); font-size:0.9rem;">${escapeHtml(order.customer_contact)}</p>
-                    </div>
-                    <div style="text-align:right;">
-                        <span class="status-badge status-${normalizeText(order.status)}">${escapeHtml(order.status)}</span>
-                        <div style="font-size:0.85rem; color:var(--muted); margin-top:0.3rem;">${formatDate(order.created_at)}</div>
-                    </div>
-                </div>
-                
-                <div style="background:#faf7f2; padding:0.8rem; border-radius:8px; margin-bottom:0.8rem; font-size:0.95rem;">
-                    ${order.items.map(item => `
+        container.innerHTML = data.map((order) => {
+            const items = Array.isArray(order.items) ? order.items : [];
+            const itemsHtml = items.length > 0
+                ? items.map((item) => `
                         <div style="display:flex; justify-content:space-between; margin-bottom:0.2rem;">
-                            <span>${item.quantity}x ${escapeHtml(item.name)}</span>
-                            <span>${formatPrice(item.price * item.quantity)}</span>
+                            <span>${escapeHtml(item.quantity || 0)}x ${escapeHtml(item.name || 'Producto')}</span>
+                            <span>${formatPrice(Number(item.price || 0) * Number(item.quantity || 0))}</span>
                         </div>
-                    `).join('')}
+                    `).join('')
+                : '<div style="color:var(--muted);">Pedido sin líneas de producto.</div>';
+
+            return `
+                <div class="order-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
+                        <div>
+                            <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(order.customer_name || 'Cliente')}</h3>
+                            <p style="color:var(--muted); font-size:0.9rem;">${escapeHtml(order.customer_contact || '-')}</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <span class="status-badge status-${normalizeStatusClass(order.status)}">${escapeHtml(order.status || 'Nuevo')}</span>
+                            <div style="font-size:0.85rem; color:var(--muted); margin-top:0.3rem;">${formatDate(order.created_at)}</div>
+                        </div>
+                    </div>
+
+                    <div style="background:#faf7f2; padding:0.8rem; border-radius:8px; margin-bottom:0.8rem; font-size:0.95rem;">
+                        ${itemsHtml}
+                    </div>
+
+                    <div style="display:flex; justify-content:flex-end; align-items:center; gap:1rem;">
+                        <div style="font-size:1.2rem; font-weight:700;">Total: ${formatPrice(order.total)}</div>
+                    </div>
                 </div>
-                
-                <div style="display:flex; justify-content:flex-end; align-items:center; gap:1rem;">
-                    <div style="font-size:1.2rem; font-weight:700;">Total: ${formatPrice(order.total)}</div>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
 
     } catch (err) {
         console.error('Error loading orders:', err);
@@ -1275,17 +1647,18 @@ async function loadAtelier() {
             return;
         }
 
-        container.innerHTML = data.map(req => `
+        container.innerHTML = data.map((req) => `
             <div class="atelier-card">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
                     <div>
-                        <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(req.name)}</h3>
+                        <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(req.name || 'Solicitud Atelier')}</h3>
                         <div style="font-size:0.85rem; color:var(--muted);">${formatDate(req.created_at)}</div>
                     </div>
-                    <span class="status-badge status-${normalizeText(req.status)}">${escapeHtml(req.status)}</span>
+                    <span class="status-badge status-${normalizeStatusClass(req.status)}">${escapeHtml(req.status || 'Nuevo')}</span>
                 </div>
 
-                    <div><strong>Preferencia Contacto:</strong> ${escapeHtml(req.contact)}</div>
+                <div style="display:grid; gap:0.25rem; margin-bottom:0.85rem;">
+                    <div><strong>Preferencia Contacto:</strong> ${escapeHtml(req.contact || '-')}</div>
                     <div><strong>Email:</strong> ${escapeHtml(req.email || '-')}</div>
                     <div><strong>Teléfono:</strong> ${escapeHtml(req.phone || '-')}</div>
                     <div><strong>Fecha Evento:</strong> ${escapeHtml(req.event_date || 'No especificada')}</div>
