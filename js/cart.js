@@ -289,22 +289,24 @@ class ShoppingCart {
             formContainer.innerHTML = `
                 <div class="cart-header">
                     <h3>Finalizar Pedido</h3>
-                    <button class="close-checkout" aria-label="Volver">←</button>
+                    <button class="close-checkout" aria-label="Volver">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    </button>
                 </div>
-                <div style="padding: 1.5rem;">
-                    <p style="margin-bottom: 1rem; color: #666; font-size: 0.95rem;">
+                <div class="checkout-body">
+                    <p class="checkout-desc">
                         Déjanos tus datos para preparar tu pedido Iuvene. Te redirigiremos a WhatsApp para confirmar el pago.
                     </p>
                     <form id="order-form">
-                        <div style="margin-bottom: 1rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Nombre Completo</label>
-                            <input type="text" id="cust-name" required style="width:100%; padding:0.8rem; border:1px solid #ddd; border-radius:8px;">
+                        <div class="checkout-field">
+                            <label class="checkout-label" for="cust-name">Nombre Completo</label>
+                            <input class="checkout-input" type="text" id="cust-name" required placeholder="Tu nombre">
                         </div>
-                        <div style="margin-bottom: 1.5rem;">
-                            <label style="display:block; margin-bottom:0.5rem; font-weight:600;">Teléfono / WhatsApp</label>
-                            <input type="tel" id="cust-phone" required style="width:100%; padding:0.8rem; border:1px solid #ddd; border-radius:8px;">
+                        <div class="checkout-field">
+                            <label class="checkout-label" for="cust-phone">Teléfono / WhatsApp</label>
+                            <input class="checkout-input" type="tel" id="cust-phone" required placeholder="+34 600 000 000">
                         </div>
-                        <button type="submit" class="checkout-btn" style="width:100%;">Confirmar Pedido</button>
+                        <button type="submit" class="checkout-btn submit-btn">Confirmar Pedido</button>
                     </form>
                 </div>
             `;
