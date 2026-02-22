@@ -285,16 +285,21 @@ function isModalOpen() {
 function renderCollectionOptions() {
     const list = state.collections.length > 0 ? state.collections : [FALLBACK_COLLECTION];
     const currentFilterCollection = elements.filterCollection?.value || 'all';
+    const currentProductCollection = elements.productCollection?.value || '';
 
     const optionsHtml = list
         .map((collection) => `<option value="${escapeHtml(collection.id)}">${escapeHtml(collection.name)}</option>`)
         .join('');
 
-    // Update only the filter dropdown (product form no longer has a collection field)
-    elements.filterCollection.innerHTML =
-        '<option value="all">Todas</option>' + optionsHtml;
+    if (elements.filterCollection) {
+        elements.filterCollection.innerHTML = '<option value="all">Todas</option>' + optionsHtml;
+        setFieldSelectValue(elements.filterCollection, currentFilterCollection, 'all');
+    }
 
-    setFieldSelectValue(elements.filterCollection, currentFilterCollection, 'all');
+    if (elements.productCollection) {
+        elements.productCollection.innerHTML = '<option value="">(Sin colección)</option>' + optionsHtml;
+        setFieldSelectValue(elements.productCollection, currentProductCollection, '');
+    }
 }
 
 function renderTypeFilterOptions() {
@@ -616,6 +621,11 @@ function resetProductForm() {
     elements.productFeatured.checked = false;
     elements.productSoldOut.checked = false;
 
+    if (elements.productType) elements.productType.value = '';
+    if (elements.productCategory) elements.productCategory.value = 'other';
+    if (elements.productCollection) elements.productCollection.value = '';
+    if (elements.productMaterial) elements.productMaterial.value = '';
+
     if (elements.imageUrlInput) {
         elements.imageUrlInput.value = '';
     }
@@ -637,8 +647,11 @@ function openModal(product = null) {
         elements.productName.value = product.name || '';
         elements.productPrice.value = Number.isFinite(Number(product.price)) ? Number(product.price) : '';
 
-        // Preserve collection_id silently (no UI field anymore)
-        state.currentProductCollectionId = product.collection_id || product.collection || (state.collections[0]?.id || null);
+        const collectionId = product.collection_id || product.collection;
+        if (elements.productCollection) setFieldSelectValue(elements.productCollection, collectionId || '', '');
+        if (elements.productType) elements.productType.value = product.type || '';
+        if (elements.productCategory) setFieldSelectValue(elements.productCategory, product.category || 'other', 'other');
+        if (elements.productMaterial) elements.productMaterial.value = product.material || '';
 
         ensureSelectOption(elements.productStatus, product.status || '');
         setFieldSelectValue(elements.productStatus, product.status || '', '');
@@ -686,14 +699,16 @@ function buildPayloadFromForm() {
     const gallery = [...state.currentImages];
     if (gallery.length === 0) gallery.push(primaryImage);
 
+    const collectionVal = elements.productCollection?.value || null;
+
     const payload = {
         name: elements.productName.value.trim(),
         price: Number(elements.productPrice.value),
-        collection_id: state.editingId ? (state.currentProductCollectionId || null) : null,
-        collection: state.editingId ? (state.currentProductCollectionId || null) : null,
-        category: 'other',
-        type: 'chockers',
-        material: '',
+        collection_id: collectionVal,
+        collection: collectionVal,
+        category: elements.productCategory?.value || 'other',
+        type: elements.productType?.value.trim() || '',
+        material: elements.productMaterial?.value.trim() || '',
         description: elements.productDescription.value.trim(),
         image: primaryImage,
         images: gallery,
@@ -1104,6 +1119,11 @@ function cacheElements() {
     elements.productName = $('p-name');
     elements.productPrice = $('p-price');
 
+    elements.productType = $('p-type');
+    elements.productCategory = $('p-category');
+    elements.productCollection = $('p-collection');
+    elements.productMaterial = $('p-material');
+
     elements.productDescription = $('p-description');
     elements.productStatus = $('p-status');
     elements.productSoldOut = $('p-soldout');
@@ -1280,7 +1300,10 @@ function bindModalEvents() {
     const watchFields = [
         elements.productName,
         elements.productPrice,
-
+        elements.productType,
+        elements.productCategory,
+        elements.productCollection,
+        elements.productMaterial,
         elements.productDescription,
         elements.productStatus,
         elements.productSoldOut,
