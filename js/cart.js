@@ -304,7 +304,7 @@ class ShoppingCart {
                         </div>
                         <div class="checkout-field">
                             <label class="checkout-label" for="cust-phone">Teléfono / WhatsApp</label>
-                            <input class="checkout-input" type="tel" id="cust-phone" required placeholder="+34 600 000 000">
+                            <input class="checkout-input" type="tel" id="cust-phone" required placeholder="+34 600 000 000" value="+34 ">
                         </div>
                         <button type="submit" class="checkout-btn submit-btn">Confirmar Pedido</button>
                     </form>
