@@ -117,14 +117,7 @@ function resolveImageSrc(path) {
  * @param {number} quality  - JPEG/WebP quality 1-100
  */
 function supabaseImageUrl(src, width = 400, quality = 75) {
-    const resolved = resolveImageSrc(src);
-    // Only transform Supabase storage /object/public/ URLs
-    const SUPABASE_OBJECT_RE = /^(https:\/\/[^/]+\.supabase\.co\/storage\/v1\/)object\/(public\/.+)$/;
-    const match = resolved.match(SUPABASE_OBJECT_RE);
-    if (!match) return resolved; // local or external image — serve as-is
-
-    // Rewrite to render/image endpoint with transform params
-    return `${match[1]}render/image/${match[2]}?width=${width}&quality=${quality}&format=webp`;
+    return resolveImageSrc(src);
 }
 
 function getCollectionById(collectionId) {
