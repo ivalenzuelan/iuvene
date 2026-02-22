@@ -336,8 +336,13 @@ class ShoppingCart {
 
         try {
             // 1. Save to Supabase
-            if (window.supabaseClient) {
-                const { error } = await window.supabaseClient.from('orders').insert({
+            let supaClient = window.supabaseClient;
+            if (!supaClient && window.productManager && window.productManager.supabaseClient) {
+                supaClient = window.productManager.supabaseClient;
+            }
+
+            if (supaClient) {
+                const { error } = await supaClient.from('orders').insert({
                     customer_name: name,
                     customer_contact: phone,
                     items: this.items,
