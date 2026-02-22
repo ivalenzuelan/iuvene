@@ -1000,26 +1000,6 @@ async function handleProductListClick(event) {
 
 
 
-function exportProductsAsJson() {
-    const payload = {
-        generatedAt: new Date().toISOString(),
-        collections: state.collections,
-        products: state.products
-    };
-
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-        type: 'application/json'
-    });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `iuvene-catalog-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-
-    URL.revokeObjectURL(url);
-    showToast('Exportación completada.', 'success');
-}
 
 function resetFilters() {
     state.filters = {
@@ -1081,8 +1061,6 @@ function cacheElements() {
     elements.loginError = $('login-error');
 
     elements.refreshBtn = $('refresh-btn');
-    elements.exportBtn = $('export-btn');
-    elements.clearCacheBtn = $('clear-cache-btn');
 
     elements.productsList = $('products-list');
     elements.productsSummary = $('products-summary');
@@ -1316,13 +1294,12 @@ function bindModalEvents() {
 }
 
 function bindDashboardEvents() {
-    elements.refreshBtn.addEventListener('click', async () => {
-        showToast('Actualizando catálogo...', 'info');
-        await loadProducts();
-    });
-
-    elements.exportBtn.addEventListener('click', exportProductsAsJson);
-    elements.clearCacheBtn.addEventListener('click', clearStorefrontCache);
+    if (elements.refreshBtn) {
+        elements.refreshBtn.addEventListener('click', async () => {
+            showToast('Actualizando catálogo...', 'info');
+            await loadProducts();
+        });
+    }
 
     elements.productsList.addEventListener('click', (event) => {
         handleProductListClick(event).catch((error) => {
@@ -1495,27 +1472,6 @@ function init() {
     });
 }
 
-function clearStorefrontCache() {
-    const confirmed = window.confirm('¿Limpiar caché local de productos en este navegador?');
-    if (!confirmed) return;
-
-    const keys = [
-        'iuvene-products-cache-v2',
-        'iuvene-products-cache-v1',
-        'iuvene-products-supa',
-        'iuvene-products-supa-timestamp'
-    ];
-
-    keys.forEach((key) => {
-        try {
-            localStorage.removeItem(key);
-        } catch (error) {
-            // Ignore storage errors silently.
-        }
-    });
-
-    showToast('Caché local limpiada.', 'success');
-}
 
 document.addEventListener('keydown', (event) => {
     if (event.key.toLowerCase() !== 'n') return;
