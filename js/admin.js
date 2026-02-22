@@ -1385,7 +1385,7 @@ async function handleLogin(event) {
     event.preventDefault();
     clearLoginError();
 
-    const email = $('email').value.trim();
+    const email = 'admin@iuvene.com'; // Hardcoded email for password-only login
     const password = $('password').value;
 
     elements.loginBtn.disabled = true;
