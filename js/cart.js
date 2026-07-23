@@ -286,16 +286,31 @@ class ShoppingCart {
         if (!formContainer) {
             formContainer = document.createElement('div');
             formContainer.className = 'checkout-form';
+
+            const summaryRows = this.items.map(i =>
+                `<div class="checkout-summary-row">
+                    <span>${i.name}${i.quantity > 1 ? ` ×${i.quantity}` : ''}</span>
+                    <span>€${(i.price * i.quantity).toFixed(2)}</span>
+                </div>`
+            ).join('');
+
             formContainer.innerHTML = `
                 <div class="cart-header">
-                    <h3>Finalizar Pedido</h3>
+                    <h3>Tu Pedido</h3>
                     <button class="close-checkout" aria-label="Volver">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
                     </button>
                 </div>
                 <div class="checkout-body">
+                    <div class="checkout-summary">
+                        ${summaryRows}
+                        <div class="checkout-summary-total">
+                            <span>Total</span>
+                            <span>€${this.total.toFixed(2)}</span>
+                        </div>
+                    </div>
                     <p class="checkout-desc">
-                        Déjanos tus datos para preparar tu pedido Iuvene. Te redirigiremos a WhatsApp para confirmar el pago.
+                        Déjanos tus datos y te redirigiremos a WhatsApp para confirmar el pedido y el pago.
                     </p>
                     <form id="order-form">
                         <div class="checkout-field">
@@ -303,10 +318,14 @@ class ShoppingCart {
                             <input class="checkout-input" type="text" id="cust-name" required placeholder="Tu nombre">
                         </div>
                         <div class="checkout-field">
-                            <label class="checkout-label" for="cust-phone">Teléfono / WhatsApp</label>
+                            <label class="checkout-label" for="cust-email">Correo Electrónico</label>
+                            <input class="checkout-input" type="email" id="cust-email" placeholder="tu@email.com">
+                        </div>
+                        <div class="checkout-field">
+                            <label class="checkout-label" for="cust-phone">Teléfono / WhatsApp *</label>
                             <input class="checkout-input" type="tel" id="cust-phone" required placeholder="+34 600 000 000" value="+34 ">
                         </div>
-                        <button type="submit" class="checkout-btn submit-btn">Confirmar Pedido</button>
+                        <button type="submit" class="checkout-btn submit-btn">Confirmar por WhatsApp</button>
                     </form>
                 </div>
             `;
@@ -333,6 +352,7 @@ class ShoppingCart {
 
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
+        const email = (document.getElementById('cust-email') || {}).value || '';
 
         try {
             // 1. Save to Supabase
@@ -345,6 +365,7 @@ class ShoppingCart {
                 const { error } = await supaClient.from('orders').insert({
                     customer_name: name,
                     customer_contact: phone,
+                    customer_email: email || null,
                     items: this.items,
                     total: this.total,
                     status: 'pending'
@@ -356,8 +377,9 @@ class ShoppingCart {
             }
 
             // 2. Construct WhatsApp Message
-            const itemsList = this.items.map(i => `- ${i.name} (x${i.quantity})`).join('%0A');
-            const text = `Hola! 👋%0AQuiero confirmar mi pedido Iuvene:%0A%0A*Cliente:* ${name}%0A*Contacto:* ${phone}%0A%0A*Pedido:*%0A${itemsList}%0A%0A*Total:* €${this.total.toFixed(2)}`;
+            const itemsList = this.items.map(i => `- ${i.name} (x${i.quantity}) €${(i.price * i.quantity).toFixed(2)}`).join('%0A');
+            const emailLine = email ? `%0A*Email:* ${email}` : '';
+            const text = `Hola! 👋%0AQuiero confirmar mi pedido Iuvene:%0A%0A*Nombre:* ${name}%0A*Tel:* ${phone}${emailLine}%0A%0A*Pedido:*%0A${itemsList}%0A%0A*Total:* €${this.total.toFixed(2)}`;
             const waLink = `https://wa.me/34633479785?text=${text}`;
 
             // 3. Clear Cart and Redirect

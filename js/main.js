@@ -395,6 +395,54 @@ async function loadProducts() {
     }
 }
 
+function setupHeaderScroll() {
+    const header = document.querySelector('.header');
+    if (!header) return;
+
+    const onScroll = () => {
+        header.classList.toggle('scrolled', window.scrollY > 40);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+}
+
+function setupMobileMenu() {
+    const toggle = document.getElementById('menu-toggle');
+    const menu = document.getElementById('mobile-menu');
+    const overlay = document.getElementById('mobile-menu-overlay');
+    if (!toggle || !menu) return;
+
+    const links = menu.querySelectorAll('.mobile-nav a');
+
+    const close = () => {
+        menu.classList.remove('open');
+        toggle.classList.remove('open');
+        toggle.setAttribute('aria-expanded', 'false');
+        menu.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    };
+
+    const open = () => {
+        menu.classList.add('open');
+        toggle.classList.add('open');
+        toggle.setAttribute('aria-expanded', 'true');
+        menu.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    };
+
+    toggle.addEventListener('click', () => {
+        toggle.classList.contains('open') ? close() : open();
+    });
+
+    if (overlay) overlay.addEventListener('click', close);
+    links.forEach((link) => link.addEventListener('click', close));
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close();
+    });
+}
+
 function initializePage() {
     productsRoot = document.getElementById('products-grid');
     if (!productsRoot) {
@@ -402,6 +450,8 @@ function initializePage() {
         return;
     }
 
+    setupHeaderScroll();
+    setupMobileMenu();
     setupSearch();
     setupSmoothAnchorNavigation();
     setupRevealObserver();

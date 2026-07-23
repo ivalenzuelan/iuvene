@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Iuvene - Chockers y Collares Artesanales</title>
     <meta name="description"
-        content="Descubre la colección Iuvene de chockers y collares artesanales, y diseña tu pieza a medida en nuestro atelier.">
+        content="Descubre la colección Iuvene de chockers y collares artesanales, y diseña tu pieza a medida en nuestro atelier. Madrid.">
 
     <link rel="icon" type="image/x-icon" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon/favicon-32x32.png">
@@ -15,15 +15,15 @@
     <link rel="icon" type="image/png" sizes="512x512" href="favicon/android-chrome-512x512.png">
     <link rel="manifest" href="favicon/site.webmanifest">
 
-    <meta name="theme-color" content="#ffffff">
-    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="theme-color" content="#faf7f2">
+    <meta name="msapplication-TileColor" content="#faf7f2">
 
-    <link rel="stylesheet" href="css/style.css?v=19">
+    <link rel="stylesheet" href="css/style.css?v=20">
     <link rel="stylesheet" href="css/cart.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -39,9 +39,10 @@
                 </div>
                 <div class="nav-links">
                     <a href="#coleccion">Colección</a>
+                    <a href="#nosotros">Nosotros</a>
                     <a href="#atelier">Atelier</a>
                     <a href="#contacto">Contacto</a>
-                    <a href="https://instagram.com/iuvene" target="_blank" class="instagram-nav-btn"
+                    <a href="https://instagram.com/iuvene" target="_blank" rel="noopener" class="instagram-nav-btn"
                         aria-label="Síguenos en Instagram">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <path
@@ -52,38 +53,90 @@
                 <div class="nav-actions">
                     <button class="search-btn" aria-label="Buscar">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.35-4.35"></path>
                         </svg>
                     </button>
                     <button class="cart-btn" aria-label="Carrito">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path
-                                d="M9 20a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-7-4h7a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2z">
-                            </path>
-                            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
                         </svg>
                         <span class="cart-count" style="display: none;">0</span>
+                    </button>
+                    <button class="menu-toggle" id="menu-toggle" aria-label="Menú" aria-expanded="false">
+                        <span></span>
+                        <span></span>
+                        <span></span>
                     </button>
                 </div>
             </div>
         </nav>
     </header>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+        <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+        <div class="mobile-menu-drawer">
+            <nav class="mobile-nav">
+                <a href="#coleccion">Colección</a>
+                <a href="#nosotros">Nosotros</a>
+                <a href="#atelier">Atelier</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+            <div class="mobile-menu-socials">
+                <a href="https://instagram.com/iuvene" target="_blank" rel="noopener">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.059 1.645-.07 4.849-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                    @iuvene
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- HERO -->
     <section class="hero">
         <div class="hero-content">
-            <a href="#coleccion" class="cta-button">Ver colección</a>
+            <p class="hero-eyebrow">Artesanal · Madrid</p>
+            <h1 class="hero-title">Chockers &<br>Collares</h1>
+            <p class="hero-subtitle">Piezas únicas, edición limitada</p>
+            <a href="#coleccion" class="cta-button">Explorar Colección</a>
         </div>
     </section>
 
+    <!-- TRUST BAR -->
+    <div class="trust-bar">
+        <div class="trust-bar-inner">
+            <div class="trust-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                Hecho a mano
+            </div>
+            <div class="trust-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Edición limitada
+            </div>
+            <div class="trust-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                Envío seguro
+            </div>
+            <div class="trust-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                Materiales de calidad
+            </div>
+        </div>
+    </div>
+
+    <!-- COLLECTION -->
     <section class="products" id="coleccion">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title">Colección</h2>
-                <p>Descubre nuestros chockers y collares en edición limitada.</p>
-
+            <div class="section-header reveal">
+                <span class="section-eyebrow">Colección</span>
+                <h2 class="section-title">Piezas que hablan por ti</h2>
+                <p>Cada pieza Iuvene es creada a mano en Madrid, en edición limitada.</p>
             </div>
             <div class="product-groups" id="products-grid">
                 <!-- Productos cargados dinámicamente -->
@@ -91,17 +144,39 @@
         </div>
     </section>
 
+    <!-- ABOUT -->
+    <section class="about-section" id="nosotros">
+        <div class="container">
+            <div class="about-grid reveal">
+                <div class="about-image-wrap">
+                    <img
+                        src="images/aboutus/6773A021-5D04-482B-BADD-578875E3B782_1_201_a.jpeg"
+                        alt="Artesana Iuvene trabajando en Madrid"
+                        loading="lazy"
+                    />
+                </div>
+                <div class="about-text">
+                    <span class="about-eyebrow">Nuestra historia</span>
+                    <h2>Hecho con intención,<br>llevado con identidad</h2>
+                    <p>Iuvene nació en Madrid con una sola convicción: los accesorios merecen la misma dedicación que cualquier obra de arte. Cada chocker y collar que sale de nuestro taller es una pieza única, creada a mano con materiales seleccionados y pensada para quienes entienden que los detalles lo son todo.</p>
+                    <p>No producimos en masa. Trabajamos en ediciones limitadas porque creemos que lo especial no debería ser accesible para todos, sino solo para quienes realmente lo valoran.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ATELIER -->
     <section class="atelier-section" id="atelier">
         <div class="container">
-            <h2 class="section-title">Atelier: Accesorios a tu medida</h2>
+            <div class="section-header reveal">
+                <span class="section-eyebrow">Atelier</span>
+                <h2 class="section-title">Tu pieza, tu historia</h2>
+                <p>Diseña un accesorio completamente a medida.</p>
+            </div>
             <div class="atelier-content reveal">
                 <div class="atelier-copy">
                     <p>Sabemos que muchas veces buscamos piezas diferentes para ocasiones más especiales.</p>
-                    <p>Desde la sección de atelier-iuvene puedes diseñar tu propio chocker o collar totalmente a
-                        medida que combine con el outfit que llevas pensando tanto tiempo, los accesorios no se merecen
-                        menos.</p>
-                    <p>Podemos partir de ideas que traigas, de algún chocker de colecciones antiguas que ya esté
-                        agotado o jugar con colores y formas desde cero para co-crear algo totalmente nuevo.</p>
+                    <p>Desde el atelier Iuvene puedes diseñar tu propio chocker o collar totalmente a medida: podemos partir de ideas que traigas, de alguna pieza de colecciones antiguas o jugar con colores y formas desde cero para co-crear algo totalmente nuevo.</p>
                     <p>Para más información, déjanos tus datos y nos pondremos en contacto contigo.</p>
                 </div>
                 <form class="atelier-form" id="atelier-form">
@@ -144,7 +219,6 @@
                                 <label for="atelier-product">¿Te gusta algún producto similar?</label>
                                 <select id="atelier-product" name="related_product">
                                     <option value="">-- Selecciona un producto (opcional) --</option>
-                                    <!-- Options populated via JS -->
                                 </select>
                             </div>
                             <div class="atelier-field">
@@ -157,8 +231,6 @@
                                     value="+34 ">
                             </div>
                         </div>
-
-
 
                         <div class="atelier-extra-builder">
                             <div class="atelier-extra-header">
@@ -176,35 +248,56 @@
         </div>
     </section>
 
+    <!-- CONTACT -->
     <section class="contact-section" id="contacto">
         <div class="container reveal">
             <h2 class="section-title">Contacto</h2>
-            <p>Si tienes cualquier duda o quieres saber más sobre Iuvene, no dudes en ponerte en contacto con
-                nosotros:</p>
+            <p>¿Tienes alguna pregunta? Escríbenos o llámanos directamente.</p>
             <ul class="contact-list">
                 <li><a href="mailto:info.iuvene@gmail.com">info.iuvene@gmail.com</a></li>
-                <li><a href="tel:+34633479785">+633 479 785</a></li>
+                <li><a href="tel:+34633479785">+34 633 479 785</a></li>
             </ul>
         </div>
     </section>
 
+    <!-- FOOTER -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div>
+                <div class="footer-brand">
                     <h3>Iuvene</h3>
-                    <p class="copyright">© Iuvene • Madrid, España</p>
+                    <p>Chockers y collares artesanales creados a mano en Madrid. Edición limitada.</p>
                 </div>
+                <div class="footer-section">
+                    <h3>Explorar</h3>
+                    <ul>
+                        <li><a href="#coleccion">Colección</a></li>
+                        <li><a href="#nosotros">Nosotros</a></li>
+                        <li><a href="#atelier">Atelier</a></li>
+                        <li><a href="#contacto">Contacto</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Contacto</h3>
+                    <ul>
+                        <li><a href="mailto:info.iuvene@gmail.com">info.iuvene@gmail.com</a></li>
+                        <li><a href="tel:+34633479785">+34 633 479 785</a></li>
+                        <li><a href="https://instagram.com/iuvene" target="_blank" rel="noopener">@iuvene</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
                 <div class="social-links">
-                    <a href="https://instagram.com/iuvene" target="_blank" aria-label="Instagram"
+                    <a href="https://instagram.com/iuvene" target="_blank" rel="noopener" aria-label="Instagram"
                         class="instagram-link">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                             <path
                                 d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.059 1.645-.07 4.849-.07zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
                         </svg>
                         Síguenos en Instagram
                     </a>
                 </div>
+                <p class="copyright">© 2025 Iuvene · Madrid, España</p>
             </div>
         </div>
     </footer>
@@ -213,7 +306,7 @@
     <script src="js/collection-scanner.js"></script>
     <script src="js/product-manager.js?v=21"></script>
     <script src="js/background-slideshow.js"></script>
-    <script src="js/main.js?v=21"></script>
+    <script src="js/main.js?v=22"></script>
     <script src="js/cart.js"></script>
 </body>
 

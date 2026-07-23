@@ -1535,7 +1535,11 @@ async function loadOrders() {
             return;
         }
 
-        container.innerHTML = data.map((order) => {
+        const ORDER_STATUSES = ['pending', 'confirmed', 'shipped', 'completed', 'cancelled'];
+
+        container.innerHTML = '';
+
+        data.forEach((order) => {
             const items = Array.isArray(order.items) ? order.items : [];
             const itemsHtml = items.length > 0
                 ? items.map((item) => `
@@ -1546,29 +1550,46 @@ async function loadOrders() {
                     `).join('')
                 : '<div style="color:var(--muted);">Pedido sin líneas de producto.</div>';
 
-            return `
-                <div class="order-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
-                        <div>
-                            <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(order.customer_name || 'Cliente')}</h3>
-                            <p style="color:var(--muted); font-size:0.9rem;">${escapeHtml(order.customer_contact || '-')}</p>
-                        </div>
-                        <div style="text-align:right;">
-                            <span class="status-badge status-${normalizeStatusClass(order.status)}">${escapeHtml(order.status || 'Nuevo')}</span>
-                            <div style="font-size:0.85rem; color:var(--muted); margin-top:0.3rem;">${formatDate(order.created_at)}</div>
-                        </div>
-                    </div>
+            const statusButtons = ORDER_STATUSES.map((s) =>
+                `<button
+                    class="admin-status-btn ${order.status === s ? 'active' : ''}"
+                    data-table="orders"
+                    data-id="${escapeHtml(String(order.id))}"
+                    data-status="${s}"
+                    style="padding:0.3rem 0.7rem; font-size:0.78rem; font-weight:600; border:1px solid ${order.status === s ? 'var(--accent)' : '#ddd'}; border-radius:4px; background:${order.status === s ? 'var(--accent)' : '#fff'}; color:${order.status === s ? '#fff' : '#555'}; cursor:pointer; text-transform:capitalize; transition:all .2s;"
+                >${s}</button>`
+            ).join('');
 
-                    <div style="background:#faf7f2; padding:0.8rem; border-radius:8px; margin-bottom:0.8rem; font-size:0.95rem;">
-                        ${itemsHtml}
-                    </div>
+            const emailLine = order.customer_email
+                ? `<p style="color:var(--muted); font-size:0.9rem;">${escapeHtml(order.customer_email)}</p>` : '';
 
-                    <div style="display:flex; justify-content:flex-end; align-items:center; gap:1rem;">
-                        <div style="font-size:1.2rem; font-weight:700;">Total: ${formatPrice(order.total)}</div>
+            const card = document.createElement('div');
+            card.className = 'order-card';
+            card.dataset.orderId = order.id;
+            card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
+                    <div>
+                        <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(order.customer_name || 'Cliente')}</h3>
+                        <p style="color:var(--muted); font-size:0.9rem;">${escapeHtml(order.customer_contact || '-')}</p>
+                        ${emailLine}
+                    </div>
+                    <div style="text-align:right;">
+                        <span class="status-badge status-${normalizeStatusClass(order.status)}">${escapeHtml(order.status || 'pending')}</span>
+                        <div style="font-size:0.85rem; color:var(--muted); margin-top:0.3rem;">${formatDate(order.created_at)}</div>
                     </div>
                 </div>
+
+                <div style="background:#faf7f2; padding:0.8rem; border-radius:8px; margin-bottom:0.8rem; font-size:0.95rem;">
+                    ${itemsHtml}
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:1rem; flex-wrap:wrap;">
+                    <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">${statusButtons}</div>
+                    <div style="font-size:1.1rem; font-weight:700;">Total: ${formatPrice(order.total)}</div>
+                </div>
             `;
-        }).join('');
+            container.appendChild(card);
+        });
 
     } catch (err) {
         console.error('Error loading orders:', err);
@@ -1595,14 +1616,31 @@ async function loadAtelier() {
             return;
         }
 
-        container.innerHTML = data.map((req) => `
-            <div class="atelier-card">
+        const ATELIER_STATUSES = ['nuevo', 'contactado', 'en proceso', 'completado', 'cancelado'];
+
+        container.innerHTML = '';
+
+        data.forEach((req) => {
+            const statusButtons = ATELIER_STATUSES.map((s) =>
+                `<button
+                    class="admin-status-btn ${req.status === s ? 'active' : ''}"
+                    data-table="atelier_requests"
+                    data-id="${escapeHtml(String(req.id))}"
+                    data-status="${s}"
+                    style="padding:0.3rem 0.7rem; font-size:0.78rem; font-weight:600; border:1px solid ${req.status === s ? 'var(--accent)' : '#ddd'}; border-radius:4px; background:${req.status === s ? 'var(--accent)' : '#fff'}; color:${req.status === s ? '#fff' : '#555'}; cursor:pointer; text-transform:capitalize; transition:all .2s;"
+                >${s}</button>`
+            ).join('');
+
+            const card = document.createElement('div');
+            card.className = 'atelier-card';
+            card.dataset.atelierId = req.id;
+            card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.8rem;">
                     <div>
                         <h3 style="font-size:1.1rem; margin-bottom:0.2rem;">${escapeHtml(req.name || 'Solicitud Atelier')}</h3>
                         <div style="font-size:0.85rem; color:var(--muted);">${formatDate(req.created_at)}</div>
                     </div>
-                    <span class="status-badge status-${normalizeStatusClass(req.status)}">${escapeHtml(req.status || 'Nuevo')}</span>
+                    <span class="status-badge status-${normalizeStatusClass(req.status)}">${escapeHtml(req.status || 'nuevo')}</span>
                 </div>
 
                 <div style="display:grid; gap:0.25rem; margin-bottom:0.85rem;">
@@ -1613,18 +1651,70 @@ async function loadAtelier() {
                     ${req.related_product ? `<div><strong>Interesado en:</strong> ${escapeHtml(req.related_product)}</div>` : ''}
                 </div>
 
-                <div style="background:#faf7f2; padding:1rem; border-radius:8px;">
+                <div style="background:#faf7f2; padding:1rem; border-radius:8px; margin-bottom:0.85rem;">
                     <strong style="display:block; margin-bottom:0.4rem; font-size:0.9rem;">Detalles / Idea:</strong>
                     <p style="white-space:pre-wrap; color:#444;">${escapeHtml(req.details || 'Sin detalles')}</p>
                 </div>
-            </div>
-        `).join('');
+
+                <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">${statusButtons}</div>
+            `;
+            container.appendChild(card);
+        });
 
     } catch (err) {
         console.error('Error loading atelier:', err);
         container.innerHTML = '<div class="login-error">Error al cargar solicitudes.</div>';
     }
 }
+
+async function updateRecordStatus(table, id, status) {
+    const { error } = await supabaseClient
+        .from(table)
+        .update({ status })
+        .eq('id', id);
+
+    if (error) {
+        console.error(`Error updating ${table} status:`, error);
+        showToast('Error al actualizar el estado.', 'error');
+        return false;
+    }
+    return true;
+}
+
+document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.admin-status-btn');
+    if (!btn) return;
+
+    const table = btn.dataset.table;
+    const id = btn.dataset.id;
+    const status = btn.dataset.status;
+    if (!table || !id || !status) return;
+
+    btn.disabled = true;
+    btn.textContent = '…';
+
+    const ok = await updateRecordStatus(table, id, status);
+    if (ok) {
+        const card = btn.closest('.order-card, .atelier-card');
+        if (card) {
+            card.querySelectorAll('.admin-status-btn').forEach((b) => {
+                const isActive = b.dataset.status === status;
+                b.style.background = isActive ? 'var(--accent)' : '#fff';
+                b.style.color = isActive ? '#fff' : '#555';
+                b.style.borderColor = isActive ? 'var(--accent)' : '#ddd';
+            });
+            const badge = card.querySelector('.status-badge');
+            if (badge) {
+                badge.textContent = status;
+                badge.className = `status-badge status-${status.replace(/\s+/g, '-')}`;
+            }
+        }
+        showToast('Estado actualizado correctamente.');
+    }
+
+    btn.disabled = false;
+    btn.textContent = btn.dataset.status;
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     init(); // Run original init
