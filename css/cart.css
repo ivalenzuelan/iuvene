@@ -47,11 +47,11 @@
 }
 .cart-header h3 {
     margin: 0;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.1rem;
-    font-weight: 600;
-    letter-spacing: -.01em;
-    color: var(--charcoal, #1a1917);
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.35rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--charcoal, #4a3d31);
 }
 .close-cart {
     background: none; border: none;
@@ -112,10 +112,10 @@
 }
 .cart-item-details h4 {
     margin: 0;
-    font-family: 'Montserrat', sans-serif;
-    font-size: .95rem;
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.05rem;
     font-weight: 500;
-    color: var(--charcoal, #1a1917);
+    color: var(--charcoal, #4a3d31);
     line-height: 1.3;
     white-space: nowrap;
     overflow: hidden;
@@ -205,27 +205,27 @@
     justify-content: space-between;
     align-items: baseline;
     margin-bottom: 1.25rem;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--charcoal, #1a1917);
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--charcoal, #4a3d31);
 }
-.cart-total span:last-child { color: var(--gold, #8b7355); font-size: 1.3rem; }
+.cart-total span:last-child { color: var(--gold, #a5825a); font-size: 1.35rem; }
 
 .checkout-btn {
     width: 100%;
     padding: 1rem;
-    background: var(--charcoal, #1a1917);
-    color: #fff;
-    border: none; border-radius: 1px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: .75rem; font-weight: 700;
-    letter-spacing: .14em; text-transform: uppercase;
+    background: var(--charcoal, #4a3d31);
+    color: var(--ivory, #fffdf9);
+    border: none; border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem; font-weight: 500;
+    letter-spacing: .01em;
     cursor: pointer;
     transition: background .3s, transform .2s;
 }
 .checkout-btn:hover:not(:disabled) {
-    background: var(--ink, #0e0d0b);
+    background: var(--ink, #3a2f26);
     transform: translateY(-1px);
 }
 .checkout-btn:disabled {
@@ -300,11 +300,10 @@
 .checkout-label {
     display: block;
     margin-bottom: .5rem;
-    font-size: .68rem;
-    font-weight: 700;
-    letter-spacing: .14em;
-    text-transform: uppercase;
-    color: var(--stone, #6b6460);
+    font-size: .85rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    color: var(--stone, #8a7d6f);
 }
 
 .checkout-input {
@@ -353,21 +352,21 @@
     flex: 1;
     min-width: 200px;
     height: 54px;
-    background: var(--charcoal, #1a1917);
-    color: #fff;
-    border: none; border-radius: 1px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: .75rem; font-weight: 700;
-    letter-spacing: .14em; text-transform: uppercase;
+    background: var(--charcoal, #4a3d31);
+    color: var(--ivory, #fffdf9);
+    border: none; border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem; font-weight: 500;
+    letter-spacing: .01em;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     gap: .5rem;
     transition: background .3s, transform .2s, box-shadow .2s;
 }
 .add-to-cart-btn:hover:not(:disabled) {
-    background: var(--ink, #0e0d0b);
+    background: var(--ink, #3a2f26);
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(14,13,11,.15);
+    box-shadow: 0 6px 20px rgba(90,77,63,.18);
 }
 .add-to-cart-btn:active { transform: translateY(0); }
 .add-to-cart-btn:disabled {
@@ -383,12 +382,12 @@
     width: 100%;
     margin-top: .875rem;
     padding: .7rem 1rem;
-    background: var(--charcoal, #1a1917);
-    color: #fff;
-    border: none; border-radius: 1px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: .72rem; font-weight: 700;
-    letter-spacing: .1em; text-transform: uppercase;
+    background: var(--charcoal, #4a3d31);
+    color: var(--ivory, #fffdf9);
+    border: none; border-radius: 999px;
+    font-family: 'Inter', sans-serif;
+    font-size: .85rem; font-weight: 500;
+    letter-spacing: .01em;
     cursor: pointer;
     opacity: 0;
     transform: translateY(8px);
@@ -398,7 +397,7 @@
     opacity: 1;
     transform: translateY(0);
 }
-.add-to-cart-card-btn:hover { background: var(--gold, #8b7355); }
+.add-to-cart-card-btn:hover { background: var(--gold, #a5825a); }
 .add-to-cart-card-btn:disabled,
 .add-to-cart-card-btn[disabled] {
     background: var(--cloud, #b5ada4);
