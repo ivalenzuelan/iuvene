@@ -4,18 +4,20 @@
 
 /* --- TOKENS --- */
 :root {
-  --ink:        #0e0d0b;
-  --charcoal:   #1a1917;
-  --dark:       #2c2825;
-  --stone:      #6b6460;
-  --cloud:      #b5ada4;
-  --border:     #e5dfd6;
-  --cream:      #faf7f2;
-  --parchment:  #f0ebe0;
-  --ivory:      #fffdf8;
+  /* Tonos cálidos, tierra — nada de negro duro */
+  --ink:        #3a2f26;   /* café espresso cálido */
+  --charcoal:   #4a3d31;   /* marrón cálido oscuro */
+  --dark:       #5c4d3f;   /* marrón medio */
+  --stone:      #8a7d6f;   /* topo suave */
+  --cloud:      #c4b8a8;   /* arena clara */
+  --border:     #e8e0d4;   /* borde crema */
+  --cream:      #faf6ef;   /* fondo crema cálido */
+  --parchment:  #f2ece0;   /* pergamino */
+  --ivory:      #fffdf9;   /* marfil */
   --white:      #ffffff;
-  --gold:       #8b7355;
-  --gold-lt:    #a08a6a;
+  --gold:       #a5825a;   /* terracota-oro cálido */
+  --gold-lt:    #bb9b73;
+  --clay:       #c08858;   /* arcilla / acento cálido */
 
   /* legacy aliases */
   --primary:       var(--gold);
@@ -23,9 +25,12 @@
   --light:         var(--cream);
   --gray:          var(--stone);
 
-  --shadow-sm: 0 1px 4px rgba(14,13,11,.06);
-  --shadow-md: 0 4px 20px rgba(14,13,11,.10);
-  --shadow-lg: 0 12px 48px rgba(14,13,11,.16);
+  --shadow-sm: 0 2px 8px rgba(90,77,63,.06);
+  --shadow-md: 0 6px 24px rgba(90,77,63,.10);
+  --shadow-lg: 0 16px 50px rgba(90,77,63,.15);
+
+  --radius:    16px;
+  --radius-sm: 10px;
 
   --ease:     cubic-bezier(.16,1,.3,1);
   --ease-std: cubic-bezier(.4,0,.2,1);
@@ -50,16 +55,16 @@ ul { list-style: none; padding: 0; }
 
 /* --- TYPOGRAPHY --- */
 h1,h2,h3,h4,h5,h6 {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 500;
-  line-height: 1.15;
-  letter-spacing: -.02em;
+  font-family: 'Fraunces', Georgia, serif;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -.01em;
   color: var(--charcoal);
 }
-h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 600; }
-h2 { font-size: clamp(1.75rem, 3.5vw, 2.75rem); }
-h3 { font-size: clamp(1.125rem, 2vw, 1.5rem); }
-p { color: var(--stone); line-height: 1.75; }
+h1 { font-size: clamp(2.25rem, 5.5vw, 3.75rem); font-weight: 500; }
+h2 { font-size: clamp(1.65rem, 3.5vw, 2.5rem); }
+h3 { font-size: clamp(1.125rem, 2vw, 1.45rem); }
+p { color: var(--stone); line-height: 1.8; }
 
 /* --- CONTAINER --- */
 .container {
@@ -879,12 +884,22 @@ p { color: var(--stone); line-height: 1.75; }
 
   .product-detail-content { grid-template-columns: 1fr; }
   .product-info-detail { position: static; }
-  .product-detail { padding-bottom: 100px; }
+  .product-detail { padding: 5rem 0 108px; }
+  .product-title { font-size: 1.65rem; }
+  .product-price { font-size: 1.5rem; margin-bottom: 1.25rem; }
+
+  /* Image nav arrows must stay visible on touch (no hover) */
+  .product-images .main-image .image-navigation { opacity: 1; }
+  .nav-btn { width: 40px; height: 40px; background: rgba(255,255,255,.88); }
+
+  .breadcrumb { font-size: .75rem; }
+  .breadcrumb a, .breadcrumb span { white-space: nowrap; }
+
   .product-actions {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: rgba(250,247,242,.97);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    padding: .875rem 1.25rem; margin: 0;
+    padding: .75rem 1.25rem calc(.75rem + env(safe-area-inset-bottom)); margin: 0;
     box-shadow: 0 -1px 0 var(--border), 0 -8px 24px rgba(0,0,0,.08);
     z-index: 100; border-radius: 0;
   }
