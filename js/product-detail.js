@@ -374,6 +374,7 @@ function renderRelatedProducts(product) {
     const productId = String(product.id);
     const related = products
         .filter((candidate) => String(candidate.id) !== productId)
+        .filter((candidate) => candidate.hasRealImage !== false)
         .filter((candidate) => candidate.collection === product.collection || candidate.type === product.type)
         .slice(0, 3);
 

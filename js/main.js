@@ -51,6 +51,8 @@ function normalizeProductType(product) {
 function prepareProducts(rawProducts) {
     return rawProducts
         .filter((product) => product.showOnDashboard !== false)
+        // Solo mostramos productos con foto real (no el fallback)
+        .filter((product) => product.hasRealImage !== false)
         .map((product) => ({
             ...product,
             typeGroup: normalizeProductType(product),

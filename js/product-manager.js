@@ -107,6 +107,8 @@ function normalizeProduct(rawProduct, index = 0) {
     const images = dedupeStrings(imageCandidates.map(normalizeImagePath));
     const fallbackImage = 'images/hero-background.jpg';
     const image = images[0] || fallbackImage;
+    // Una foto "real" es cualquier imagen propia del producto (no el fallback ni vacío)
+    const hasRealImage = images.some((src) => src && src !== fallbackImage);
 
     const price = toNumberSafe(rawProduct && rawProduct.price, null);
 
@@ -123,6 +125,7 @@ function normalizeProduct(rawProduct, index = 0) {
         description: toStringSafe(rawProduct && rawProduct.description, 'Joyería artesanal diseñada en Madrid.'),
         image,
         images: images.length > 0 ? images : [fallbackImage],
+        hasRealImage,
         price,
         soldOut: toBooleanSafe(rawProduct && (rawProduct.soldOut ?? rawProduct.sold_out), false),
         showOnDashboard: toBooleanSafe(rawProduct && rawProduct.showOnDashboard, true),
