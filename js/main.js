@@ -92,12 +92,22 @@ function createProductCard(product) {
     imageWrapper.className = 'product-image';
 
     const image = document.createElement('img');
-    image.src = product.image || 'images/hero-background.jpg';
+    const primarySrc = product.image || 'images/hero-background.jpg';
+    image.src = primarySrc;
     image.alt = product.name;
     image.loading = 'lazy';
     image.decoding = 'async';
-    image.fetchPriority = 'low';
+    // Reintenta la foto real una vez ante un fallo puntual de red (la parrilla
+    // pide muchas imágenes a la vez) antes de caer al placeholder.
+    image.dataset.retries = '0';
     image.onerror = function onImageError() {
+        const retries = Number(this.dataset.retries || '0');
+        if (retries < 1 && primarySrc && !primarySrc.includes('hero-background')) {
+            this.dataset.retries = String(retries + 1);
+            this.src = `${primarySrc}${primarySrc.includes('?') ? '&' : '?'}r=${Date.now()}`;
+            return;
+        }
+        this.onerror = null;
         this.src = 'images/hero-background.jpg';
     };
 
