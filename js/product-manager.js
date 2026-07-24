@@ -107,8 +107,10 @@ function normalizeProduct(rawProduct, index = 0) {
     const images = dedupeStrings(imageCandidates.map(normalizeImagePath));
     const fallbackImage = 'images/hero-background.jpg';
     const image = images[0] || fallbackImage;
-    // Una foto "real" es cualquier imagen propia del producto (no el fallback ni vacío)
-    const hasRealImage = images.some((src) => src && src !== fallbackImage);
+    // Una foto "real" es cualquier imagen propia del producto: no vacía y que
+    // no sea la de fondo del hero (hero-background), venga como ruta o URL.
+    const isPlaceholder = (src) => !src || /hero-background/i.test(src);
+    const hasRealImage = images.some((src) => !isPlaceholder(src));
 
     const price = toNumberSafe(rawProduct && rawProduct.price, null);
 
