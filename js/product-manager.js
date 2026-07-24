@@ -107,9 +107,14 @@ function normalizeProduct(rawProduct, index = 0) {
     const images = dedupeStrings(imageCandidates.map(normalizeImagePath));
     const fallbackImage = 'images/hero-background.jpg';
     const image = images[0] || fallbackImage;
-    // Una foto "real" es cualquier imagen propia del producto: no vacía y que
-    // no sea la de fondo del hero (hero-background), venga como ruta o URL.
-    const isPlaceholder = (src) => !src || /hero-background/i.test(src);
+    // Una foto "real" es una imagen realmente subida (URL http de Supabase
+    // storage). Descartamos: vacías, el fondo del hero, y las rutas locales
+    // autogeneradas tipo "images/ProductsCollections/.../2003.jpg" que no
+    // existen como fichero (dan 404 y caen al placeholder).
+    const isPlaceholder = (src) =>
+        !src ||
+        /hero-background/i.test(src) ||
+        !/^https?:\/\//i.test(src);
     const hasRealImage = images.some((src) => !isPlaceholder(src));
 
     const price = toNumberSafe(rawProduct && rawProduct.price, null);
